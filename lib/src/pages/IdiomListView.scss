@@ -1,0 +1,19 @@
+@import "../components/App.scss";
+
+.idiomListView {
+  .idiomListDetails {
+    align-items: center;
+
+    h4 {
+      font-weight: bold;
+    }
+
+    .ant-list-item-meta-title {
+      font-size: 1rem;
+    }
+
+    .ant-list-item-meta-avatar {
+      flex-basis: 80px;
+    }
+  }
+}

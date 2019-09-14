@@ -1,0 +1,10 @@
+version: '2.1'
+
+services:
+  idiomatically:
+    image: idiomatically
+    build: .
+    environment:
+      NODE_ENV: development
+    ports:
+      - 8000:8000

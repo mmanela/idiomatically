@@ -1,0 +1,39 @@
+@import "../components/App.scss";
+
+article.idiom {
+  h3 {
+    color: $primaryColor1;
+    margin-top: 6px;
+
+    i.anticon {
+      font-size: 19px;
+      vertical-align: middle;
+    }
+    i.anticon-copy {
+      color: #ccc;
+
+      &:hover {
+        color: #40a9ff;
+      }
+    }
+  }
+
+  h2,
+  h3,
+  h4 {
+    color: $primaryColor1;
+  }
+
+  h4 {
+    font-size: 1.1rem;
+  }
+
+  .content {
+    margin-left: 20px;
+    color: #000;
+  }
+
+  .flagAvatarContainer {
+    margin-bottom: 1rem;
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "sourceMap": true,
+    "module": "commonjs",
+    "importHelpers": true,
+    "allowJs": true,
+    "strict": false,
+    "outDir": "build/server",
+    "lib": ["es6", "esnext.asynciterable"],
+    "moduleResolution": "node",
+    "typeRoots": ["../node_modules/@types", "../../custom_typings"]
+  }
+}

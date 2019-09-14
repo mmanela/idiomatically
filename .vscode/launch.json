@@ -1,0 +1,34 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Server",
+            "sourceMaps": true,
+            "runtimeExecutable": "yarn",
+            "cwd": "${workspaceRoot}/server",
+            "env": {
+                "NODE_ENV": "development"
+            },
+            "runtimeArgs": [
+                "run",
+                "ide"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ]
+        },
+        {
+            "name": "Chrome",
+            "type": "chrome",
+            "request": "launch",
+            "sourceMaps": true,
+            "url": "https://idiom2.ngrok.io",
+            "webRoot": "${workspaceFolder}/src"
+        }
+    ]
+}

@@ -1,0 +1,12 @@
+@import "App.scss";
+
+.navCommandBar {
+  border-bottom: none;
+  align-self: flex-start;
+
+  .userMenuItem {
+    .profileImage {
+      margin-right: 10px;
+    }
+  }
+}

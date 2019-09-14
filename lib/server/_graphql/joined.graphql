@@ -1,0 +1,117 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Query {
+  me: User
+  user(id: ID!): User @auth(requires: CONTRIBUTOR)
+  users(filter: String, limit: Int): [User]! @auth(requires: ADMIN)
+  idiom(id: ID, slug: String): Idiom
+  idioms(cursor: String, filter: String, locale: String, limit: Int): IdiomConnection!
+  languages: [Language!]!
+  countries(languageKey: String): [Country!]!
+}
+
+type Mutation {
+  updateIdiom(idiom: IdiomUpdateInput!): Idiom! @auth(requires: CONTRIBUTOR)
+  createIdiom(idiom: IdiomCreateInput!): Idiom! @auth(requires: CONTRIBUTOR)
+  deleteIdiom(idiomId: ID!): Boolean! @auth(requires: ADMIN)
+  addEquivalent(idiomId: ID!, equivalentId: ID!): Boolean! @auth(requires: CONTRIBUTOR)
+  removeEquivalent(idiomId: ID!, equivalentId: ID!): Boolean! @auth(requires: CONTRIBUTOR)
+}
+
+enum UserRole {
+  ADMIN
+  CONTRIBUTOR
+  GENERAL
+}
+
+directive @auth(requires: UserRole = ADMIN) on OBJECT | FIELD_DEFINITION
+
+type User {
+  id: ID!
+  name: String!
+  avatar: String
+  role: UserRole
+  providers: [Login]!
+}
+
+enum ProviderType {
+  GOOGLE
+  FACEBOOK
+}
+
+type Login @auth(requires: ADMIN) {
+  externalId: ID!
+  name: String!
+  email: String
+  avatar: String
+  type: ProviderType!
+}
+
+type IdiomConnection {
+  edges: [IdiomEdge!]!
+  pageInfo: PageInfo!
+}
+
+type IdiomEdge {
+  cursor: String!
+  node: Idiom!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  endCursor: String!
+}
+
+input IdiomCreateInput {
+  title: String!
+  description: String
+  languageKey: String!
+  countryKeys: [String!]
+  tags: [String!]
+  transliteration: String
+  literalTranslation: String
+  relatedIdiomId: ID
+}
+
+input IdiomUpdateInput {
+  id: ID!
+  title: String
+  description: String
+  transliteration: String
+  literalTranslation: String
+  tags: [String!]
+  countryKeys: [String!]
+}
+
+type Idiom {
+  id: ID!
+  slug: String!
+  title: String!
+  description: String
+  tags: [String!]!
+  transliteration: String
+  literalTranslation: String
+  equivalents: [Idiom!]!
+  language: Language!
+  createdAt: String!
+  createdBy: User
+  updatedAt: String
+  updatedBy: User
+}
+
+type Language {
+  languageName: String!
+  languageNativeName: String!
+  languageKey: String!
+  countries: [Country!]!
+}
+
+type Country {
+  countryKey: String!
+  countryName: String!
+  countryNativeName: String!
+  emojiFlag: String!
+}

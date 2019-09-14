@@ -1,0 +1,14 @@
+schema:
+  - "_graphql/joined.graphql"
+documents: []
+generates:
+  _graphql/types.ts:
+    config:
+      printTime: false
+      schemaNamespace: null
+      noNamespaces: true
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-resolvers
+require: []

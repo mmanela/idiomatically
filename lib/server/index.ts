@@ -19,6 +19,7 @@ import * as cors from 'cors';
 import { User } from './_graphql/types';
 import { ExpressContext } from 'apollo-server-express/dist/ApolloServer';
 import { AuthDirective } from './schemaDirectives/auth';
+import { setupSSR } from './ssr';
 
 const start = async () => {
   try {
@@ -29,10 +30,11 @@ const start = async () => {
     dotenv.config({
       path: `.env.${process.env.NODE_ENV}.local`,
     });
+
     const isProd = process.env.NODE_ENV === 'production';
     const serverUrl = process.env.SERVER_URL;
     const clientUrl = process.env.CLIENT_URL;
-    const clientPath = "../src/build";
+    const clientPath = path.join(__dirname, "../build");
     const dbConnection = process.env.DB_CONNECTION;
     const googleClientId = process.env.GOOGLE_CLIENT_ID;
     const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -69,10 +71,6 @@ const start = async () => {
     httpServer.listen({ port: port }, () =>
       console.log(`🚀 Server ready at ${serverUrl}${server.graphqlPath}`)
     );
-
-    console.log(path.join(__dirname, clientPath));
-    app.use('/', express.static(path.join(__dirname, clientPath)));
-
 
     app.get("/hello", (req, res) => {
       let text = `<html><body><h1>Welcome to idiomatically!</h1>`;
@@ -113,6 +111,7 @@ const start = async () => {
       })
     });
 
+    setupSSR(app, clientPath, schema, dataProvider);
 
   } catch (e) {
     console.error(e);
@@ -145,12 +144,23 @@ function setupAuthAndSession(app: express.Application, serverUrl: string, client
   // example does not have a database, the complete Facebook profile is serialized
   // and deserialized.
   passport.serializeUser<Profile, string>(async (profile, cb) => {
-    const user = await dataProvider.ensureUserFromLogin(profile)
-    cb(null, user.id);
+    try {
+      const user = await dataProvider.ensureUserFromLogin(profile)
+      cb(null, user.id);
+    } catch {
+      console.error("Unable to serialize user");
+      cb(null, null);
+    }
   });
   passport.deserializeUser<User, string>(async (userId, cb) => {
-    const user = await dataProvider.getUser(userId);
-    cb(null, user);
+    try {
+      const user = await dataProvider.getUser(userId);
+      cb(null, user);
+    }
+    catch {
+      console.error("Unable to deserialize user");
+      cb(null, null);
+    }
   });
 
   const sessionLength = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -183,3 +193,6 @@ function setupAuthAndSession(app: express.Application, serverUrl: string, client
   app.use(passport.initialize());
   app.use(passport.session());
 }
+
+
+process.on('SIGINT', () => { console.log("Adios!"); process.exit(); })

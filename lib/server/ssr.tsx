@@ -1,8 +1,7 @@
 import * as React from "react";
 import * as express from "express";
-import { ApolloProvider, renderToStringWithData } from "react-apollo";
+import { renderToStringWithData } from "@apollo/react-ssr";
 import { ApolloClient } from "apollo-client";
-import { createHttpLink } from "apollo-link-http";
 import { InMemoryCache, NormalizedCacheObject } from "apollo-cache-inmemory";
 import { StaticRouter } from "react-router";
 import { App } from "./../src/components/App";
@@ -12,7 +11,8 @@ import { GraphQLSchema } from "graphql";
 import { DataProvider } from "./dataProvider";
 import * as fs from "fs";
 import * as path from "path";
-import { Dictionary } from 'express-serve-static-core';
+import { getSubTitle } from "../src/components/subTitles";
+import { ApolloProvider } from '@apollo/react-common';
 
 // When running in staging or prod we setup to run using SSR for improved performance
 export function setupSSR(
@@ -39,6 +39,7 @@ function render(
   dataProvider: DataProvider,
   clientPath: string
 ) {
+  const cache = new InMemoryCache();
   const client = new ApolloClient({
     ssrMode: true,
     // Remember that this is the interface the SSR server will use to connect to the
@@ -50,8 +51,15 @@ function render(
         currentUser: req.user
       }
     }),
-    cache: new InMemoryCache()
+    cache: cache
   });
+
+  cache.writeData({
+    data: {
+      subTitle: getSubTitle()
+    }
+  });
+
   const context = {};
   // The client-side App will instead use <BrowserRouter>
   const WrappedApp = (

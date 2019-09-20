@@ -4,18 +4,13 @@ import {
   GetIdiomListQueryVariables,
   GetIdiomListQuery_idioms_edges
 } from "../__generated__/types";
-import { Query } from "react-apollo";
+import { Query } from "@apollo/react-components";
 import gql from "graphql-tag";
 import "./IdiomListView.scss";
 import { Alert, Spin, List, Empty } from "antd";
 import { Link } from "react-router-dom";
 import { LanguageFlags } from "../components/LanguageFlags";
 import { FULL_IDIOM_ENTRY } from "../fragments/fragments";
-
-class IdiomListQuery extends Query<
-  GetIdiomListQuery,
-  GetIdiomListQueryVariables
-> {}
 
 export const getIdiomListQuery = gql`
   query GetIdiomListQuery($filter: String, $locale: String) {
@@ -40,7 +35,10 @@ export const IdiomListView: React.StatelessComponent<
   const { filter } = props;
 
   return (
-    <IdiomListQuery query={getIdiomListQuery} variables={{ filter }}>
+    <Query<
+    GetIdiomListQuery,
+    GetIdiomListQueryVariables
+  > query={getIdiomListQuery} variables={{ filter }}>
       {({ loading, data, error }) => {
         if (loading)
           return (
@@ -76,7 +74,7 @@ export const IdiomListView: React.StatelessComponent<
           />
         );
       }}
-    </IdiomListQuery>
+    </Query>
   );
 };
 

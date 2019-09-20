@@ -1,16 +1,17 @@
-import { WithCurrentUserProps } from "../components/withCurrentUser";
+
 import * as React from "react";
 import "./Profile.scss";
 import { Avatar, Typography, Button, Spin } from 'antd';
 import { useState } from "react";
 import { Redirect } from "react-router";
+import { useCurrentUser } from '../components/withCurrentUser';
 const { Title } = Typography;
 
 export interface ProfileProps {
 }
 
-export const Profile: React.StatelessComponent<WithCurrentUserProps<ProfileProps>> = props => {
-    const { currentUser, resetOnLogout, currentUserLoading } = props;
+export const Profile: React.StatelessComponent<ProfileProps> = props => {
+    const { currentUser, currentUserLoading, resetOnLogout } = useCurrentUser();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const logOut = async () => {

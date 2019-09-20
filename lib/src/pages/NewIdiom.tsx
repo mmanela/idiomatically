@@ -2,28 +2,26 @@ import * as React from "react";
 import {
   CreateIdiomMutation,
   CreateIdiomMutationVariables,
-  FullIdiomEntry
+  FullIdiomEntry,
+  GetIdiomQuery,
+  GetIdiomQueryVariables
 } from "../__generated__/types";
-import { Mutation, MutationFn } from "react-apollo";
+import { Mutation, Query } from "@apollo/react-components";
 import gql from "graphql-tag";
 import "./NewIdiom.scss";
 import { Typography, Alert, Spin, Form } from "antd";
 import { WrappedFormInternalProps } from "antd/lib/form/Form";
 import { IDictionary } from "../types";
 import { FormEvent, useState } from "react";
-import { WithCurrentUserProps } from "../components/withCurrentUser";
 import { Redirect } from "react-router";
 import { FULL_IDIOM_ENTRY } from "../fragments/fragments";
 import { LanguageFlags } from "../components/LanguageFlags";
-import { IdiomQuery, getIdiomQuery } from "../fragments/getIdiom";
+import { getIdiomQuery } from "../fragments/getIdiom";
 import { commonFormItems } from "../components/commonFormItems";
 import { getErrorMessage } from "../utilities/getErrorMessage";
+import { MutationFunction } from "@apollo/react-common";
+import { useCurrentUser } from "../components/withCurrentUser";
 const { Title, Paragraph } = Typography;
-
-class CreateIdiomQuery extends Mutation<
-  CreateIdiomMutation,
-  CreateIdiomMutationVariables
-> {}
 
 export const createIdiomQuery = gql`
   mutation CreateIdiomMutation(
@@ -56,9 +54,8 @@ export interface NewIdiomProps {
   equivilentIdiomId?: string;
 }
 
-type FormProps = WithCurrentUserProps<
-  NewIdiomProps & WrappedFormInternalProps<IDictionary<string | string[]>>
->;
+type FormProps = NewIdiomProps &
+  WrappedFormInternalProps<IDictionary<string | string[]>>;
 
 const formItemLayout = {
   labelCol: {
@@ -72,14 +69,17 @@ const formItemLayout = {
 };
 
 const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
-  const { currentUser, currentUserLoading } = props;
+  const { currentUser, currentUserLoading } = useCurrentUser();
   const { getFieldDecorator } = props.form;
 
   const [languageKey, setLanguageKey] = useState("");
   const handleSubmit = async (
     e: FormEvent<any>,
     props: FormProps,
-    createIdiom: MutationFn<CreateIdiomMutation, CreateIdiomMutationVariables>,
+    createIdiom: MutationFunction<
+      CreateIdiomMutation,
+      CreateIdiomMutationVariables
+    >,
     equivalentIdiom: FullIdiomEntry | null
   ) => {
     e.preventDefault();
@@ -113,11 +113,13 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
   }
 
   return (
-    <CreateIdiomQuery mutation={createIdiomQuery}>
+    <Mutation<CreateIdiomMutation, CreateIdiomMutationVariables>
+      mutation={createIdiomQuery}
+    >
       {(createIdiom, { data, error, loading, client }) => {
         let equivilentIdiom: FullIdiomEntry | null = null;
         if (props.equivilentIdiomId) {
-          equivilentIdiom = client.readFragment<FullIdiomEntry>({
+          equivilentIdiom = client!.readFragment<FullIdiomEntry>({
             id: "Idiom:" + props.equivilentIdiomId,
             fragment: FULL_IDIOM_ENTRY
           });
@@ -176,7 +178,7 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
 
         if (props.equivilentIdiomId) {
           return (
-            <IdiomQuery
+            <Query<GetIdiomQuery, GetIdiomQueryVariables>
               query={getIdiomQuery}
               variables={{ id: props.equivilentIdiomId }}
             >
@@ -213,13 +215,13 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
                 equivilentIdiom = idiomLoadInfo.data.idiom;
                 return <>{form()}</>;
               }}
-            </IdiomQuery>
+            </Query>
           );
         } else {
           return form();
         }
       }}
-    </CreateIdiomQuery>
+    </Mutation>
   );
 };
 

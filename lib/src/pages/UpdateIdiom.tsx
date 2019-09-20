@@ -1,27 +1,26 @@
 import * as React from "react";
 import {
   UpdateIdiomMutation,
-  UpdateIdiomMutationVariables
+  UpdateIdiomMutationVariables,
+  GetIdiomQuery,
+  GetIdiomQueryVariables
 } from "../__generated__/types";
-import { Mutation, MutationFn } from "react-apollo";
+import { Mutation, Query } from "@apollo/react-components";
 import gql from "graphql-tag";
 import "./NewIdiom.scss";
 import { Typography, Alert, Spin, Form } from "antd";
 import { WrappedFormInternalProps } from "antd/lib/form/Form";
 import { IDictionary } from "../types";
 import { FormEvent } from "react";
-import { WithCurrentUserProps } from "../components/withCurrentUser";
 import { Redirect } from "react-router";
 import { FULL_IDIOM_ENTRY } from "../fragments/fragments";
-import { IdiomQuery, getIdiomQuery } from "../fragments/getIdiom";
+import { getIdiomQuery } from "../fragments/getIdiom";
 import { commonFormItems } from "../components/commonFormItems";
 import { getErrorMessage } from "../utilities/getErrorMessage";
+import { MutationFunction } from '@apollo/react-common';
+import { useCurrentUser } from '../components/withCurrentUser';
 const { Title } = Typography;
 
-class UpdateIdiomQuery extends Mutation<
-  UpdateIdiomMutation,
-  UpdateIdiomMutationVariables
-> {}
 
 export const updateIdiomQuery = gql`
   mutation UpdateIdiomMutation(
@@ -52,9 +51,7 @@ export interface UpdateIdiomProps {
   slug: string;
 }
 
-type FormProps = WithCurrentUserProps<
-  UpdateIdiomProps & WrappedFormInternalProps<IDictionary<string | string[]>>
->;
+type FormProps = UpdateIdiomProps & WrappedFormInternalProps<IDictionary<string | string[]>>;
 
 const formItemLayout = {
   labelCol: {
@@ -68,12 +65,12 @@ const formItemLayout = {
 };
 
 const UpdateIdiomComponent: React.StatelessComponent<FormProps> = props => {
-  const { currentUser, currentUserLoading } = props;
+  const { currentUser, currentUserLoading } = useCurrentUser();
   const { getFieldDecorator } = props.form;
   const handleSubmit = async (
     e: FormEvent<any>,
     props: FormProps,
-    updateIdiom: MutationFn<UpdateIdiomMutation, UpdateIdiomMutationVariables>,
+    updateIdiom: MutationFunction<UpdateIdiomMutation, UpdateIdiomMutationVariables>,
     idiomId: string
   ) => {
     e.preventDefault();
@@ -104,12 +101,12 @@ const UpdateIdiomComponent: React.StatelessComponent<FormProps> = props => {
       <Spin spinning delay={500} className="middleSpinner" tip="Loading..." />
     );
   }
-
+  
   return (
-    <UpdateIdiomQuery mutation={updateIdiomQuery}>
+    <Mutation<UpdateIdiomMutation, UpdateIdiomMutationVariables> mutation={updateIdiomQuery}>
       {(createIdiom, { data, error, loading, client }) => {
         return (
-          <IdiomQuery query={getIdiomQuery} variables={{ slug: props.slug }}>
+          <Query<GetIdiomQuery, GetIdiomQueryVariables> query={getIdiomQuery} variables={{ slug: props.slug }}>
             {idiomLoadInfo => {
               if (idiomLoadInfo.loading) {
                 return (
@@ -183,10 +180,10 @@ const UpdateIdiomComponent: React.StatelessComponent<FormProps> = props => {
                 </div>
               );
             }}
-          </IdiomQuery>
+          </Query>
         );
       }}
-    </UpdateIdiomQuery>
+    </Mutation>
   );
 };
 

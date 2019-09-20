@@ -2,23 +2,23 @@ import * as React from "react";
 import "./Idiom.scss";
 import { LanguageFlags } from "../components/LanguageFlags";
 import { Typography, Alert, Spin, Button } from "antd";
-import { WithCurrentUserProps } from "../components/withCurrentUser";
 import { RouteChildrenProps } from "react-router";
 import { History } from "history";
-import { IdiomQuery, getIdiomQuery } from "../fragments/getIdiom";
+import { getIdiomQuery } from "../fragments/getIdiom";
+import { GetIdiomQuery, GetIdiomQueryVariables } from '../__generated__/types';
+import { Query } from '@apollo/react-components';
 const { Title, Paragraph } = Typography;
 
 export interface IdiomProps {
   slug: string;
 }
-type IdiomCombinedProps = RouteChildrenProps<any> &
-  WithCurrentUserProps<IdiomProps>;
+type IdiomCombinedProps = RouteChildrenProps<any> & IdiomProps;
 
 export const Idiom: React.StatelessComponent<IdiomCombinedProps> = props => {
   const { slug } = props;
 
   return (
-    <IdiomQuery query={getIdiomQuery} variables={{ slug }}>
+    <Query<GetIdiomQuery, GetIdiomQueryVariables> query={getIdiomQuery} variables={{ slug }}>
       {({ loading, data, error }) => {
         if (loading)
           return (
@@ -101,7 +101,7 @@ export const Idiom: React.StatelessComponent<IdiomCombinedProps> = props => {
           </article>
         );
       }}
-    </IdiomQuery>
+    </Query>
   );
 };
 

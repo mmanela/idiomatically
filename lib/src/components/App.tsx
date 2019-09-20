@@ -12,7 +12,6 @@ import {
 import { Layout, Input } from "antd";
 import { IdiomListView } from "../pages/IdiomListView";
 import { NavCommandBar } from "./NavCommandBar";
-import { withCurrentUser, WithCurrentUserProps } from "./withCurrentUser";
 import { Profile } from "../pages/Profile";
 import { About } from "../pages/About";
 import { NewIdiom } from "../pages/NewIdiom";
@@ -21,36 +20,18 @@ import { UpdateIdiom } from "../pages/UpdateIdiom";
 const { Header, Footer, Content } = Layout;
 const { Search } = Input;
 
-const subTitles = [
-  "Taking language with a grain of salt",
-  "The horse of a different color",
-  "The pot calling the kettle black",
-  "Reaping what it sows",
-  "The cart before the horse",
-  "The perfect storm",
-  "Letting the cat out of the bag",
-  "The elephant in the room",
-  "The penny for your thoughts",
-  "Barking up the wrong tree",
-  "On a wild goose chase",
-  "Putting its eggs in one basket",
-  "Crying over spilt milk",
-  "Catching more flies with honey than with vinegar",
-  "Looking before it leaps",
-  "Saving up for a rainy-day"
-];
-const subTitle = subTitles[Math.floor(Math.random() * subTitles.length)];
+export interface AppProps {
+  subTitle?: string;
+}
 
-function AppInternal(
-  props: RouteComponentProps<any> & WithCurrentUserProps<{}>
-) {
+function AppInternal(props: RouteComponentProps<any> & AppProps) {
   return (
     <Layout className="container">
       <Header>
         <h1>
           <Link to="/">Idiomatically</Link>
         </h1>
-        <h2>{subTitle}</h2>
+        <h2>{props.subTitle}</h2>
         <NavCommandBar {...props} />
         <Search
           placeholder="Find an idiom"
@@ -77,7 +58,7 @@ function AppInternal(
             path="/idioms/:slug/update"
             render={props => renderUpdateIdiomForm(props)}
           />
-          <Route exact path="/me" component={withCurrentUser(Profile)} />
+          <Route exact path="/me" component={Profile} />
         </Switch>
       </Content>
 
@@ -90,11 +71,10 @@ function AppInternal(
   );
 }
 // Wrap the app with the router to get access to the history object
-export const App = withRouter(withCurrentUser(AppInternal));
-const WrappedIdiom = withCurrentUser(Idiom);
+export const App = withRouter(AppInternal);
 const renderIdiom = (props: RouteChildrenProps<any>) => {
   const { slug } = props!.match!.params;
-  return <WrappedIdiom {...props} slug={slug} />;
+  return <Idiom {...props} slug={slug} />;
 };
 const renderListView = (props: RouteProps) => {
   const params = new URLSearchParams(props.location!.search);
@@ -103,17 +83,15 @@ const renderListView = (props: RouteProps) => {
   return <IdiomListView filter={filter} />;
 };
 
-const WrappedNewIdiomForm = withCurrentUser(NewIdiom);
 const renderNewIdiomForm = (props: RouteProps) => {
   const params = new URLSearchParams(props.location!.search);
   const equivilentIdiomId = params.get("equivilentIdiomId");
 
-  return <WrappedNewIdiomForm equivilentIdiomId={equivilentIdiomId!} />;
+  return <NewIdiom equivilentIdiomId={equivilentIdiomId!} />;
 };
 
-const WrappedUpdateIdiomForm = withCurrentUser(UpdateIdiom);
 const renderUpdateIdiomForm = (props: RouteChildrenProps<any>) => {
   const { slug } = props!.match!.params;
 
-  return <WrappedUpdateIdiomForm slug={slug!} />;
+  return <UpdateIdiom slug={slug!} />;
 };

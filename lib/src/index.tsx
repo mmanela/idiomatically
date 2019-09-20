@@ -1,10 +1,11 @@
 import * as React from "react";
 import { render } from "react-dom";
-import ApolloClient, { InMemoryCache } from "apollo-boost";
-import { ApolloProvider } from "react-apollo";
+import ApolloClient, { InMemoryCache, gql } from "apollo-boost";
+import { ApolloProvider } from '@apollo/react-hooks';
 import { BrowserRouter } from "react-router-dom";
-
+import { useQuery } from "@apollo/react-hooks";
 import { App } from "./components/App";
+import { getSubTitle } from "./components/subTitles";
 
 // Grab any server rendered state
 const apolloState = (window as any).__APOLLO_STATE__;
@@ -17,16 +18,25 @@ const client = new ApolloClient({
   resolvers: {}
 });
 
-cache.writeData({
-  data: {}
-});
+const GET_SUBTITLE = gql`
+  {
+    subTitle @client
+  }
+`;
 
-const WrappedApp = (
-  <BrowserRouter>
-    <ApolloProvider client={client}>
-      <App />
-    </ApolloProvider>
-  </BrowserRouter>
-);
+function WrappedApp() {
+  const { data } = useQuery<string>(GET_SUBTITLE);
+  return <App subTitle={data || getSubTitle()} />;
+}
 
-render(WrappedApp, document.getElementById("root"));
+function Root() {
+  return (
+    <BrowserRouter>
+      <ApolloProvider client={client}>
+        <WrappedApp />
+      </ApolloProvider>
+    </BrowserRouter>
+  );
+}
+
+render(<Root />, document.getElementById("root"));

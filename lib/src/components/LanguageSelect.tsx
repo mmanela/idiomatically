@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Select, Spin } from "antd";
 import gql from "graphql-tag";
-import { Query } from "react-apollo";
+import { Query } from "@apollo/react-components";
 import { GetLanguagesQuery } from "../__generated__/types";
 const { Option } = Select;
 
@@ -15,8 +15,6 @@ export const getLanguagesQuery = gql`
   }
 `;
 
-export class LanguagesQuery extends Query<GetLanguagesQuery> {}
-
 export interface LanguageSelectProps {
   onChange?: (
     value: string,
@@ -28,7 +26,7 @@ export const LanguageSelect: React.StatelessComponent<
   LanguageSelectProps
 > = React.forwardRef<{}, LanguageSelectProps>((props, ref) => {
   return (
-    <LanguagesQuery query={getLanguagesQuery}>
+    <Query<GetLanguagesQuery> query={getLanguagesQuery}>
       {({ loading, data, error }) => {
         if (loading) return <Spin delay={250} />;
 
@@ -44,7 +42,7 @@ export const LanguageSelect: React.StatelessComponent<
           </Select>
         );
       }}
-    </LanguagesQuery>
+    </Query>
   );
 });
 function buildOptions(data: GetLanguagesQuery) {

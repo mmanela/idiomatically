@@ -1,9 +1,9 @@
-import { withApollo, withQuery, WithApolloClient } from "react-apollo";
 import gql from "graphql-tag";
 import {
     GetCurrentUser, GetCurrentUser_me
 } from "../__generated__/types";
 import { ApolloQueryResult } from "apollo-boost";
+import { useQuery, useApolloClient } from "@apollo/react-hooks";
 
 export const getCurrentUserQuery = gql`
   query GetCurrentUser {
@@ -16,11 +16,32 @@ export const getCurrentUserQuery = gql`
   }
 `;
 
+export type CurrentUserModel = {
+    resetOnLogout?: () => Promise<ApolloQueryResult<any>[] | null>,
+    currentUser?: GetCurrentUser_me | null,
+    currentUserLoading?: boolean
+}
+
+
+export function useCurrentUser() {
+    const client = useApolloClient();
+    const { data, loading } = useQuery<GetCurrentUser | null>(getCurrentUserQuery);
+
+    return {
+        currentUser: data && data.me,
+        currentUserLoading: loading,
+        resetOnLogout: async () => client.resetStore()
+    }
+}
+
+/*
+
 export type WithCurrentUserProps<TProps> = TProps & {
     resetOnLogout?: () => Promise<ApolloQueryResult<any>[] | null>,
     currentUser?: GetCurrentUser_me | null,
     currentUserLoading?: boolean
 }
+
 
 // Playing with using the HOC for querying and composing Apollo client. It is much easier to just use the Query component
 // but this can be usefull for keeping child components pure. Overall, it it a pain to get the type "correct"
@@ -45,3 +66,4 @@ export function withCurrentUser<TProps = {}>(wrappedComponent: React.ComponentTy
 
     return withApollo<TProps>(component);
 }
+*/

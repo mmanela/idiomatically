@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Select, Spin } from "antd";
 import gql from "graphql-tag";
-import { Query } from "react-apollo";
+import { Query } from "@apollo/react-components";
 import {
   GetCountriesQuery,
   GetCountriesQueryVariables
@@ -18,11 +18,6 @@ export const getCountriesQuery = gql`
   }
 `;
 
-export class CountriesQuery extends Query<
-  GetCountriesQuery,
-  GetCountriesQueryVariables
-> {}
-
 export interface CountrySelectProps {
   initialValue?: string[];
   languageKey?: string;
@@ -36,7 +31,7 @@ export const CountrySelect: React.StatelessComponent<
   CountrySelectProps
 > = React.forwardRef<{}, CountrySelectProps>((props, ref) => {
   return (
-    <CountriesQuery
+    <Query<GetCountriesQuery, GetCountriesQueryVariables>
       query={getCountriesQuery}
       variables={{ languageKey: props.languageKey }}
     >
@@ -61,7 +56,7 @@ export const CountrySelect: React.StatelessComponent<
           </Select>
         );
       }}
-    </CountriesQuery>
+    </Query>
   );
 });
 function buildOptions(data: GetCountriesQuery) {

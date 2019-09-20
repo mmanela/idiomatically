@@ -3,17 +3,16 @@ import * as React from "react";
 import { Menu, Icon, Avatar, Button } from "antd";
 import { ClickParam } from "antd/lib/menu";
 import { Link, RouteComponentProps } from "react-router-dom";
-import { WithCurrentUserProps } from "./withCurrentUser";
+import { useCurrentUser } from "./withCurrentUser";
 
-export interface NavCommandBarProps {
-}
+export interface NavCommandBarProps {}
 
-type NavBarCombinedProps = RouteComponentProps<any> & WithCurrentUserProps<NavCommandBarProps>
+type NavBarCombinedProps = RouteComponentProps<any> & NavCommandBarProps;
 
 export const NavCommandBar: React.StatelessComponent<
-NavBarCombinedProps
+  NavBarCombinedProps
 > = props => {
-  const { currentUser } = props;
+  const { currentUser } = useCurrentUser();
   const isLoggedIn = !!currentUser;
 
   return (
@@ -60,7 +59,7 @@ NavBarCombinedProps
             icon="plus-circle"
             size="default"
             onClick={() => {
-                props.history.push("/new");
+              props.history.push("/new");
             }}
           >
             Add an Idiom

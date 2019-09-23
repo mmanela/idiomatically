@@ -2,7 +2,10 @@ import * as React from "react";
 import { parse as emoji } from "twemoji-parser";
 import { Tooltip, Avatar } from "antd";
 import "./LanguageFlags.scss";
-import { FullIdiomEntry_language, FullIdiomEntry_language_countries } from "../__generated__/types";
+import {
+  FullIdiomEntry_language,
+  FullIdiomEntry_language_countries
+} from "../__generated__/types";
 
 type FlagSize = "small" | "default" | "large";
 export interface FlagCountry {
@@ -10,7 +13,7 @@ export interface FlagCountry {
   flag: string;
 }
 export interface LanguageFlagsProps {
-  languageInfo: FullIdiomEntry_language
+  languageInfo: FullIdiomEntry_language;
   /**
    * Small - 24px
    * Default - 32px
@@ -19,7 +22,7 @@ export interface LanguageFlagsProps {
   size?: FlagSize;
   showLabel?: boolean;
   layoutMode?: "horizontal" | "vertical";
-  smallMode?: boolean;
+  compactMode?: boolean;
 }
 
 export const LanguageFlags: React.StatelessComponent<
@@ -31,10 +34,8 @@ export const LanguageFlags: React.StatelessComponent<
 
   return (
     <div className={["flagAvatarContainer", layoutMode, size].join(" ")}>
-      {props.showLabel && (
-        <div className="flagAfterText">{languageLabel}</div>
-      )}
-      {renderFlag(props.languageInfo.countries, size, props.smallMode)}
+      {props.showLabel && <div className="flagAfterText">{languageLabel}</div>}
+      {renderFlag(props.languageInfo.countries, size, props.compactMode)}
     </div>
   );
 };
@@ -42,15 +43,15 @@ export const LanguageFlags: React.StatelessComponent<
 const renderFlag = (
   countries: FullIdiomEntry_language_countries[],
   size?: FlagSize,
-  smallMode?: boolean
+  compactMode?: boolean
 ) => {
-  if (smallMode) {
-    // Just pick first country for now, in the future we may want some idead
+  if (compactMode) {
+    // Just pick first country for now, in the future we may want some idea
     // of default country that best represents the idiom
     const country = countries[0];
     return (
       <div className="flagsGroup">
-        {getCountryFlag(country)}
+        {getCountryFlag(country, size)}
         {countries.length > 1 && (
           <Tooltip
             className="flagOverflow"
@@ -72,13 +73,20 @@ const renderFlag = (
   }
 };
 
-const renderFlagList = (countries: FullIdiomEntry_language_countries[], size?: FlagSize) => (
+const renderFlagList = (
+  countries: FullIdiomEntry_language_countries[],
+  size?: FlagSize
+) => (
   <div className="flagList">{countries.map(f => getCountryFlag(f, size))}</div>
 );
 
-const getCountryFlag = (country: FullIdiomEntry_language_countries, size?: FlagSize) => {
+const getCountryFlag = (
+  country: FullIdiomEntry_language_countries,
+  size?: FlagSize
+) => {
   const emojiResults = emoji(country.emojiFlag);
   const flagEmoji = emojiResults ? emojiResults[0].url : undefined;
+
   return (
     <Tooltip
       className="flagImage"

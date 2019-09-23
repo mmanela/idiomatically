@@ -1,8 +1,14 @@
 @import "../components/App.scss";
 
 article.idiom {
+  .page-header {
+    padding-top: 0;
+  }
+  .ant-page-header-content-view {
+    padding-top: 0px;
+  }
+
   h3 {
-    color: $primaryColor1;
     margin-top: 6px;
 
     i.anticon {
@@ -35,5 +41,30 @@ article.idiom {
 
   .flagAvatarContainer {
     margin-bottom: 1rem;
+  }
+
+  ul.equivilentList {
+    list-style: none;
+    padding: 0;
+    margin-left: 20px;
+
+    a {
+      color: black;
+      margin-left: 10px;
+    }
+
+    a:hover {
+      color: #1890ff;
+    }
+
+    .equivilentItem {
+      display: flex;
+    }
+  }
+
+  .addEquivalent {
+    button {
+      padding-left: 0px;
+    }
   }
 }

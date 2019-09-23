@@ -10,6 +10,7 @@
   }
 
   &.horizontal {
+    flex-direction: row;
     .flagImage {
       margin-right: 5px;
     }

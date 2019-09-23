@@ -86,7 +86,7 @@ const renderIdiomListItem = (item: GetIdiomListQuery_idioms_edges) => {
       languageInfo={idiom.language}
       showLabel={true}
       layoutMode="vertical"
-      smallMode
+      compactMode
     />
   );
 

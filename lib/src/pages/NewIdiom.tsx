@@ -161,7 +161,7 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
                     <LanguageFlags
                       languageInfo={equivilentIdiom.language}
                       layoutMode="horizontal"
-                      smallMode
+                      compactMode
                       size="small"
                     />
                     <span className="ant-form-text">

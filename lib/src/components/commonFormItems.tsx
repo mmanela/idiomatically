@@ -161,7 +161,8 @@ export function commonFormItems(
               {
                 message: "The literal translation is too long",
                 whitespace: true,
-                max: 1000
+                max: 1000,
+                required: true
               }
             ]
           })(<Input />)}

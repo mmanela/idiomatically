@@ -1,7 +1,31 @@
 import { UserModel } from '../model/types';
 import { Idiom, Login, UserRole, ProviderType } from '../_graphql/types';
-import { ObjectID } from 'mongodb';
+import { ObjectID, ObjectId } from 'mongodb';
 import { Languages } from './languages'
+
+
+/**
+ * Represents a proposed creation or update to an idiom
+ */
+export interface DbIdiomChangeProposal {
+    _id?: ObjectID,
+    type: IdiomProposalType,
+    idiomId?: ObjectId,
+    equivalentId?: ObjectId,
+    idiomToCreate?: DbIdiom,
+    idiomToUpdate?: Partial<DbIdiom>,
+    userId: ObjectID,
+    createdAt?: Date
+}
+
+export enum IdiomProposalType {
+    CreateIdiom = "CreateIdiom",
+    UpdateIdiom = "UpdateIdiom",
+    DeleteIdiom = "DeleteIdiom",
+    AddEquivalent = "AddEquivalent",
+    DeleteEquivalent = "DeleteEquivalent"
+}
+
 
 export interface DbIdiom {
     _id?: ObjectID,

@@ -19,6 +19,10 @@ export class UserModel implements User {
     providers: Login[];
 
 
+    hasEditPermission() {
+        return this.role !== UserRole.General;
+    }
+
     hasRole(requiredRole: string | UserRole) {
         if (!requiredRole) {
             throw new Error("Role must not be empty.");

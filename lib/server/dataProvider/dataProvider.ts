@@ -3,20 +3,40 @@ import { Idiom, IdiomCreateInput, IdiomUpdateInput, QueryIdiomsArgs, UserRole, P
 import { Languages } from './languages'
 import { Profile } from 'passport';
 import { UserModel, IdiomExpandOptions } from '../model/types';
-import { DbIdiom, DbUser, mapDbUser, mapDbIdiom } from './mapping';
+import { DbIdiom, DbUser, mapDbUser, mapDbIdiom, DbIdiomChangeProposal, IdiomProposalType } from './mapping';
 import { transliterate, slugify } from 'transliteration';
+import e = require('express');
 
 export class DataProvider {
+
+    private changeProposalCollection: Collection<DbIdiomChangeProposal>;
     private idiomCollection: Collection<DbIdiom>;
     private userCollection: Collection<DbUser>;
 
+    private activeIdiomFilter: FilterQuery<DbIdiom> = { isDeleted: { $ne: true } };
+
     constructor(private mongodb: Db) {
+        this.changeProposalCollection = mongodb.collection('idiomChangeProposal');
+
         this.idiomCollection = mongodb.collection('idiom');
         this.userCollection = mongodb.collection('user');
 
         // Not supported in CosmoDB Mongo facade
         //this.idiomCollection.createIndex({ title: "text" });
         //this.idiomCollection.createIndex({ description: "text" });
+    }
+
+    /**
+     * Converts a idiom filter into one that excludes deleted and provisional idioms
+     * @param idiomFilter A filter to extend to active idioms only
+     */
+    private activeOnly(idiomFilter: FilterQuery<DbIdiom>): FilterQuery<DbIdiom> {
+        const active = this.activeIdiomFilter;
+
+        if (idiomFilter instanceof ObjectID) {
+            idiomFilter = { _id: { $eq: idiomFilter } };
+        }
+        return { $and: [active, idiomFilter] };
     }
 
     async getUser(id: string | ObjectID): Promise<UserModel> {
@@ -143,10 +163,23 @@ export class DataProvider {
         }
 
         const objectId = new ObjectID(idiomId);
-        const deleteResult = await this.idiomCollection.deleteOne({ _id: objectId });
-        await this.idiomCollection.updateMany({ equivalents: objectId }, { $pull: { equivalents: objectId } });
 
-        return deleteResult && deleteResult.deletedCount ? deleteResult.deletedCount > 0 : false;
+        if (this.isUserProvisional(currentUser)) {
+            const proposal: DbIdiomChangeProposal = {
+                userId: new ObjectID(currentUser.id),
+                createdAt: new Date(new Date().toUTCString()),
+                type: IdiomProposalType.DeleteIdiom,
+                idiomId: objectId
+            };
+            const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
+            return provisionalResult && provisionalResult.insertedCount ? provisionalResult.insertedCount > 0 : false;
+        }
+        else {
+            const deleteResult = await this.idiomCollection.deleteOne({ _id: objectId });
+            await this.idiomCollection.updateMany({ equivalents: objectId }, { $pull: { equivalents: objectId } });
+
+            return deleteResult && deleteResult.deletedCount ? deleteResult.deletedCount > 0 : false;
+        }
     }
 
     async createIdiom(currentUser: UserModel, createInput: IdiomCreateInput, idiomExpandOptions: IdiomExpandOptions): Promise<Idiom> {
@@ -194,7 +227,8 @@ export class DataProvider {
         // Look for dupe titles or slugs
         const titleRegex = "^" + this.escapeRegex(createInput.title) + "$";
         const titleRegexObj = { $regex: titleRegex, $options: 'i' };
-        const dupeIdioms = await this.idiomCollection.find({ $or: [{ title: titleRegexObj }, { slug: { $eq: idiomSlug } }] }).toArray();
+        const dupeFilter = this.activeOnly({ $or: [{ title: titleRegexObj }, { slug: { $eq: idiomSlug } }] });
+        const dupeIdioms = await this.idiomCollection.find(dupeFilter).toArray();
         if (dupeIdioms) {
 
             // If dupe title, throw. Ideally this could be a fuzzy smart match in the future
@@ -209,17 +243,30 @@ export class DataProvider {
             }
         }
 
-        const result = await this.idiomCollection.insertOne(dbIdiom);
-
-        if (result.insertedCount <= 0) {
-            throw new Error("Failed to insert idiom");
+        if (this.isUserProvisional(currentUser)) {
+            const proposal: DbIdiomChangeProposal = {
+                userId: new ObjectID(currentUser.id),
+                createdAt: new Date(new Date().toUTCString()),
+                type: IdiomProposalType.CreateIdiom,
+                idiomToCreate: dbIdiom
+            };
+            const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
+            return null;
         }
+        else {
 
-        if (createInput.relatedIdiomId) {
-            await this.addIdiomEquivalent(currentUser, result.insertedId, createInput.relatedIdiomId);
+            const result = await this.idiomCollection.insertOne(dbIdiom);
+
+            if (result.insertedCount <= 0) {
+                throw new Error("Failed to insert idiom");
+            }
+
+            if (createInput.relatedIdiomId) {
+                await this.addIdiomEquivalent(currentUser, result.insertedId, createInput.relatedIdiomId);
+            }
+
+            return await this.getIdiom(result.insertedId, idiomExpandOptions);
         }
-
-        return await this.getIdiom(result.insertedId, idiomExpandOptions);
     }
 
     async updateIdiom(currentUser: UserModel, updateInput: IdiomUpdateInput, idiomExpandOptions: IdiomExpandOptions): Promise<Idiom> {
@@ -250,7 +297,8 @@ export class DataProvider {
         if (updates.title && updateInput.title !== dbIdiom.title) {
             const titleRegex = "^" + this.escapeRegex(updates.title) + "$";
             const titleRegexObj = { $regex: titleRegex, $options: 'i' };
-            const dupeIdioms = await this.idiomCollection.find({ title: titleRegexObj, _id: { $ne: objId } }).toArray();
+            const dupeFilter = this.activeOnly({ title: titleRegexObj, _id: { $ne: objId } });
+            const dupeIdioms = await this.idiomCollection.find(dupeFilter).toArray();
             if (dupeIdioms) {
                 // If dupe title, throw. Ideally this could be a fuzzy smart match in the future
                 if (dupeIdioms.some(idiom => idiom.title === updates.title)) {
@@ -261,14 +309,26 @@ export class DataProvider {
 
         updates.updatedAt = new Date(new Date().toUTCString());
         updates.updateById = new ObjectID(currentUser.id);
-
-        const result = await this.idiomCollection.updateOne({ _id: objId }, { $set: updates });
-
-        if (result.matchedCount <= 0) {
-            throw new Error("Failed to update idiom");
+        if (this.isUserProvisional(currentUser)) {
+            const proposal: DbIdiomChangeProposal = {
+                userId: new ObjectID(currentUser.id),
+                createdAt: new Date(new Date().toUTCString()),
+                type: IdiomProposalType.UpdateIdiom,
+                idiomToUpdate: updates
+            };
+            const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
+            return null;
         }
+        else {
 
-        return await this.getIdiom(objId, idiomExpandOptions);
+            const result = await this.idiomCollection.updateOne({ _id: objId }, { $set: updates });
+
+            if (result.matchedCount <= 0) {
+                throw new Error("Failed to update idiom");
+            }
+
+            return await this.getIdiom(objId, idiomExpandOptions);
+        }
     }
 
     private validateAndNormalize(isNew: boolean, updates: Partial<DbIdiom>) {
@@ -348,6 +408,7 @@ export class DataProvider {
             query = { slug: { $eq: args.slug } };
         }
 
+        query = this.activeOnly(query);
         return await this.idiomCollection.findOne(query);
     }
 
@@ -359,7 +420,9 @@ export class DataProvider {
         if (dbIdiom) {
             if (idiomExpandOptions && idiomExpandOptions.expandEquivalents) {
                 const equivalentObjIds = (dbIdiom.equivalents || []).map(id => new ObjectID(id));
-                dbEquivalents = await this.idiomCollection.find({ _id: { $in: equivalentObjIds } }).toArray();
+
+                const equivalentQuery = this.activeOnly({ _id: { $in: equivalentObjIds } });
+                dbEquivalents = await this.idiomCollection.find(equivalentQuery).toArray();
             }
 
             if (idiomExpandOptions && idiomExpandOptions.expandUsers) {
@@ -400,6 +463,10 @@ export class DataProvider {
             sortObj = { title: 1 };
         }
 
+        if (findFilter) {
+            findFilter = this.activeOnly(findFilter);
+        }
+
         dbIdioms = await this.idiomCollection
             .find(findFilter)
             .sort(sortObj)
@@ -411,7 +478,8 @@ export class DataProvider {
         if (dbIdioms) {
             if (idiomExpandOptions.expandEquivalents) {
                 const equivalentsObjIds = dbIdioms.flatMap(dbIdiom => (dbIdiom.equivalents || []).map(id => new ObjectID(id)));
-                dbEquivalents = await this.idiomCollection.find({ _id: { $in: equivalentsObjIds } }).toArray();
+                const equivalentQuery = this.activeOnly({ _id: { $in: equivalentsObjIds } });
+                dbEquivalents = await this.idiomCollection.find(equivalentQuery).toArray();
             }
 
             if (idiomExpandOptions.expandUsers) {
@@ -436,12 +504,25 @@ export class DataProvider {
             throw new Error("Failed to resolve both idioms");
         }
 
-        var bulk = this.idiomCollection.initializeOrderedBulkOp();
-        bulk.find({ _id: idiomObjId }).updateOne({ $pull: { equivalents: equivalentObjId } });
-        bulk.find({ _id: equivalentObjId }).updateOne({ $pull: { equivalents: idiomObjId } });
-        const result = await bulk.execute();
+        if (this.isUserProvisional(currentUser)) {
+            const proposal: DbIdiomChangeProposal = {
+                userId: new ObjectID(currentUser.id),
+                createdAt: new Date(new Date().toUTCString()),
+                type: IdiomProposalType.DeleteEquivalent,
+                idiomId: idiomObjId,
+                equivalentId: equivalentObjId
+            };
+            const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
+            return true;
+        }
+        else {
+            var bulk = this.idiomCollection.initializeOrderedBulkOp();
+            bulk.find({ _id: idiomObjId }).updateOne({ $pull: { equivalents: equivalentObjId } });
+            bulk.find({ _id: equivalentObjId }).updateOne({ $pull: { equivalents: idiomObjId } });
+            const result = await bulk.execute();
+            return !result.hasWriteErrors();
+        }
 
-        return !result.hasWriteErrors();
     }
 
     async addIdiomEquivalent(currentUser: UserModel, idiomId: string | ObjectID, equivalentId: string | ObjectID) {
@@ -457,15 +538,32 @@ export class DataProvider {
             throw new Error("Fails to resolve both idioms");
         }
 
-        var bulk = this.idiomCollection.initializeOrderedBulkOp();
-        bulk.find({ _id: idiomObjId }).updateOne({ $addToSet: { equivalents: equivalentObjId } });
-        bulk.find({ _id: equivalentObjId }).updateOne({ $addToSet: { equivalents: idiomObjId } });
-        const result = await bulk.execute();
+        if (this.isUserProvisional(currentUser)) {
+            const proposal: DbIdiomChangeProposal = {
+                userId: new ObjectID(currentUser.id),
+                createdAt: new Date(new Date().toUTCString()),
+                type: IdiomProposalType.AddEquivalent,
+                idiomId: idiomObjId,
+                equivalentId: equivalentObjId
+            };
+            const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
+            return true;
+        }
+        else {
+            var bulk = this.idiomCollection.initializeOrderedBulkOp();
+            bulk.find({ _id: idiomObjId }).updateOne({ $addToSet: { equivalents: equivalentObjId } });
+            bulk.find({ _id: equivalentObjId }).updateOne({ $addToSet: { equivalents: idiomObjId } });
+            const result = await bulk.execute();
 
-        return !result.hasWriteErrors();
+            return !result.hasWriteErrors();
+        }
     }
 
     private escapeRegex(str: string): string {
         return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     };
+
+    private isUserProvisional(currentUser: UserModel) {
+        return !currentUser.hasEditPermission();
+    }
 }

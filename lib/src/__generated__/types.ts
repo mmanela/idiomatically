@@ -212,45 +212,45 @@ export interface GetIdiomListQueryVariables {
 // GraphQL mutation operation: CreateIdiomMutation
 // ====================================================
 
-export interface CreateIdiomMutation_createIdiom_language_countries {
+export interface CreateIdiomMutation_createIdiom_idiom_language_countries {
   __typename: "Country";
   countryKey: string;
   countryName: string;
   emojiFlag: string;
 }
 
-export interface CreateIdiomMutation_createIdiom_language {
+export interface CreateIdiomMutation_createIdiom_idiom_language {
   __typename: "Language";
   languageKey: string;
   languageName: string;
-  countries: CreateIdiomMutation_createIdiom_language_countries[];
+  countries: CreateIdiomMutation_createIdiom_idiom_language_countries[];
 }
 
-export interface CreateIdiomMutation_createIdiom_equivalents_language_countries {
+export interface CreateIdiomMutation_createIdiom_idiom_equivalents_language_countries {
   __typename: "Country";
   countryKey: string;
   countryName: string;
   emojiFlag: string;
 }
 
-export interface CreateIdiomMutation_createIdiom_equivalents_language {
+export interface CreateIdiomMutation_createIdiom_idiom_equivalents_language {
   __typename: "Language";
   languageKey: string;
   languageName: string;
-  countries: CreateIdiomMutation_createIdiom_equivalents_language_countries[];
+  countries: CreateIdiomMutation_createIdiom_idiom_equivalents_language_countries[];
 }
 
-export interface CreateIdiomMutation_createIdiom_equivalents {
+export interface CreateIdiomMutation_createIdiom_idiom_equivalents {
   __typename: "Idiom";
   id: string;
   slug: string;
   title: string;
   literalTranslation: string | null;
   transliteration: string | null;
-  language: CreateIdiomMutation_createIdiom_equivalents_language;
+  language: CreateIdiomMutation_createIdiom_idiom_equivalents_language;
 }
 
-export interface CreateIdiomMutation_createIdiom {
+export interface CreateIdiomMutation_createIdiom_idiom {
   __typename: "Idiom";
   id: string;
   slug: string;
@@ -258,8 +258,15 @@ export interface CreateIdiomMutation_createIdiom {
   literalTranslation: string | null;
   transliteration: string | null;
   description: string | null;
-  language: CreateIdiomMutation_createIdiom_language;
-  equivalents: CreateIdiomMutation_createIdiom_equivalents[];
+  language: CreateIdiomMutation_createIdiom_idiom_language;
+  equivalents: CreateIdiomMutation_createIdiom_idiom_equivalents[];
+}
+
+export interface CreateIdiomMutation_createIdiom {
+  __typename: "IdiomOperationResult";
+  status: OperationStatus;
+  message: string | null;
+  idiom: CreateIdiomMutation_createIdiom_idiom | null;
 }
 
 export interface CreateIdiomMutation {
@@ -284,45 +291,45 @@ export interface CreateIdiomMutationVariables {
 // GraphQL mutation operation: UpdateIdiomMutation
 // ====================================================
 
-export interface UpdateIdiomMutation_updateIdiom_language_countries {
+export interface UpdateIdiomMutation_updateIdiom_idiom_language_countries {
   __typename: "Country";
   countryKey: string;
   countryName: string;
   emojiFlag: string;
 }
 
-export interface UpdateIdiomMutation_updateIdiom_language {
+export interface UpdateIdiomMutation_updateIdiom_idiom_language {
   __typename: "Language";
   languageKey: string;
   languageName: string;
-  countries: UpdateIdiomMutation_updateIdiom_language_countries[];
+  countries: UpdateIdiomMutation_updateIdiom_idiom_language_countries[];
 }
 
-export interface UpdateIdiomMutation_updateIdiom_equivalents_language_countries {
+export interface UpdateIdiomMutation_updateIdiom_idiom_equivalents_language_countries {
   __typename: "Country";
   countryKey: string;
   countryName: string;
   emojiFlag: string;
 }
 
-export interface UpdateIdiomMutation_updateIdiom_equivalents_language {
+export interface UpdateIdiomMutation_updateIdiom_idiom_equivalents_language {
   __typename: "Language";
   languageKey: string;
   languageName: string;
-  countries: UpdateIdiomMutation_updateIdiom_equivalents_language_countries[];
+  countries: UpdateIdiomMutation_updateIdiom_idiom_equivalents_language_countries[];
 }
 
-export interface UpdateIdiomMutation_updateIdiom_equivalents {
+export interface UpdateIdiomMutation_updateIdiom_idiom_equivalents {
   __typename: "Idiom";
   id: string;
   slug: string;
   title: string;
   literalTranslation: string | null;
   transliteration: string | null;
-  language: UpdateIdiomMutation_updateIdiom_equivalents_language;
+  language: UpdateIdiomMutation_updateIdiom_idiom_equivalents_language;
 }
 
-export interface UpdateIdiomMutation_updateIdiom {
+export interface UpdateIdiomMutation_updateIdiom_idiom {
   __typename: "Idiom";
   id: string;
   slug: string;
@@ -330,8 +337,15 @@ export interface UpdateIdiomMutation_updateIdiom {
   literalTranslation: string | null;
   transliteration: string | null;
   description: string | null;
-  language: UpdateIdiomMutation_updateIdiom_language;
-  equivalents: UpdateIdiomMutation_updateIdiom_equivalents[];
+  language: UpdateIdiomMutation_updateIdiom_idiom_language;
+  equivalents: UpdateIdiomMutation_updateIdiom_idiom_equivalents[];
+}
+
+export interface UpdateIdiomMutation_updateIdiom {
+  __typename: "IdiomOperationResult";
+  status: OperationStatus;
+  message: string | null;
+  idiom: UpdateIdiomMutation_updateIdiom_idiom | null;
 }
 
 export interface UpdateIdiomMutation {
@@ -412,6 +426,12 @@ export interface FullIdiomEntry {
 //==============================================================
 // START Enums and Input Objects
 //==============================================================
+
+export enum OperationStatus {
+  FAILURE = "FAILURE",
+  PENDING = "PENDING",
+  SUCCESS = "SUCCESS",
+}
 
 export enum UserRole {
   ADMIN = "ADMIN",

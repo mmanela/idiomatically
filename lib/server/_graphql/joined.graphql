@@ -1,7 +1,10 @@
-schema {
-  query: Query
-  mutation: Mutation
+enum UserRole {
+  ADMIN
+  CONTRIBUTOR
+  GENERAL
 }
+
+directive @auth(requires: UserRole = ADMIN) on OBJECT | FIELD_DEFINITION
 
 type Query {
   me: User
@@ -12,22 +15,6 @@ type Query {
   languages: [Language!]!
   countries(languageKey: String): [Country!]!
 }
-
-type Mutation {
-  updateIdiom(idiom: IdiomUpdateInput!): Idiom! @auth(requires: CONTRIBUTOR)
-  createIdiom(idiom: IdiomCreateInput!): Idiom! @auth(requires: CONTRIBUTOR)
-  deleteIdiom(idiomId: ID!): Boolean! @auth(requires: ADMIN)
-  addEquivalent(idiomId: ID!, equivalentId: ID!): Boolean! @auth(requires: CONTRIBUTOR)
-  removeEquivalent(idiomId: ID!, equivalentId: ID!): Boolean! @auth(requires: CONTRIBUTOR)
-}
-
-enum UserRole {
-  ADMIN
-  CONTRIBUTOR
-  GENERAL
-}
-
-directive @auth(requires: UserRole = ADMIN) on OBJECT | FIELD_DEFINITION
 
 type User {
   id: ID!
@@ -48,6 +35,31 @@ type Login @auth(requires: ADMIN) {
   email: String
   avatar: String
   type: ProviderType!
+}
+
+type Mutation {
+  updateIdiom(idiom: IdiomUpdateInput!): IdiomOperationResult! @auth(requires: CONTRIBUTOR)
+  createIdiom(idiom: IdiomCreateInput!): IdiomOperationResult! @auth(requires: CONTRIBUTOR)
+  deleteIdiom(idiomId: ID!): OperationResult! @auth(requires: ADMIN)
+  addEquivalent(idiomId: ID!, equivalentId: ID!): OperationResult! @auth(requires: CONTRIBUTOR)
+  removeEquivalent(idiomId: ID!, equivalentId: ID!): OperationResult! @auth(requires: CONTRIBUTOR)
+}
+
+enum OperationStatus {
+  SUCCESS
+  FAILURE
+  PENDING
+}
+
+type OperationResult {
+  status: OperationStatus!
+  message: String
+}
+
+type IdiomOperationResult {
+  status: OperationStatus!
+  message: String
+  idiom: Idiom
 }
 
 type IdiomConnection {
@@ -114,4 +126,9 @@ type Country {
   countryName: String!
   countryNativeName: String!
   emojiFlag: String!
+}
+
+schema {
+  query: Query
+  mutation: Mutation
 }

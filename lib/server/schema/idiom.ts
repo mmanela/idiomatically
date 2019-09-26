@@ -9,19 +9,37 @@ export default gql`
   type Mutation {
     updateIdiom(
       idiom: IdiomUpdateInput!
-    ): Idiom! @auth(requires: CONTRIBUTOR)
+    ): IdiomOperationResult! @auth(requires: CONTRIBUTOR)
 
     createIdiom(
       idiom: IdiomCreateInput!
-    ): Idiom! @auth(requires: CONTRIBUTOR)
+    ): IdiomOperationResult! @auth(requires: CONTRIBUTOR)
 
     deleteIdiom(
       idiomId: ID!
-    ): Boolean! @auth(requires: ADMIN)
+    ): OperationResult! @auth(requires: ADMIN)
 
-    addEquivalent(idiomId:ID!, equivalentId: ID!): Boolean! @auth(requires: CONTRIBUTOR)
+    addEquivalent(idiomId:ID!, equivalentId: ID!): OperationResult! @auth(requires: CONTRIBUTOR)
 
-    removeEquivalent(idiomId:ID!, equivalentId: ID!): Boolean! @auth(requires: CONTRIBUTOR)
+    removeEquivalent(idiomId:ID!, equivalentId: ID!): OperationResult! @auth(requires: CONTRIBUTOR)
+  }
+
+
+  enum OperationStatus {
+    SUCCESS
+    FAILURE
+    PENDING
+  } 
+
+  type OperationResult {
+    status: OperationStatus!
+    message: String
+  }
+
+  type IdiomOperationResult {
+    status: OperationStatus!
+    message: String
+    idiom: Idiom
   }
   
   type IdiomConnection {

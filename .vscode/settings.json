@@ -1,5 +1,7 @@
 {
     "files.eol": "\n",
     "debug.node.autoAttach": "on",
-    "terminal.integrated.shell.windows": "C:\\Windows\\System32\\bash.exe"
+    "terminal.integrated.shell.windows": "C:\\Windows\\System32\\bash.exe",
+    "prettier.printWidth": 140,
+    "editor.minimap.maxColumn": 80
 }

@@ -1,11 +1,5 @@
 import * as React from "react";
-import {
-  UpdateIdiomMutation,
-  UpdateIdiomMutationVariables,
-  GetIdiomQuery,
-  GetIdiomQueryVariables
-} from "../__generated__/types";
-import { Mutation, Query } from "@apollo/react-components";
+import { UpdateIdiomMutation, UpdateIdiomMutationVariables, GetIdiomQuery, GetIdiomQueryVariables } from "../__generated__/types";
 import gql from "graphql-tag";
 import "./NewIdiom.scss";
 import { Typography, Alert, Spin, Form } from "antd";
@@ -17,10 +11,10 @@ import { FULL_IDIOM_ENTRY } from "../fragments/fragments";
 import { getIdiomQuery } from "../fragments/getIdiom";
 import { commonFormItems } from "../components/commonFormItems";
 import { getErrorMessage } from "../utilities/getErrorMessage";
-import { MutationFunction } from '@apollo/react-common';
-import { useCurrentUser } from '../components/withCurrentUser';
+import { MutationFunction } from "@apollo/react-common";
+import { useCurrentUser } from "../components/withCurrentUser";
+import { useMutation, useQuery } from "@apollo/react-hooks";
 const { Title } = Typography;
-
 
 export const updateIdiomQuery = gql`
   mutation UpdateIdiomMutation(
@@ -41,7 +35,11 @@ export const updateIdiomQuery = gql`
         countryKeys: $countryKeys
       }
     ) {
-      ...FullIdiomEntry
+      status
+      message
+      idiom {
+        ...FullIdiomEntry
+      }
     }
   }
   ${FULL_IDIOM_ENTRY}
@@ -67,6 +65,12 @@ const formItemLayout = {
 const UpdateIdiomComponent: React.StatelessComponent<FormProps> = props => {
   const { currentUser, currentUserLoading } = useCurrentUser();
   const { getFieldDecorator } = props.form;
+
+  const [updateIdiom, { data, error, loading }] = useMutation<UpdateIdiomMutation, UpdateIdiomMutationVariables>(updateIdiomQuery);
+  const idiomLoadInfo = useQuery<GetIdiomQuery, GetIdiomQueryVariables>(getIdiomQuery, {
+    variables: { slug: props.slug }
+  });
+
   const handleSubmit = async (
     e: FormEvent<any>,
     props: FormProps,
@@ -97,97 +101,32 @@ const UpdateIdiomComponent: React.StatelessComponent<FormProps> = props => {
     return <></>;
   }
   if (currentUserLoading) {
-    return (
-      <Spin spinning delay={500} className="middleSpinner" tip="Loading..." />
-    );
+    return <Spin spinning delay={500} className="middleSpinner" tip="Loading..." />;
   }
-  
+
+  if (idiomLoadInfo.loading) {
+    return <Spin delay={500} className="middleSpinner" tip="Loading..." />;
+  }
+
+  if (idiomLoadInfo.error) {
+    return <Alert message="Error" type="error" description={error} showIcon />;
+  }
+
+  if (!idiomLoadInfo.data || !idiomLoadInfo.data.idiom) {
+    return <Alert message="Oops!" description="It looks like you went barking up the wrong tree." type="warning" showIcon />;
+  }
+
   return (
-    <Mutation<UpdateIdiomMutation, UpdateIdiomMutationVariables> mutation={updateIdiomQuery}>
-      {(createIdiom, { data, error, loading, client }) => {
-        return (
-          <Query<GetIdiomQuery, GetIdiomQueryVariables> query={getIdiomQuery} variables={{ slug: props.slug }}>
-            {idiomLoadInfo => {
-              if (idiomLoadInfo.loading) {
-                return (
-                  <Spin
-                    delay={500}
-                    className="middleSpinner"
-                    tip="Loading..."
-                  />
-                );
-              }
-              if (idiomLoadInfo.error) {
-                return (
-                  <Alert
-                    message="Error"
-                    type="error"
-                    description={error}
-                    showIcon
-                  />
-                );
-              }
-              if (!idiomLoadInfo.data || !idiomLoadInfo.data.idiom) {
-                return (
-                  <Alert
-                    message="Oops!"
-                    description="It looks like you went barking up the wrong tree."
-                    type="warning"
-                    showIcon
-                  />
-                );
-              }
-              return (
-                <div>
-                  <Title level={2}>Update an Idiom</Title>
-                  {data && !loading && !error && (
-                    <Redirect to={`/idioms/${data.updateIdiom.slug}`} />
-                  )}
-                  {(loading || currentUserLoading) && (
-                    <Spin
-                      className="middleSpinner"
-                      delay={500}
-                      spinning
-                      tip="Loading..."
-                    />
-                  )}
-                  {error && (
-                    <Alert
-                      type="error"
-                      message={getErrorMessage(error)}
-                      showIcon
-                    />
-                  )}
-                  <Form
-                    labelAlign="left"
-                    {...formItemLayout}
-                    onSubmit={e =>
-                      handleSubmit(
-                        e,
-                        props,
-                        createIdiom,
-                        idiomLoadInfo.data!.idiom!.id
-                      )
-                    }
-                  >
-                    {commonFormItems(
-                      getFieldDecorator,
-                      undefined,
-                      undefined,
-                      idiomLoadInfo.data.idiom
-                    )}
-                  </Form>
-                </div>
-              );
-            }}
-          </Query>
-        );
-      }}
-    </Mutation>
+    <div>
+      <Title level={2}>Update an Idiom</Title>
+      {data && !loading && !error && data.updateIdiom.idiom && <Redirect to={`/idioms/${data.updateIdiom.idiom.slug}`} />}
+      {(loading || currentUserLoading) && <Spin className="middleSpinner" delay={500} spinning tip="Loading..." />}
+      {error && <Alert type="error" message={getErrorMessage(error)} showIcon />}
+      <Form labelAlign="left" {...formItemLayout} onSubmit={e => handleSubmit(e, props, updateIdiom, idiomLoadInfo.data!.idiom!.id)}>
+        {commonFormItems(getFieldDecorator, undefined, undefined, idiomLoadInfo.data.idiom)}
+      </Form>
+    </div>
   );
 };
 
-export const UpdateIdiom = Form.create<FormProps>({ name: "updateIdiom" })(
-  UpdateIdiomComponent
-);
-
+export const UpdateIdiom = Form.create<FormProps>({ name: "updateIdiom" })(UpdateIdiomComponent);

@@ -6,7 +6,6 @@ import {
   GetIdiomQuery,
   GetIdiomQueryVariables
 } from "../__generated__/types";
-import { Mutation, Query } from "@apollo/react-components";
 import gql from "graphql-tag";
 import "./NewIdiom.scss";
 import { Typography, Alert, Spin, Form } from "antd";
@@ -21,6 +20,7 @@ import { commonFormItems } from "../components/commonFormItems";
 import { getErrorMessage } from "../utilities/getErrorMessage";
 import { MutationFunction } from "@apollo/react-common";
 import { useCurrentUser } from "../components/withCurrentUser";
+import { useMutation, useLazyQuery } from "@apollo/react-hooks";
 const { Title, Paragraph } = Typography;
 
 export const createIdiomQuery = gql`
@@ -44,7 +44,11 @@ export const createIdiomQuery = gql`
         relatedIdiomId: $relatedIdiomId
       }
     ) {
-      ...FullIdiomEntry
+      status
+      message
+      idiom {
+        ...FullIdiomEntry
+      }
     }
   }
   ${FULL_IDIOM_ENTRY}
@@ -54,8 +58,7 @@ export interface NewIdiomProps {
   equivilentIdiomId?: string;
 }
 
-type FormProps = NewIdiomProps &
-  WrappedFormInternalProps<IDictionary<string | string[]>>;
+type FormProps = NewIdiomProps & WrappedFormInternalProps<IDictionary<string | string[]>>;
 
 const formItemLayout = {
   labelCol: {
@@ -73,13 +76,14 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
   const { getFieldDecorator } = props.form;
 
   const [languageKey, setLanguageKey] = useState("");
+
+  const [createIdiom, { data, error, loading, client }] = useMutation<CreateIdiomMutation, CreateIdiomMutationVariables>(createIdiomQuery);
+  const [getEquivalentIdiom, equivalentLoadInfo] = useLazyQuery<GetIdiomQuery, GetIdiomQueryVariables>(getIdiomQuery);
+
   const handleSubmit = async (
     e: FormEvent<any>,
     props: FormProps,
-    createIdiom: MutationFunction<
-      CreateIdiomMutation,
-      CreateIdiomMutationVariables
-    >,
+    createIdiom: MutationFunction<CreateIdiomMutation, CreateIdiomMutationVariables>,
     equivalentIdiom: FullIdiomEntry | null
   ) => {
     e.preventDefault();
@@ -107,124 +111,62 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
     return <></>;
   }
   if (currentUserLoading) {
-    return (
-      <Spin spinning delay={500} className="middleSpinner" tip="Loading..." />
-    );
+    return <Spin spinning delay={500} className="middleSpinner" tip="Loading..." />;
   }
 
-  return (
-    <Mutation<CreateIdiomMutation, CreateIdiomMutationVariables>
-      mutation={createIdiomQuery}
-    >
-      {(createIdiom, { data, error, loading, client }) => {
-        let equivilentIdiom: FullIdiomEntry | null = null;
-        if (props.equivilentIdiomId) {
-          equivilentIdiom = client!.readFragment<FullIdiomEntry>({
-            id: "Idiom:" + props.equivilentIdiomId,
-            fragment: FULL_IDIOM_ENTRY
-          });
-        }
-        const form = () => (
-          <div>
-            <Title level={2}>Add an Idiom</Title>
-            <Paragraph>
-              A goal of Idiomatically is to catalog and relate Idioms across
-              countries and cultures. For that reason, it is important to give
-              idioms from non-English alphabets in their native characters. Then
-              provide an english character transliteration and translation of
-              that Idiom.
-            </Paragraph>
-            {data && data.createIdiom.slug && (
-              <Redirect to={`/idioms/${data.createIdiom.slug}`} />
-            )}
-            {(loading || currentUserLoading) && (
-              <Spin
-                className="middleSpinner"
-                delay={500}
-                spinning
-                tip="Loading..."
-              />
-            )}
-            {error && (
-              <Alert type="error" message={getErrorMessage(error)} showIcon />
-            )}
-            <Form
-              labelAlign="left"
-              {...formItemLayout}
-              onSubmit={e =>
-                handleSubmit(e, props, createIdiom, equivilentIdiom)
-              }
-            >
-              {equivilentIdiom && (
-                <Form.Item label="Equivalent for">
-                  <div className="equivalentEntry">
-                    <LanguageFlags
-                      languageInfo={equivilentIdiom.language}
-                      layoutMode="horizontal"
-                      compactMode
-                      size="small"
-                    />
-                    <span className="ant-form-text">
-                      {equivilentIdiom.title}
-                    </span>
-                  </div>
-                </Form.Item>
-              )}
+  let equivilentIdiom: FullIdiomEntry | null = null;
+  if (props.equivilentIdiomId) {
+    equivilentIdiom = client!.readFragment<FullIdiomEntry>({
+      id: "Idiom:" + props.equivilentIdiomId,
+      fragment: FULL_IDIOM_ENTRY
+    });
+  }
+  const form = () => (
+    <div>
+      <Title level={2}>Add an Idiom</Title>
+      <Paragraph>
+        A goal of Idiomatically is to catalog and relate Idioms across countries and cultures. For that reason, it is important to give
+        idioms from non-English alphabets in their native characters. Then provide an english character transliteration and translation of
+        that Idiom.
+      </Paragraph>
+      {data && data.createIdiom.idiom && data.createIdiom.idiom.slug && <Redirect to={`/idioms/${data.createIdiom.idiom.slug}`} />}
+      {(loading || currentUserLoading) && <Spin className="middleSpinner" delay={500} spinning tip="Loading..." />}
+      {error && <Alert type="error" message={getErrorMessage(error)} showIcon />}
+      <Form labelAlign="left" {...formItemLayout} onSubmit={e => handleSubmit(e, props, createIdiom, equivilentIdiom)}>
+        {equivilentIdiom && (
+          <Form.Item label="Equivalent for">
+            <div className="equivalentEntry">
+              <LanguageFlags languageInfo={equivilentIdiom.language} layoutMode="horizontal" compactMode size="small" />
+              <span className="ant-form-text">{equivilentIdiom.title}</span>
+            </div>
+          </Form.Item>
+        )}
 
-              {commonFormItems(getFieldDecorator, setLanguageKey, languageKey)}
-            </Form>
-          </div>
-        );
-
-        if (props.equivilentIdiomId) {
-          return (
-            <Query<GetIdiomQuery, GetIdiomQueryVariables>
-              query={getIdiomQuery}
-              variables={{ id: props.equivilentIdiomId }}
-            >
-              {idiomLoadInfo => {
-                if (idiomLoadInfo.loading) {
-                  return (
-                    <Spin
-                      delay={500}
-                      className="middleSpinner"
-                      tip="Loading..."
-                    />
-                  );
-                }
-                if (idiomLoadInfo.error) {
-                  return (
-                    <Alert
-                      message="Error"
-                      type="error"
-                      description={error}
-                      showIcon
-                    />
-                  );
-                }
-                if (!idiomLoadInfo.data || !idiomLoadInfo.data.idiom) {
-                  return (
-                    <Alert
-                      message="Oops!"
-                      description="It looks like you went barking up the wrong tree."
-                      type="warning"
-                      showIcon
-                    />
-                  );
-                }
-                equivilentIdiom = idiomLoadInfo.data.idiom;
-                return <>{form()}</>;
-              }}
-            </Query>
-          );
-        } else {
-          return form();
-        }
-      }}
-    </Mutation>
+        {commonFormItems(getFieldDecorator, setLanguageKey, languageKey)}
+      </Form>
+    </div>
   );
+
+  if (props.equivilentIdiomId) {
+    // Get the idiom
+    if (!equivalentLoadInfo.called) {
+      getEquivalentIdiom({ variables: { id: props.equivilentIdiomId } });
+    }
+    
+    if (equivalentLoadInfo.loading) {
+      return <Spin delay={500} className="middleSpinner" tip="Loading..." />;
+    }
+    if (equivalentLoadInfo.error) {
+      return <Alert message="Error" type="error" description={error} showIcon />;
+    }
+    if (!equivalentLoadInfo.data || !equivalentLoadInfo.data.idiom) {
+      return <Alert message="Oops!" description="It looks like you went barking up the wrong tree." type="warning" showIcon />;
+    }
+    equivilentIdiom = equivalentLoadInfo.data.idiom;
+    return <>{form()}</>;
+  } else {
+    return form();
+  }
 };
 
-export const NewIdiom = Form.create<FormProps>({ name: "newIdiom" })(
-  NewIdiomComponent
-);
+export const NewIdiom = Form.create<FormProps>({ name: "newIdiom" })(NewIdiomComponent);

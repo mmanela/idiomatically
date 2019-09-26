@@ -1,11 +1,10 @@
 import { Db, Collection, ObjectID, FilterQuery } from 'mongodb'
-import { Idiom, IdiomCreateInput, IdiomUpdateInput, QueryIdiomsArgs, UserRole, ProviderType, User, Login, QueryUsersArgs, QueryIdiomArgs } from '../_graphql/types';
+import { Idiom, IdiomCreateInput, IdiomUpdateInput, QueryIdiomsArgs, UserRole, ProviderType, OperationResult, IdiomOperationResult, OperationStatus, QueryUsersArgs, QueryIdiomArgs } from '../_graphql/types';
 import { Languages } from './languages'
 import { Profile } from 'passport';
 import { UserModel, IdiomExpandOptions } from '../model/types';
 import { DbIdiom, DbUser, mapDbUser, mapDbIdiom, DbIdiomChangeProposal, IdiomProposalType } from './mapping';
 import { transliterate, slugify } from 'transliteration';
-import e = require('express');
 
 export class DataProvider {
 
@@ -157,7 +156,7 @@ export class DataProvider {
             email == "mallory.emerson@gmail.com";
     }
 
-    async deleteIdiom(currentUser: UserModel, idiomId: string): Promise<boolean> {
+    async deleteIdiom(currentUser: UserModel, idiomId: string): Promise<OperationResult> {
         if (!idiomId) {
             throw new Error("Invalid idiomId");
         }
@@ -172,17 +171,18 @@ export class DataProvider {
                 idiomId: objectId
             };
             const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
-            return provisionalResult && provisionalResult.insertedCount ? provisionalResult.insertedCount > 0 : false;
+            return this.operationResult(OperationStatus.Pending);
         }
         else {
             const deleteResult = await this.idiomCollection.deleteOne({ _id: objectId });
             await this.idiomCollection.updateMany({ equivalents: objectId }, { $pull: { equivalents: objectId } });
 
-            return deleteResult && deleteResult.deletedCount ? deleteResult.deletedCount > 0 : false;
+            return deleteResult && deleteResult.deletedCount && deleteResult.deletedCount > 0
+                ? this.operationResult(OperationStatus.Success) : this.operationResult(OperationStatus.Failure);
         }
     }
 
-    async createIdiom(currentUser: UserModel, createInput: IdiomCreateInput, idiomExpandOptions: IdiomExpandOptions): Promise<Idiom> {
+    async createIdiom(currentUser: UserModel, createInput: IdiomCreateInput, idiomExpandOptions: IdiomExpandOptions): Promise<IdiomOperationResult> {
         if (!currentUser || !currentUser.id) {
             throw new Error("Could not find current user");
         }
@@ -251,7 +251,7 @@ export class DataProvider {
                 idiomToCreate: dbIdiom
             };
             const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
-            return null;
+            return this.idiomOperationResult(OperationStatus.Pending);
         }
         else {
 
@@ -265,11 +265,12 @@ export class DataProvider {
                 await this.addIdiomEquivalent(currentUser, result.insertedId, createInput.relatedIdiomId);
             }
 
-            return await this.getIdiom(result.insertedId, idiomExpandOptions);
+            const resIdiom = await this.getIdiom(result.insertedId, idiomExpandOptions);
+            return this.idiomOperationResult(OperationStatus.Success, resIdiom);
         }
     }
 
-    async updateIdiom(currentUser: UserModel, updateInput: IdiomUpdateInput, idiomExpandOptions: IdiomExpandOptions): Promise<Idiom> {
+    async updateIdiom(currentUser: UserModel, updateInput: IdiomUpdateInput, idiomExpandOptions: IdiomExpandOptions): Promise<IdiomOperationResult> {
         if (!currentUser || !currentUser.id) {
             throw new Error("Could not find current user");
         }
@@ -317,7 +318,7 @@ export class DataProvider {
                 idiomToUpdate: updates
             };
             const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
-            return null;
+            return this.idiomOperationResult(OperationStatus.Pending);
         }
         else {
 
@@ -327,7 +328,8 @@ export class DataProvider {
                 throw new Error("Failed to update idiom");
             }
 
-            return await this.getIdiom(objId, idiomExpandOptions);
+            const resIdiom = await this.getIdiom(objId, idiomExpandOptions);
+            return this.idiomOperationResult(OperationStatus.Success, resIdiom);
         }
     }
 
@@ -491,7 +493,7 @@ export class DataProvider {
         return dbIdioms.map(idiom => mapDbIdiom(idiom, dbEquivalents, users));
     }
 
-    async removeIdiomEquivalent(currentUser: UserModel, idiomId: string, equivalentId: string) {
+    async removeIdiomEquivalent(currentUser: UserModel, idiomId: string, equivalentId: string): Promise<OperationResult> {
         if (!idiomId || !equivalentId) {
             throw new Error("Empty id passed");
         }
@@ -513,19 +515,19 @@ export class DataProvider {
                 equivalentId: equivalentObjId
             };
             const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
-            return true;
+            return this.operationResult(OperationStatus.Pending);
         }
         else {
             var bulk = this.idiomCollection.initializeOrderedBulkOp();
             bulk.find({ _id: idiomObjId }).updateOne({ $pull: { equivalents: equivalentObjId } });
             bulk.find({ _id: equivalentObjId }).updateOne({ $pull: { equivalents: idiomObjId } });
             const result = await bulk.execute();
-            return !result.hasWriteErrors();
+            return !result.hasWriteErrors() ? this.operationResult(OperationStatus.Success) : this.operationResult(OperationStatus.Failure);
         }
 
     }
 
-    async addIdiomEquivalent(currentUser: UserModel, idiomId: string | ObjectID, equivalentId: string | ObjectID) {
+    async addIdiomEquivalent(currentUser: UserModel, idiomId: string | ObjectID, equivalentId: string | ObjectID): Promise<OperationResult> {
         if (!idiomId || !equivalentId) {
             throw new Error("Empty id passed");
         }
@@ -547,7 +549,7 @@ export class DataProvider {
                 equivalentId: equivalentObjId
             };
             const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
-            return true;
+            return this.operationResult(OperationStatus.Pending);
         }
         else {
             var bulk = this.idiomCollection.initializeOrderedBulkOp();
@@ -555,8 +557,29 @@ export class DataProvider {
             bulk.find({ _id: equivalentObjId }).updateOne({ $addToSet: { equivalents: idiomObjId } });
             const result = await bulk.execute();
 
-            return !result.hasWriteErrors();
+            return !result.hasWriteErrors() ? this.operationResult(OperationStatus.Success) : this.operationResult(OperationStatus.Failure);
         }
+    }
+
+    private idiomOperationResult(status: OperationStatus, idiom?: Idiom, message?: string): IdiomOperationResult {
+        if (status == OperationStatus.Pending) {
+            message = message || "Change is pending approval, thanks!";
+        }
+        return {
+            status: status,
+            message: message,
+            idiom: idiom
+        };
+    }
+
+    private operationResult(status: OperationStatus, message?: string): OperationResult {
+        if (status == OperationStatus.Pending) {
+            message = message || "Change is pending approval, thanks!";
+        }
+        return {
+            status: status,
+            message: message
+        };
     }
 
     private escapeRegex(str: string): string {

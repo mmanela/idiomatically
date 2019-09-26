@@ -1,7 +1,7 @@
 import * as React from "react";
 import { render } from "react-dom";
 import ApolloClient, { InMemoryCache, gql } from "apollo-boost";
-import { ApolloProvider } from '@apollo/react-hooks';
+import { ApolloProvider } from "@apollo/react-hooks";
 import { BrowserRouter } from "react-router-dom";
 import { useQuery } from "@apollo/react-hooks";
 import { App } from "./components/App";

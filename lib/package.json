@@ -95,8 +95,7 @@
     "server:schema": "TS_NODE_PROJECT=server/tsconfig.json ts-node ./server/scripts/genJoined.ts && apollo service:download --config=server/apollo.config.js ./src/schema.json",
     "server:types": "graphql-codegen --config ./server/codegen.yml",
     "server:pre": "yarn server:schema && yarn server:types",
-    "server:prod": "NODE_ENV=production ts-node server/index.ts",
-    "server2:prod": "NODE_ENV=production TS_NODE_PROJECT=server/tsconfig.json ts-node server/bootstrap.ts"
+    "server:prod": "NODE_ENV=production TS_NODE_PROJECT=server/tsconfig.json ts-node server/bootstrap.ts"
   },
   "browserslist": {
     "production": [

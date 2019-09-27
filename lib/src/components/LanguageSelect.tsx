@@ -16,15 +16,10 @@ export const getLanguagesQuery = gql`
 `;
 
 export interface LanguageSelectProps {
-  onChange?: (
-    value: string,
-    option: React.ReactElement<any> | React.ReactElement<any>[]
-  ) => void;
+  onChange?: (value: string, option: React.ReactElement<any> | React.ReactElement<any>[]) => void;
 }
 
-export const LanguageSelect: React.StatelessComponent<
-  LanguageSelectProps
-> = React.forwardRef<{}, LanguageSelectProps>((props, ref) => {
+export const LanguageSelect: React.StatelessComponent<LanguageSelectProps> = React.forwardRef<{}, LanguageSelectProps>((props, ref) => {
   return (
     <Query<GetLanguagesQuery> query={getLanguagesQuery}>
       {({ loading, data, error }) => {
@@ -34,6 +29,8 @@ export const LanguageSelect: React.StatelessComponent<
         return (
           <Select
             onChange={props.onChange}
+            // This ensure the box opens so you can type right away
+            showAction={["focus", "click"]}
             showSearch
             placeholder="Please select a language"
             optionFilterProp="title"

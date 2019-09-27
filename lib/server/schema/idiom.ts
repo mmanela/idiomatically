@@ -9,19 +9,19 @@ export default gql`
   type Mutation {
     updateIdiom(
       idiom: IdiomUpdateInput!
-    ): IdiomOperationResult! @auth(requires: CONTRIBUTOR)
+    ): IdiomOperationResult! @auth(requires: GENERAL)
 
     createIdiom(
       idiom: IdiomCreateInput!
-    ): IdiomOperationResult! @auth(requires: CONTRIBUTOR)
+    ): IdiomOperationResult! @auth(requires: GENERAL)
 
     deleteIdiom(
       idiomId: ID!
     ): OperationResult! @auth(requires: ADMIN)
 
-    addEquivalent(idiomId:ID!, equivalentId: ID!): OperationResult! @auth(requires: CONTRIBUTOR)
+    addEquivalent(idiomId:ID!, equivalentId: ID!): OperationResult! @auth(requires: GENERAL)
 
-    removeEquivalent(idiomId:ID!, equivalentId: ID!): OperationResult! @auth(requires: CONTRIBUTOR)
+    removeEquivalent(idiomId:ID!, equivalentId: ID!): OperationResult! @auth(requires: GENERAL)
   }
 
 

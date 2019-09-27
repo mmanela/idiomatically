@@ -20,24 +20,18 @@ export const tailFormItemLayout = {
 };
 
 export function commonFormItems(
-  getFieldDecorator: (
-    id: string,
-    options?: GetFieldDecoratorOptions
-  ) => (node: React.ReactNode) => React.ReactNode,
+  getFieldDecorator: (id: string, options?: GetFieldDecoratorOptions) => (node: React.ReactNode) => React.ReactNode,
+  actionInProgress?: boolean,
   setLanguageKey?: React.Dispatch<React.SetStateAction<string>>,
   languageKey?: string,
   existingValues?: Partial<FullIdiomEntry>
 ) {
   const isCreate = !existingValues;
   existingValues = existingValues || {};
-  languageKey =
-    languageKey ||
-    (existingValues.language && existingValues.language.languageKey);
+  languageKey = languageKey || (existingValues.language && existingValues.language.languageKey);
   const isEnglish = languageKey === "en";
 
-  const existingCountries =
-    existingValues.language &&
-    existingValues.language.countries.map(x => x.countryKey);
+  const existingCountries = existingValues.language && existingValues.language.countries.map(x => x.countryKey);
 
   return (
     <>
@@ -87,11 +81,7 @@ export function commonFormItems(
                 }
               ]
             })(<LanguageSelect onChange={lk => setLanguageKey(lk)} />)}
-          {!isCreate && (
-            <span className="ant-form-text">
-              {existingValues!.language!.languageName}
-            </span>
-          )}
+          {!isCreate && <span className="ant-form-text">{existingValues!.language!.languageName}</span>}
         </Form.Item>
       }
       <Form.Item
@@ -114,12 +104,7 @@ export function commonFormItems(
               type: "array"
             }
           ]
-        })(
-          <CountrySelect
-            initialValue={existingCountries}
-            languageKey={languageKey}
-          />
-        )}
+        })(<CountrySelect initialValue={existingCountries} languageKey={languageKey} />)}
       </Form.Item>
 
       <Form.Item
@@ -173,8 +158,7 @@ export function commonFormItems(
         <Form.Item
           label={
             <span>
-              Transliteration (How to pronounce it with English
-              characters)&nbsp;
+              Transliteration (How to pronounce it with English characters)&nbsp;
               <Tooltip title="Write the idiom into English letters to aid in pronunciation (like Pinyin for Chinese)">
                 <Icon type="question-circle-o" />
               </Tooltip>
@@ -195,7 +179,7 @@ export function commonFormItems(
       )}
 
       <Form.Item {...tailFormItemLayout}>
-        <Button type="primary" htmlType="submit">
+        <Button type="primary" htmlType="submit" disabled={actionInProgress}>
           Submit
         </Button>
       </Form.Item>

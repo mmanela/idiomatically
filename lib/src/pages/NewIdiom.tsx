@@ -142,7 +142,7 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
           </Form.Item>
         )}
 
-        {commonFormItems(getFieldDecorator, setLanguageKey, languageKey)}
+        {commonFormItems(getFieldDecorator, loading, setLanguageKey, languageKey)}
       </Form>
     </div>
   );
@@ -152,7 +152,7 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
     if (!equivalentLoadInfo.called) {
       getEquivalentIdiom({ variables: { id: props.equivilentIdiomId } });
     }
-    
+
     if (equivalentLoadInfo.loading) {
       return <Spin delay={500} className="middleSpinner" tip="Loading..." />;
     }

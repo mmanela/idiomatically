@@ -123,7 +123,7 @@ const UpdateIdiomComponent: React.StatelessComponent<FormProps> = props => {
       {(loading || currentUserLoading) && <Spin className="middleSpinner" delay={500} spinning tip="Loading..." />}
       {error && <Alert type="error" message={getErrorMessage(error)} showIcon />}
       <Form labelAlign="left" {...formItemLayout} onSubmit={e => handleSubmit(e, props, updateIdiom, idiomLoadInfo.data!.idiom!.id)}>
-        {commonFormItems(getFieldDecorator, undefined, undefined, idiomLoadInfo.data.idiom)}
+        {commonFormItems(getFieldDecorator, loading, undefined, undefined, idiomLoadInfo.data.idiom)}
       </Form>
     </div>
   );

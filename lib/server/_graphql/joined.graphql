@@ -38,11 +38,11 @@ type Login @auth(requires: ADMIN) {
 }
 
 type Mutation {
-  updateIdiom(idiom: IdiomUpdateInput!): IdiomOperationResult! @auth(requires: CONTRIBUTOR)
-  createIdiom(idiom: IdiomCreateInput!): IdiomOperationResult! @auth(requires: CONTRIBUTOR)
+  updateIdiom(idiom: IdiomUpdateInput!): IdiomOperationResult! @auth(requires: GENERAL)
+  createIdiom(idiom: IdiomCreateInput!): IdiomOperationResult! @auth(requires: GENERAL)
   deleteIdiom(idiomId: ID!): OperationResult! @auth(requires: ADMIN)
-  addEquivalent(idiomId: ID!, equivalentId: ID!): OperationResult! @auth(requires: CONTRIBUTOR)
-  removeEquivalent(idiomId: ID!, equivalentId: ID!): OperationResult! @auth(requires: CONTRIBUTOR)
+  addEquivalent(idiomId: ID!, equivalentId: ID!): OperationResult! @auth(requires: GENERAL)
+  removeEquivalent(idiomId: ID!, equivalentId: ID!): OperationResult! @auth(requires: GENERAL)
 }
 
 enum OperationStatus {

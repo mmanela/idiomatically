@@ -46,11 +46,18 @@ export class AuthDirective extends SchemaDirectiveVisitor {
                 }
 
                 const user = context.currentUser;
+                let error: Error = null;
                 if (!user) {
-                    throw new Error("User must be logged in");
+                    error = new Error("User must be logged in");
+                    error.name = "401";
                 }
                 else if (!user.hasRole(requiredRole)) {
-                    throw new Error("User is not authorized to access this resource");
+                    error = new Error("User is not authorized to access this resource");
+                    error.name = "403";
+                }
+
+                if (error) {
+                    throw error;
                 }
 
                 return resolve.apply(this, args);

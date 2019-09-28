@@ -1,5 +1,11 @@
 import * as React from "react";
-import { UpdateIdiomMutation, UpdateIdiomMutationVariables, GetIdiomQuery, GetIdiomQueryVariables } from "../__generated__/types";
+import {
+  UpdateIdiomMutation,
+  UpdateIdiomMutationVariables,
+  GetIdiomQuery,
+  GetIdiomQueryVariables,
+  OperationStatus
+} from "../__generated__/types";
 import gql from "graphql-tag";
 import "./NewIdiom.scss";
 import { Typography, Alert, Spin, Form } from "antd";
@@ -14,6 +20,7 @@ import { getErrorMessage } from "../utilities/getErrorMessage";
 import { MutationFunction } from "@apollo/react-common";
 import { useCurrentUser } from "../components/withCurrentUser";
 import { useMutation, useQuery } from "@apollo/react-hooks";
+import { PendingOperationNotification } from "../components/PendingOperationNotification";
 const { Title } = Typography;
 
 export const updateIdiomQuery = gql`
@@ -96,10 +103,13 @@ const UpdateIdiomComponent: React.StatelessComponent<FormProps> = props => {
     });
   };
 
-  if (!currentUser && !currentUserLoading) {
+  const userNoLongerSignedIn = error && error.name === "401";
+  const userNeedsToAuthenticate = (!currentUser && !currentUserLoading) || userNoLongerSignedIn;
+  if (userNeedsToAuthenticate) {
     window.location.href = `${process.env.REACT_APP_SERVER}/auth/google`;
     return <></>;
   }
+
   if (currentUserLoading) {
     return <Spin spinning delay={500} className="middleSpinner" tip="Loading..." />;
   }
@@ -120,6 +130,10 @@ const UpdateIdiomComponent: React.StatelessComponent<FormProps> = props => {
     <div>
       <Title level={2}>Update an Idiom</Title>
       {data && !loading && !error && data.updateIdiom.idiom && <Redirect to={`/idioms/${data.updateIdiom.idiom.slug}`} />}
+      {data && !loading && !error && data.updateIdiom.status === OperationStatus.PENDING && (
+        <PendingOperationNotification redirect={`/idioms/${props.slug}`} />
+      )}
+
       {(loading || currentUserLoading) && <Spin className="middleSpinner" delay={500} spinning tip="Loading..." />}
       {error && <Alert type="error" message={getErrorMessage(error)} showIcon />}
       <Form labelAlign="left" {...formItemLayout} onSubmit={e => handleSubmit(e, props, updateIdiom, idiomLoadInfo.data!.idiom!.id)}>

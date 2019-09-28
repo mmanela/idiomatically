@@ -4,7 +4,8 @@ import {
   CreateIdiomMutationVariables,
   FullIdiomEntry,
   GetIdiomQuery,
-  GetIdiomQueryVariables
+  GetIdiomQueryVariables,
+  OperationStatus
 } from "../__generated__/types";
 import gql from "graphql-tag";
 import "./NewIdiom.scss";
@@ -21,6 +22,7 @@ import { getErrorMessage } from "../utilities/getErrorMessage";
 import { MutationFunction } from "@apollo/react-common";
 import { useCurrentUser } from "../components/withCurrentUser";
 import { useMutation, useLazyQuery } from "@apollo/react-hooks";
+import { PendingOperationNotification } from "../components/PendingOperationNotification";
 const { Title, Paragraph } = Typography;
 
 export const createIdiomQuery = gql`
@@ -106,10 +108,13 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
     });
   };
 
-  if (!currentUser && !currentUserLoading) {
+  const userNoLongerSignedIn = error && error.name === "401";
+  const userNeedsToAuthenticate = (!currentUser && !currentUserLoading) || userNoLongerSignedIn;
+  if (userNeedsToAuthenticate) {
     window.location.href = `${process.env.REACT_APP_SERVER}/auth/google`;
     return <></>;
   }
+
   if (currentUserLoading) {
     return <Spin spinning delay={500} className="middleSpinner" tip="Loading..." />;
   }
@@ -130,6 +135,10 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
         that Idiom.
       </Paragraph>
       {data && data.createIdiom.idiom && data.createIdiom.idiom.slug && <Redirect to={`/idioms/${data.createIdiom.idiom.slug}`} />}
+      {data && !loading && !error && data.createIdiom.status === OperationStatus.PENDING && (
+        <PendingOperationNotification redirect={`/idioms`} delay={10} />
+      )}
+
       {(loading || currentUserLoading) && <Spin className="middleSpinner" delay={500} spinning tip="Loading..." />}
       {error && <Alert type="error" message={getErrorMessage(error)} showIcon />}
       <Form labelAlign="left" {...formItemLayout} onSubmit={e => handleSubmit(e, props, createIdiom, equivilentIdiom)}>

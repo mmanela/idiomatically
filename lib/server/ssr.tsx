@@ -32,6 +32,7 @@ export function setupSSR(app: express.Application, clientPath: string, schema: G
 function render(req: express.Request, res: express.Response, schema: GraphQLSchema, dataProviders: DataProviders, clientPath: string) {
   const cache = new InMemoryCache();
 
+  const subTitle = getSubTitle();
   const globalContext: GlobalContext = {
     dataProviders: dataProviders,
     currentUser: req.user as UserModel
@@ -49,7 +50,7 @@ function render(req: express.Request, res: express.Response, schema: GraphQLSche
 
   cache.writeData({
     data: {
-      subTitle: getSubTitle()
+      subTitle: subTitle
     }
   });
 
@@ -58,7 +59,7 @@ function render(req: express.Request, res: express.Response, schema: GraphQLSche
   const WrappedApp = (
     <ApolloProvider client={client}>
       <StaticRouter location={req.originalUrl} context={context}>
-        <App />
+        <App subTitle={subTitle} />
       </StaticRouter>
     </ApolloProvider>
   );

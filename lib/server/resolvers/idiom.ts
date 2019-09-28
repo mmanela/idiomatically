@@ -14,7 +14,7 @@ export default {
             const limit = args && args.limit ? args.limit : 50;
 
             const expandOptions: IdiomExpandOptions = getIdiomExpandOptions(info);
-            const idioms = await context.db.queryIdioms(args, expandOptions);
+            const idioms = await context.dataProviders.idiom.queryIdioms(args, expandOptions);
             let pageInfo: PageInfo = {
                 endCursor: String(idioms.length - 1),
                 hasNextPage: idioms.length > limit
@@ -40,7 +40,7 @@ export default {
 
             const expandOptions: IdiomExpandOptions = getIdiomExpandOptions(info);
 
-            return context.db.getIdiom(args, expandOptions);
+            return context.dataProviders.idiom.getIdiom(args, expandOptions);
         }
     } as QueryResolvers,
 
@@ -48,24 +48,24 @@ export default {
         updateIdiom: async (parent, args: MutationUpdateIdiomArgs, context: GlobalContext, info: GraphQLResolveInfo) => {
 
             const expandOptions: IdiomExpandOptions = getIdiomExpandOptions(info);
-            return await context.db.updateIdiom(context.currentUser, args.idiom, expandOptions);
+            return await context.dataProviders.idiom.updateIdiom(context.currentUser, args.idiom, expandOptions);
         },
 
         createIdiom: async (parent, args: MutationCreateIdiomArgs, context: GlobalContext, info: GraphQLResolveInfo) => {
             const expandOptions: IdiomExpandOptions = getIdiomExpandOptions(info);
-            return await context.db.createIdiom(context.currentUser, args.idiom, expandOptions);
+            return await context.dataProviders.idiom.createIdiom(context.currentUser, args.idiom, expandOptions);
         },
 
         deleteIdiom: async (parent, args: MutationDeleteIdiomArgs, context: GlobalContext, info) => {
-            return await context.db.deleteIdiom(context.currentUser, args.idiomId);
+            return await context.dataProviders.idiom.deleteIdiom(context.currentUser, args.idiomId);
         },
 
         addEquivalent: async (parent, args: MutationAddEquivalentArgs, context: GlobalContext, info) => {
-            return await context.db.addIdiomEquivalent(context.currentUser, args.idiomId, args.equivalentId);
+            return await context.dataProviders.idiom.addIdiomEquivalent(context.currentUser, args.idiomId, args.equivalentId);
         },
 
         removeEquivalent: async (parent, args: MutationRemoveEquivalentArgs, context: GlobalContext, info) => {
-            return await context.db.removeIdiomEquivalent(context.currentUser, args.idiomId, args.equivalentId);
+            return await context.dataProviders.idiom.removeIdiomEquivalent(context.currentUser, args.idiomId, args.equivalentId);
         }
 
     } as MutationResolvers

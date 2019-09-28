@@ -10,13 +10,13 @@ export default {
         throw new Error("Id must passed");
       }
 
-      return context.db.getUser(args.id);
+      return context.dataProviders.user.getUser(args.id);
     },
 
     users: async (parent, args: QueryUsersArgs, context: GlobalContext) => {
       const limit = args && args.limit ? args.limit : 50;
-      const users = await context.db.queryUsers(args);
-      let result=  users.slice(0, limit);
+      const users = await context.dataProviders.user.queryUsers(args);
+      let result = users.slice(0, limit);
       return result;
     },
 

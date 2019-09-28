@@ -8,7 +8,7 @@ import resolvers from './resolvers';
 import * as dotenv from 'dotenv';
 import { GlobalContext } from './model/types';
 import { MongoClient } from 'mongodb'
-import { DataProvider } from './dataProvider';
+import { IdiomDataProvider } from './dataProvider';
 import * as passport from 'passport';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import * as expressSession from 'express-session';
@@ -20,6 +20,8 @@ import { User } from './_graphql/types';
 import { ExpressContext } from 'apollo-server-express/dist/ApolloServer';
 import { AuthDirective } from './schemaDirectives/auth';
 import { setupSSR } from './ssr';
+import { createDataProviders } from './dataProvider/dataProviderFactory';
+import { DataProviders } from './dataProvider/dataProviders';
 
 const start = async () => {
   try {
@@ -41,7 +43,7 @@ const start = async () => {
     const port = process.env.PORT || 8000;
     const mongoConnection = await MongoClient.connect(dbConnection, { useNewUrlParser: true, useUnifiedTopology: true });
     const mongodb = mongoConnection.db(process.env.MONGO_DB);
-    const dataProvider = new DataProvider(mongodb);
+    const dataProviders = createDataProviders(mongodb);
 
     const schema = makeExecutableSchema({
       typeDefs,
@@ -56,14 +58,14 @@ const start = async () => {
       context: async (expressContext: ExpressContext) => {
         const req: express.Request = expressContext.req;
         return <GlobalContext>{
-          db: dataProvider,
+          dataProviders: dataProviders,
           currentUser: req.user
         };
       }
     });
 
     const app = express();
-    setupAuthAndSession(app, serverUrl, clientUrl, dataProvider, isProd, googleClientId, googleClientSecret);
+    setupAuthAndSession(app, serverUrl, clientUrl, dataProviders, isProd, googleClientId, googleClientSecret);
 
     server.applyMiddleware({ app, cors: false });
     const httpServer = http.createServer(app);
@@ -111,7 +113,7 @@ const start = async () => {
       })
     });
 
-    setupSSR(app, clientPath, schema, dataProvider);
+    setupSSR(app, clientPath, schema, dataProviders);
 
   } catch (e) {
     console.error(e);
@@ -120,7 +122,7 @@ const start = async () => {
 
 start();
 
-function setupAuthAndSession(app: express.Application, serverUrl: string, clientUrl: string, dataProvider: DataProvider, isProd: boolean, googleClientId: string, googleClientSecret: string) {
+function setupAuthAndSession(app: express.Application, serverUrl: string, clientUrl: string, dataProviders: DataProviders, isProd: boolean, googleClientId: string, googleClientSecret: string) {
 
   // Use the GoogleStrategy within Passport.
   //   Strategies in Passport require a `verify` function, which accept
@@ -145,7 +147,7 @@ function setupAuthAndSession(app: express.Application, serverUrl: string, client
   // and deserialized.
   passport.serializeUser<Profile, string>(async (profile, cb) => {
     try {
-      const user = await dataProvider.ensureUserFromLogin(profile)
+      const user = await dataProviders.user.ensureUserFromLogin(profile)
       cb(null, user.id);
     } catch {
       console.error("Unable to serialize user");
@@ -154,7 +156,7 @@ function setupAuthAndSession(app: express.Application, serverUrl: string, client
   });
   passport.deserializeUser<User, string>(async (userId, cb) => {
     try {
-      const user = await dataProvider.getUser(userId);
+      const user = await dataProviders.user.getUser(userId);
       cb(null, user);
     }
     catch {

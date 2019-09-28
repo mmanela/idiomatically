@@ -1,8 +1,9 @@
-import { DataProvider } from '../dataProvider';
+import { IdiomDataProvider } from '../dataProvider';
 import { User, Login, UserRole } from '../_graphql/types';
+import { DataProviders } from '../dataProvider/dataProviders';
 
 export interface GlobalContext {
-    db: DataProvider,
+    dataProviders: DataProviders,
     currentUser: UserModel
 }
 

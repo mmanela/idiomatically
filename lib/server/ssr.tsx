@@ -8,48 +8,41 @@ import { App } from "./../src/components/App";
 import { renderToStaticMarkup } from "react-dom/server";
 import { SchemaLink } from "apollo-link-schema";
 import { GraphQLSchema } from "graphql";
-import { DataProvider } from "./dataProvider";
+import { IdiomDataProvider } from "./dataProvider";
 import * as fs from "fs";
 import * as path from "path";
 import { getSubTitle } from "../src/components/subTitles";
-import { ApolloProvider } from '@apollo/react-common';
+import { ApolloProvider } from "@apollo/react-common";
+import { DataProviders } from "./dataProvider/dataProviders";
+import { GlobalContext, UserModel } from "./model/types";
 
 // When running in staging or prod we setup to run using SSR for improved performance
-export function setupSSR(
-  app: express.Application,
-  clientPath: string,
-  schema: GraphQLSchema,
-  dataProvider: DataProvider
-) {
+export function setupSSR(app: express.Application, clientPath: string, schema: GraphQLSchema, dataProviders: DataProviders) {
   app.use("^/$", (req, res, next) => {
-    render(req, res, schema, dataProvider, clientPath);
+    render(req, res, schema, dataProviders, clientPath);
   });
 
   app.use(express.static(path.resolve(clientPath), { maxAge: "30d" }));
 
   app.use("*", (req, res, next) => {
-    render(req, res, schema, dataProvider, clientPath);
+    render(req, res, schema, dataProviders, clientPath);
   });
 }
 
-function render(
-  req: express.Request,
-  res: express.Response,
-  schema: GraphQLSchema,
-  dataProvider: DataProvider,
-  clientPath: string
-) {
+function render(req: express.Request, res: express.Response, schema: GraphQLSchema, dataProviders: DataProviders, clientPath: string) {
   const cache = new InMemoryCache();
+
+  const globalContext: GlobalContext = {
+    dataProviders: dataProviders,
+    currentUser: req.user as UserModel
+  };
   const client = new ApolloClient({
     ssrMode: true,
     // Remember that this is the interface the SSR server will use to connect to the
     // API server, so we need to ensure it isn't firewalled, etc
     link: new SchemaLink({
       schema,
-      context: {
-        db: dataProvider,
-        currentUser: req.user
-      }
+      context: globalContext
     }),
     cache: cache
   });
@@ -79,12 +72,7 @@ function render(
   });
 }
 
-function getHtml(
-  content: string,
-  state: NormalizedCacheObject,
-  clientPath: string,
-  callback: (arg: string) => void
-) {
+function getHtml(content: string, state: NormalizedCacheObject, clientPath: string, callback: (arg: string) => void) {
   // point to the html file created by CRA's build tool
   const filePath = path.resolve(clientPath, "index.html");
 
@@ -97,19 +85,13 @@ function getHtml(
         <div id="root" dangerouslySetInnerHTML={{ __html: content }} />
         <script
           dangerouslySetInnerHTML={{
-            __html: `window.__APOLLO_STATE__=${JSON.stringify(state).replace(
-              /</g,
-              "\\u003c"
-            )};`
+            __html: `window.__APOLLO_STATE__=${JSON.stringify(state).replace(/</g, "\\u003c")};`
           }}
         />
       </>
     );
 
-    const result = htmlData.replace(
-      '<div id="root"></div>',
-      renderToStaticMarkup(htmlToInject)
-    );
+    const result = htmlData.replace('<div id="root"></div>', renderToStaticMarkup(htmlToInject));
 
     callback(result);
   });

@@ -1,1 +1,2 @@
-export * from './dataProvider';
+export * from './idiomDataProvider';
+export * from './userDataProvider';

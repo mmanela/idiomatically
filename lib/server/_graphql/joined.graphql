@@ -14,6 +14,8 @@ type Query {
   idioms(cursor: String, filter: String, locale: String, limit: Int): IdiomConnection!
   languages: [Language!]!
   countries(languageKey: String): [Country!]!
+  idiomChangeProposal(id: ID): IdiomChangeProposal! @auth(requires: ADMIN)
+  idiomChangeProposals(cursor: String, filter: String, limit: Int): IdiomChangeProposalConnection! @auth(requires: ADMIN)
 }
 
 type User {
@@ -43,6 +45,8 @@ type Mutation {
   deleteIdiom(idiomId: ID!): OperationResult! @auth(requires: ADMIN)
   addEquivalent(idiomId: ID!, equivalentId: ID!): OperationResult! @auth(requires: GENERAL)
   removeEquivalent(idiomId: ID!, equivalentId: ID!): OperationResult! @auth(requires: GENERAL)
+  acceptIdiomChangeProposal(proposalId: ID!): Boolean! @auth(requires: ADMIN)
+  rejectIdiomChangeProposal(proposalId: ID!): Boolean! @auth(requires: ADMIN)
 }
 
 enum OperationStatus {
@@ -126,6 +130,21 @@ type Country {
   countryName: String!
   countryNativeName: String!
   emojiFlag: String!
+}
+
+type IdiomChangeProposalConnection {
+  edges: [IdiomChangeProposalEdge!]!
+  pageInfo: PageInfo!
+}
+
+type IdiomChangeProposalEdge {
+  cursor: String!
+  node: IdiomChangeProposal!
+}
+
+type IdiomChangeProposal {
+  id: ID!
+  body: String!
 }
 
 schema {

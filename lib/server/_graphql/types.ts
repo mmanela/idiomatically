@@ -36,6 +36,24 @@ export type Idiom = {
   updatedBy?: Maybe<User>,
 };
 
+export type IdiomChangeProposal = {
+   __typename?: 'IdiomChangeProposal',
+  id: Scalars['ID'],
+  body: Scalars['String'],
+};
+
+export type IdiomChangeProposalConnection = {
+   __typename?: 'IdiomChangeProposalConnection',
+  edges: Array<IdiomChangeProposalEdge>,
+  pageInfo: PageInfo,
+};
+
+export type IdiomChangeProposalEdge = {
+   __typename?: 'IdiomChangeProposalEdge',
+  cursor: Scalars['String'],
+  node: IdiomChangeProposal,
+};
+
 export type IdiomConnection = {
    __typename?: 'IdiomConnection',
   edges: Array<IdiomEdge>,
@@ -100,6 +118,8 @@ export type Mutation = {
   deleteIdiom: OperationResult,
   addEquivalent: OperationResult,
   removeEquivalent: OperationResult,
+  acceptIdiomChangeProposal: Scalars['Boolean'],
+  rejectIdiomChangeProposal: Scalars['Boolean'],
 };
 
 
@@ -127,6 +147,16 @@ export type MutationAddEquivalentArgs = {
 export type MutationRemoveEquivalentArgs = {
   idiomId: Scalars['ID'],
   equivalentId: Scalars['ID']
+};
+
+
+export type MutationAcceptIdiomChangeProposalArgs = {
+  proposalId: Scalars['ID']
+};
+
+
+export type MutationRejectIdiomChangeProposalArgs = {
+  proposalId: Scalars['ID']
 };
 
 export type OperationResult = {
@@ -161,6 +191,8 @@ export type Query = {
   idioms: IdiomConnection,
   languages: Array<Language>,
   countries: Array<Country>,
+  idiomChangeProposal: IdiomChangeProposal,
+  idiomChangeProposals: IdiomChangeProposalConnection,
 };
 
 
@@ -191,6 +223,18 @@ export type QueryIdiomsArgs = {
 
 export type QueryCountriesArgs = {
   languageKey?: Maybe<Scalars['String']>
+};
+
+
+export type QueryIdiomChangeProposalArgs = {
+  id?: Maybe<Scalars['ID']>
+};
+
+
+export type QueryIdiomChangeProposalsArgs = {
+  cursor?: Maybe<Scalars['String']>,
+  filter?: Maybe<Scalars['String']>,
+  limit?: Maybe<Scalars['Int']>
 };
 
 export type User = {
@@ -293,6 +337,9 @@ export type ResolversTypes = {
   IdiomEdge: ResolverTypeWrapper<IdiomEdge>,
   PageInfo: ResolverTypeWrapper<PageInfo>,
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>,
+  IdiomChangeProposal: ResolverTypeWrapper<IdiomChangeProposal>,
+  IdiomChangeProposalConnection: ResolverTypeWrapper<IdiomChangeProposalConnection>,
+  IdiomChangeProposalEdge: ResolverTypeWrapper<IdiomChangeProposalEdge>,
   Mutation: ResolverTypeWrapper<{}>,
   IdiomUpdateInput: IdiomUpdateInput,
   IdiomOperationResult: ResolverTypeWrapper<IdiomOperationResult>,
@@ -318,6 +365,9 @@ export type ResolversParentTypes = {
   IdiomEdge: IdiomEdge,
   PageInfo: PageInfo,
   Boolean: Scalars['Boolean'],
+  IdiomChangeProposal: IdiomChangeProposal,
+  IdiomChangeProposalConnection: IdiomChangeProposalConnection,
+  IdiomChangeProposalEdge: IdiomChangeProposalEdge,
   Mutation: {},
   IdiomUpdateInput: IdiomUpdateInput,
   IdiomOperationResult: IdiomOperationResult,
@@ -349,6 +399,21 @@ export type IdiomResolvers<ContextType = any, ParentType extends ResolversParent
   createdBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>,
   updatedAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
   updatedBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>,
+};
+
+export type IdiomChangeProposalResolvers<ContextType = any, ParentType extends ResolversParentTypes['IdiomChangeProposal'] = ResolversParentTypes['IdiomChangeProposal']> = {
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>,
+  body?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
+};
+
+export type IdiomChangeProposalConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IdiomChangeProposalConnection'] = ResolversParentTypes['IdiomChangeProposalConnection']> = {
+  edges?: Resolver<Array<ResolversTypes['IdiomChangeProposalEdge']>, ParentType, ContextType>,
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>,
+};
+
+export type IdiomChangeProposalEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IdiomChangeProposalEdge'] = ResolversParentTypes['IdiomChangeProposalEdge']> = {
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
+  node?: Resolver<ResolversTypes['IdiomChangeProposal'], ParentType, ContextType>,
 };
 
 export type IdiomConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IdiomConnection'] = ResolversParentTypes['IdiomConnection']> = {
@@ -388,6 +453,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteIdiom?: Resolver<ResolversTypes['OperationResult'], ParentType, ContextType, RequireFields<MutationDeleteIdiomArgs, 'idiomId'>>,
   addEquivalent?: Resolver<ResolversTypes['OperationResult'], ParentType, ContextType, RequireFields<MutationAddEquivalentArgs, 'idiomId' | 'equivalentId'>>,
   removeEquivalent?: Resolver<ResolversTypes['OperationResult'], ParentType, ContextType, RequireFields<MutationRemoveEquivalentArgs, 'idiomId' | 'equivalentId'>>,
+  acceptIdiomChangeProposal?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationAcceptIdiomChangeProposalArgs, 'proposalId'>>,
+  rejectIdiomChangeProposal?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRejectIdiomChangeProposalArgs, 'proposalId'>>,
 };
 
 export type OperationResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['OperationResult'] = ResolversParentTypes['OperationResult']> = {
@@ -408,6 +475,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   idioms?: Resolver<ResolversTypes['IdiomConnection'], ParentType, ContextType, QueryIdiomsArgs>,
   languages?: Resolver<Array<ResolversTypes['Language']>, ParentType, ContextType>,
   countries?: Resolver<Array<ResolversTypes['Country']>, ParentType, ContextType, QueryCountriesArgs>,
+  idiomChangeProposal?: Resolver<ResolversTypes['IdiomChangeProposal'], ParentType, ContextType, QueryIdiomChangeProposalArgs>,
+  idiomChangeProposals?: Resolver<ResolversTypes['IdiomChangeProposalConnection'], ParentType, ContextType, QueryIdiomChangeProposalsArgs>,
 };
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
@@ -421,6 +490,9 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
 export type Resolvers<ContextType = any> = {
   Country?: CountryResolvers<ContextType>,
   Idiom?: IdiomResolvers<ContextType>,
+  IdiomChangeProposal?: IdiomChangeProposalResolvers<ContextType>,
+  IdiomChangeProposalConnection?: IdiomChangeProposalConnectionResolvers<ContextType>,
+  IdiomChangeProposalEdge?: IdiomChangeProposalEdgeResolvers<ContextType>,
   IdiomConnection?: IdiomConnectionResolvers<ContextType>,
   IdiomEdge?: IdiomEdgeResolvers<ContextType>,
   IdiomOperationResult?: IdiomOperationResultResolvers<ContextType>,

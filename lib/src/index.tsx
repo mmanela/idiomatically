@@ -18,6 +18,10 @@ const client = new ApolloClient({
   resolvers: {}
 });
 
+type LocalState = {
+  subTitle: string;
+};
+
 const GET_SUBTITLE = gql`
   {
     subTitle @client
@@ -25,8 +29,9 @@ const GET_SUBTITLE = gql`
 `;
 
 function WrappedApp() {
-  const { data } = useQuery<string>(GET_SUBTITLE);
-  return <App subTitle={data || getSubTitle()} />;
+  const { data } = useQuery<LocalState>(GET_SUBTITLE);
+  const subTitle = (data && data.subTitle) || getSubTitle();
+  return <App subTitle={subTitle} />;
 }
 
 function Root() {

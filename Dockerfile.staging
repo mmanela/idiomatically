@@ -12,9 +12,9 @@ RUN yarn install --production=false
 COPY lib/ .
 
 # Build Client
-RUN yarn client:build
+RUN yarn client:build:staging
 
 # Start Server
 WORKDIR /usr/src/app/server
 EXPOSE 8000
-CMD ["yarn","server:start"]
+CMD ["yarn","server:start:staging"]

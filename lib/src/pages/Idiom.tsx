@@ -23,28 +23,12 @@ export const Idiom: React.StatelessComponent<IdiomCombinedProps> = props => {
   const showEdit = currentUser && !currentUserLoading;
 
   return (
-    <Query<GetIdiomQuery, GetIdiomQueryVariables>
-      query={getIdiomQuery}
-      variables={{ slug }}
-    >
+    <Query<GetIdiomQuery, GetIdiomQueryVariables> query={getIdiomQuery} variables={{ slug }}>
       {({ loading, data, error }) => {
-        if (loading)
-          return (
-            <Spin delay={500} className="middleSpinner" tip="Loading..." />
-          );
-        if (error)
-          return (
-            <Alert message="Error" type="error" description={error} showIcon />
-          );
+        if (loading) return <Spin delay={500} className="middleSpinner" tip="Loading..." />;
+        if (error) return <Alert message="Error" type="error" description={error} showIcon />;
         if (!data || !data.idiom)
-          return (
-            <Alert
-              message="Oops!"
-              description="It looks like you went barking up the wrong tree."
-              type="warning"
-              showIcon
-            />
-          );
+          return <Alert message="Oops!" description="It looks like you went barking up the wrong tree." type="warning" showIcon />;
 
         const { idiom } = data;
         const buttons = showEdit
@@ -72,26 +56,18 @@ export const Idiom: React.StatelessComponent<IdiomCombinedProps> = props => {
               className="page-header"
               extra={buttons}
             >
-              <LanguageFlags
-                languageInfo={idiom.language}
-                size="large"
-                showLabel
-              />
+              <LanguageFlags languageInfo={idiom.language} size="large" showLabel />
               {idiom.transliteration && (
                 <>
                   <Title level={4}>Pronunciation</Title>
-                  <Paragraph className="content">
-                    {idiom.transliteration}
-                  </Paragraph>
+                  <Paragraph className="content">{idiom.transliteration}</Paragraph>
                 </>
               )}
 
               {idiom.literalTranslation && (
                 <>
                   <Title level={4}>Literal Translation </Title>
-                  <Paragraph className="content">
-                    {idiom.literalTranslation}
-                  </Paragraph>
+                  <Paragraph className="content">{idiom.literalTranslation}</Paragraph>
                 </>
               )}
 
@@ -103,20 +79,13 @@ export const Idiom: React.StatelessComponent<IdiomCombinedProps> = props => {
               )}
 
               <Title level={4}>Equivalents</Title>
-              <Paragraph className="info">
-                This is how you express this idiom across languages and locales.
-              </Paragraph>
+              <Paragraph className="info">This is how you express this idiom across languages and locales.</Paragraph>
               <ul className="equivilentList">
                 {idiom.equivalents.length > 0 &&
                   idiom.equivalents.map(x => (
                     <li key={x.slug}>
                       <div className="equivilentItem">
-                        <LanguageFlags
-                          languageInfo={x.language}
-                          compactMode={true}
-                          size={"small"}
-                          layoutMode={"horizontal"}
-                        />
+                        <LanguageFlags languageInfo={x.language} compactMode={true} size={"small"} layoutMode={"horizontal"} />
                         <Link to={"/idioms/" + x.slug}>{x.title}</Link>
                       </div>
                     </li>
@@ -124,20 +93,12 @@ export const Idiom: React.StatelessComponent<IdiomCombinedProps> = props => {
               </ul>
               {idiom.equivalents.length <= 0 && (
                 <>
-                  <Paragraph className="content">
-                    No equivilent idioms across languages found yet...
-                  </Paragraph>
+                  <Paragraph className="content">No equivilent idioms across languages found yet...</Paragraph>
                 </>
               )}
               <Paragraph className="content addEquivalent">
-                <Button
-                  type="link"
-                  icon="plus-circle"
-                  onClick={e =>
-                    handleAddEquivilentClick(e, data.idiom!.id, props.history)
-                  }
-                >
-                  Add an equivilent idiom
+                <Button type="link" icon="plus-circle" onClick={e => handleAddEquivilentClick(e, data.idiom!.id, props.history)}>
+                  {currentUser ? "Add an equivilent idiom" : "Login to connect this to other idioms"}
                 </Button>
               </Paragraph>
             </PageHeader>
@@ -148,10 +109,6 @@ export const Idiom: React.StatelessComponent<IdiomCombinedProps> = props => {
   );
 };
 
-const handleAddEquivilentClick = (
-  e: React.MouseEvent<any, any>,
-  idiomId: string,
-  history: History
-) => {
+const handleAddEquivilentClick = (e: React.MouseEvent<any, any>, idiomId: string, history: History) => {
   history.push(`/new?equivilentIdiomId=${idiomId}`);
 };

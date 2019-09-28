@@ -18,7 +18,7 @@ import { FULL_IDIOM_ENTRY } from "../fragments/fragments";
 import { LanguageFlags } from "../components/LanguageFlags";
 import { getIdiomQuery } from "../fragments/getIdiom";
 import { commonFormItems } from "../components/commonFormItems";
-import { getErrorMessage } from "../utilities/getErrorMessage";
+import { getErrorMessage, isAuthenticationError } from "../utilities/errorUtils";
 import { MutationFunction } from "@apollo/react-common";
 import { useCurrentUser } from "../components/withCurrentUser";
 import { useMutation, useLazyQuery } from "@apollo/react-hooks";
@@ -108,7 +108,7 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
     });
   };
 
-  const userNoLongerSignedIn = error && error.name === "401";
+  const userNoLongerSignedIn = isAuthenticationError(error);
   const userNeedsToAuthenticate = (!currentUser && !currentUserLoading) || userNoLongerSignedIn;
   if (userNeedsToAuthenticate) {
     window.location.href = `${process.env.REACT_APP_SERVER}/auth/google`;

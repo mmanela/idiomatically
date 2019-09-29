@@ -7,6 +7,14 @@ import { transliterate, slugify } from 'transliteration';
 import { escapeRegex } from './utils';
 import { UserDataProvider } from './userDataProvider';
 
+export type Paged<T> = {
+    result: T[],
+    limit: number,
+    skip: number,
+    count: number,
+    totalCount: number
+}
+
 export class IdiomDataProvider {
 
     private changeProposalCollection: Collection<DbIdiomChangeProposal>;
@@ -317,11 +325,16 @@ export class IdiomDataProvider {
         }
     }
 
-    async queryIdioms(args: QueryIdiomsArgs, idiomExpandOptions: IdiomExpandOptions): Promise<Idiom[]> {
+    async queryIdioms(args: QueryIdiomsArgs, idiomExpandOptions: IdiomExpandOptions): Promise<Paged<Idiom>> {
         const filter = args && args.filter ? args.filter : undefined;
         const limit = args && args.limit ? args.limit : 50;
         const locale = args && args.locale ? args.locale : undefined;
+        let skip = args && args.cursor && Number.parseInt(args.cursor);
+        if (isNaN(skip)) {
+            skip = 0;
+        }
 
+        let totalCount = null;
         let dbIdioms: DbIdiom[];
         let findFilter: FilterQuery<DbIdiom>;
         let sortObj: object = { createdAt: -1 };
@@ -348,11 +361,16 @@ export class IdiomDataProvider {
 
         if (findFilter) {
             findFilter = this.activeOnly(findFilter);
+            totalCount = await this.idiomCollection.countDocuments(findFilter);
+        }
+        else {
+            totalCount = await this.idiomCollection.estimatedDocumentCount();
         }
 
         dbIdioms = await this.idiomCollection
             .find(findFilter)
             .sort(sortObj)
+            .skip(skip)
             .limit(limit)
             .toArray();
 
@@ -371,7 +389,13 @@ export class IdiomDataProvider {
             }
         }
 
-        return dbIdioms.map(idiom => mapDbIdiom(idiom, dbEquivalents, users));
+        return {
+            totalCount: totalCount,
+            limit: limit,
+            skip: skip,
+            count: dbIdioms.length,
+            result: dbIdioms.map(idiom => mapDbIdiom(idiom, dbEquivalents, users))
+        };
     }
 
     async removeIdiomEquivalent(currentUser: UserModel, idiomId: string, equivalentId: string): Promise<OperationResult> {

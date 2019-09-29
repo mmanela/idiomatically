@@ -135,6 +135,12 @@ export interface GetIdiomQueryVariables {
 // GraphQL query operation: GetIdiomListQuery
 // ====================================================
 
+export interface GetIdiomListQuery_idioms_pageInfo {
+  __typename: "PageInfo";
+  endCursor: string;
+  hasNextPage: boolean;
+}
+
 export interface GetIdiomListQuery_idioms_edges_node_language_countries {
   __typename: "Country";
   countryKey: string;
@@ -192,6 +198,8 @@ export interface GetIdiomListQuery_idioms_edges {
 
 export interface GetIdiomListQuery_idioms {
   __typename: "IdiomConnection";
+  totalCount: number;
+  pageInfo: GetIdiomListQuery_idioms_pageInfo;
   edges: GetIdiomListQuery_idioms_edges[];
 }
 
@@ -202,6 +210,8 @@ export interface GetIdiomListQuery {
 export interface GetIdiomListQueryVariables {
   filter?: string | null;
   locale?: string | null;
+  limit?: number | null;
+  cursor?: string | null;
 }
 
 /* tslint:disable */

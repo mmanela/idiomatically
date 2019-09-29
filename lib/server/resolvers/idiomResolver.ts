@@ -11,23 +11,31 @@ import { traverse } from './traverser';
 export default {
     Query: {
         idioms: async (parent, args: QueryIdiomsArgs, context: GlobalContext, info) => {
-            const limit = args && args.limit ? args.limit : 50;
-
             const expandOptions: IdiomExpandOptions = getIdiomExpandOptions(info);
-            const idioms = await context.dataProviders.idiom.queryIdioms(args, expandOptions);
+            const response = await context.dataProviders.idiom.queryIdioms(args, expandOptions);
+
+            // This is really not right. Using skip/take is weak in two ways
+            // 1. Performance isn't great since its paging whole query still
+            // 2. If you order in certain ways, new items can appear in the middle of paging 
+            // Ideally, we should order by date and use that as page but that then means
+            // that we have to always prioritize oldest idiom first, which is also unfortunate.
+            
+            const nextEndPosition = response.skip + response.count;
+            const hasNextPage = nextEndPosition < response.totalCount;
             let pageInfo: PageInfo = {
-                endCursor: String(idioms.length - 1),
-                hasNextPage: idioms.length > limit
+                endCursor: nextEndPosition.toString(),
+                hasNextPage: hasNextPage
             };
 
             let result: IdiomConnection = {
-                edges: idioms.slice(0, limit).map<IdiomEdge>((idiom, index) => {
+                edges: response.result.map<IdiomEdge>((idiom, index) => {
                     return {
                         node: idiom,
-                        cursor: index.toString()
+                        cursor: (index + response.skip).toString()
                     };
                 }),
-                pageInfo: pageInfo
+                pageInfo: pageInfo,
+                totalCount: response.totalCount
             };
 
             return result;

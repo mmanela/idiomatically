@@ -69,6 +69,7 @@ type IdiomOperationResult {
 type IdiomConnection {
   edges: [IdiomEdge!]!
   pageInfo: PageInfo!
+  totalCount: Int!
 }
 
 type IdiomEdge {

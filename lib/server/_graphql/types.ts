@@ -58,6 +58,7 @@ export type IdiomConnection = {
    __typename?: 'IdiomConnection',
   edges: Array<IdiomEdge>,
   pageInfo: PageInfo,
+  totalCount: Scalars['Int'],
 };
 
 export type IdiomCreateInput = {
@@ -419,6 +420,7 @@ export type IdiomChangeProposalEdgeResolvers<ContextType = any, ParentType exten
 export type IdiomConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IdiomConnection'] = ResolversParentTypes['IdiomConnection']> = {
   edges?: Resolver<Array<ResolversTypes['IdiomEdge']>, ParentType, ContextType>,
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>,
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>,
 };
 
 export type IdiomEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IdiomEdge'] = ResolversParentTypes['IdiomEdge']> = {

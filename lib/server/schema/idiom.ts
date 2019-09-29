@@ -45,6 +45,7 @@ export default gql`
   type IdiomConnection {
     edges: [IdiomEdge!]!
     pageInfo: PageInfo!
+    totalCount: Int!
   }
   
   type IdiomEdge {

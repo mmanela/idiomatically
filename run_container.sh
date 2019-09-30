@@ -2,8 +2,10 @@
 
 if [[ $1 == "prod" ]]; then
     DockerFile="Dockerfile"
+    Port = 80
 else
     DockerFile="Dockerfile.staging"
+    Port = 8000
 fi
 
 
@@ -14,7 +16,7 @@ echo "Building container"
 docker build -t idiomatically -f $DockerFile .
 
 echo "Running container"
-docker run -l idiomatically -d -p 8000:8000  idiomatically
+docker run -l idiomatically -d -p $Port:$Port  idiomatically
 
 echo "Listing running containers"
 docker ps

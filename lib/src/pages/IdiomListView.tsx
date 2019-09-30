@@ -37,12 +37,16 @@ export const IdiomListView: React.StatelessComponent<IdiomListViewProps> = props
   const pageSize = 10;
 
   // Based on the page number we get from state we calculate the bounds of the cursors
-  // we then check if the data we current have has a endCursor that falls in that range. If so, 
+  // we then check if the data we current have has a endCursor that falls in that range. If so,
   // we have the data for this page, no need to query. Otherwise, run the query.
   const currCursorNum = (pageNumber - 1) * pageSize;
   const nextCursorNum = pageNumber * pageSize;
-  const incomingEndCursorNum = loadResult.data ? Number.parseInt(loadResult.data.idioms.pageInfo.endCursor) : 0;
-  const changePage = !(currCursorNum < incomingEndCursorNum && nextCursorNum >= incomingEndCursorNum);
+  const incomingEndCursorNum =
+    loadResult.data && loadResult.data.idioms.totalCount > 0
+      ? Number.parseInt(loadResult.data.idioms.pageInfo.endCursor)
+      : null;
+  const changePage =
+    incomingEndCursorNum != null && !(currCursorNum < incomingEndCursorNum && nextCursorNum >= incomingEndCursorNum);
   if (!loadResult.called || (!loadResult.loading && loadResult.data && changePage)) {
     queryPage({
       variables: { filter, limit: pageSize, cursor: currCursorNum.toString() }

@@ -7,3 +7,8 @@ tunnels:
     proto: http
     addr: 3000
     subdomain: idiom2
+
+  prod:
+    proto: http
+    addr: 80
+    subdomain: idiom3

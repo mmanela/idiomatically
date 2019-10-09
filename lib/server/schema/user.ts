@@ -1,6 +1,21 @@
 import { gql } from 'apollo-server-express';
 
 export default gql`
+
+  # Apollo defines these internally but
+  # graphql-codegen was flipping out over it not
+  # being define, so re-define it here
+  directive @cacheControl(
+    maxAge: Int,
+    scope: CacheControlScope
+  ) on OBJECT | FIELD_DEFINITION
+
+  enum CacheControlScope {
+    PUBLIC
+    PRIVATE
+  }
+
+
   enum UserRole {
     ADMIN
     CONTRIBUTOR
@@ -12,9 +27,9 @@ export default gql`
   ) on OBJECT | FIELD_DEFINITION
 
   type Query {
-    me: User
-    user(id: ID!): User @auth(requires: CONTRIBUTOR)
-    users(filter: String, limit: Int): [User]! @auth(requires: ADMIN)
+    me: User @cacheControl(maxAge: 0)
+    user(id: ID!): User @auth(requires: CONTRIBUTOR) @cacheControl(maxAge: 0)
+    users(filter: String, limit: Int): [User]! @auth(requires: ADMIN) @cacheControl(maxAge: 0)
   }
 
   type User {

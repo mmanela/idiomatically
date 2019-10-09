@@ -2,8 +2,8 @@ import { gql } from 'apollo-server-express';
 
 export default gql`
   type Query {
-    idiom(id: ID, slug: String): Idiom
-    idioms(cursor: String, filter: String, locale: String, limit: Int): IdiomConnection!
+    idiom(id: ID, slug: String): Idiom @cacheControl(maxAge: 1800)
+    idioms(cursor: String, filter: String, locale: String, limit: Int): IdiomConnection! @cacheControl(maxAge: 1800)
   }
 
   type Mutation {

@@ -4,6 +4,7 @@
     "sourceMap": true,
     "module": "commonjs",
     "importHelpers": true,
+    "esModuleInterop": true,
     "allowJs": true,
     "strict": false,
     "outDir": "build/server",

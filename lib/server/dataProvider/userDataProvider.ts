@@ -9,8 +9,8 @@ export class UserDataProvider {
 
     private userCollection: Collection<DbUser>;
 
-    constructor(private mongodb: Db) {
-        this.userCollection = mongodb.collection('user');
+    constructor(private mongodb: Db, collectionPrefix: string) {
+        this.userCollection = mongodb.collection(collectionPrefix + 'user');
     }
 
     async getUser(id: string | ObjectID): Promise<UserModel> {

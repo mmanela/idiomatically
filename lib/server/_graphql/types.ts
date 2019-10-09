@@ -11,6 +11,12 @@ export type Scalars = {
 };
 
 
+
+export enum CacheControlScope {
+  Public = 'PUBLIC',
+  Private = 'PRIVATE'
+}
+
 export type Country = {
    __typename?: 'Country',
   countryKey: Scalars['String'],
@@ -347,6 +353,7 @@ export type ResolversTypes = {
   OperationStatus: OperationStatus,
   IdiomCreateInput: IdiomCreateInput,
   OperationResult: ResolverTypeWrapper<OperationResult>,
+  CacheControlScope: CacheControlScope,
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -375,7 +382,11 @@ export type ResolversParentTypes = {
   OperationStatus: OperationStatus,
   IdiomCreateInput: IdiomCreateInput,
   OperationResult: OperationResult,
+  CacheControlScope: CacheControlScope,
 };
+
+export type CacheControlDirectiveResolver<Result, Parent, ContextType = any, Args = {   maxAge?: Maybe<Maybe<Scalars['Int']>>,
+  scope?: Maybe<Maybe<CacheControlScope>> }> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
 export type AuthDirectiveResolver<Result, Parent, ContextType = any, Args = {   requires?: Maybe<Maybe<UserRole>> }> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
@@ -514,6 +525,7 @@ export type Resolvers<ContextType = any> = {
 */
 export type IResolvers<ContextType = any> = Resolvers<ContextType>;
 export type DirectiveResolvers<ContextType = any> = {
+  cacheControl?: CacheControlDirectiveResolver<any, any, ContextType>,
   auth?: AuthDirectiveResolver<any, any, ContextType>,
 };
 

@@ -22,10 +22,10 @@ export class IdiomDataProvider {
 
     private activeIdiomFilter: FilterQuery<DbIdiom> = { isDeleted: { $ne: true } };
 
-    constructor(private mongodb: Db, private userDataProvider: UserDataProvider) {
-        this.changeProposalCollection = mongodb.collection('idiomChangeProposal');
+    constructor(private mongodb: Db, private userDataProvider: UserDataProvider, collectionPrefix: string) {
+        this.changeProposalCollection = mongodb.collection(collectionPrefix + 'idiomChangeProposal');
 
-        this.idiomCollection = mongodb.collection('idiom');
+        this.idiomCollection = mongodb.collection(collectionPrefix + 'idiom');
 
         // Not supported in CosmoDB Mongo facade
         //this.idiomCollection.createIndex({ title: "text" });

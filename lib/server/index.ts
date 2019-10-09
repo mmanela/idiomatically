@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import * as http from 'http';
-import * as express from 'express';
+import express from 'express';
 import { ApolloServer, makeExecutableSchema } from 'apollo-server-express';
 import typeDefs from './schema';
 import * as path from 'path';
@@ -8,20 +8,20 @@ import resolvers from './resolvers';
 import * as dotenv from 'dotenv';
 import { GlobalContext } from './model/types';
 import { MongoClient } from 'mongodb'
-import { IdiomDataProvider } from './dataProvider';
-import * as passport from 'passport';
+import passport from 'passport';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
-import * as expressSession from 'express-session';
+import expressSession from 'express-session';
 import { ensureLoggedIn } from 'connect-ensure-login';
-import * as MemoryStoreFactory from 'memorystore'
+import MemoryStoreFactory from 'memorystore'
 import { Profile } from 'passport';
-import * as cors from 'cors';
-import { User } from './_graphql/types';
+import cors from 'cors';
+import { User, UserRole } from './_graphql/types';
 import { ExpressContext } from 'apollo-server-express/dist/ApolloServer';
 import { AuthDirective } from './schemaDirectives/auth';
 import { setupSSR } from './ssr';
 import { createDataProviders } from './dataProvider/dataProviderFactory';
 import { DataProviders } from './dataProvider/dataProviders';
+import responseCachePlugin from 'apollo-server-plugin-response-cache';
 
 const start = async () => {
   try {
@@ -43,7 +43,7 @@ const start = async () => {
     const port = process.env.PORT || 8000;
     const mongoConnection = await MongoClient.connect(dbConnection, { useNewUrlParser: true, useUnifiedTopology: true });
     const mongodb = mongoConnection.db(process.env.MONGO_DB);
-    const dataProviders = createDataProviders(mongodb);
+    const dataProviders = createDataProviders(mongodb, isProd);
 
     const schema = makeExecutableSchema({
       typeDefs,
@@ -55,6 +55,17 @@ const start = async () => {
 
     const server = new ApolloServer({
       schema: schema,
+      cacheControl: {
+        defaultMaxAge: 1800, // Default to 30 min
+      },
+      plugins: [responseCachePlugin({
+        sessionId: (req) => (req.context.currentUser ? req.context.currentUser.id : null),
+        shouldReadFromCache: (req) => {
+          const context = <GlobalContext>req.context;
+          // Cache if no logged in or just a general user (not admin or contributor)
+          return !context.currentUser || !context.currentUser.hasEditPermission()
+        }
+      })],
       context: async (expressContext: ExpressContext) => {
         const req: express.Request = expressContext.req;
         return <GlobalContext>{

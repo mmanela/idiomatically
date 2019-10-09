@@ -66,6 +66,7 @@ function render(req: express.Request, res: express.Response, schema: GraphQLSche
   renderToStringWithData(WrappedApp).then(content => {
     const initialState = client.extract();
     getHtml(content, initialState, clientPath, (html: string) => {
+      // Note sure if this really does anything //res.setHeader('Cache-Control', 'public, max-age=1800');
       res.status(200);
       res.send(html);
       res.end();

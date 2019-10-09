@@ -2,8 +2,8 @@ import { gql } from 'apollo-server-express';
 
 export default gql`
   type Query {
-    idiomChangeProposal(id: ID): IdiomChangeProposal! @auth(requires: ADMIN)
-    idiomChangeProposals(cursor: String, filter: String, limit: Int): IdiomChangeProposalConnection! @auth(requires: ADMIN)
+    idiomChangeProposal(id: ID): IdiomChangeProposal! @auth(requires: ADMIN) @cacheControl(maxAge: 0)
+    idiomChangeProposals(cursor: String, filter: String, limit: Int): IdiomChangeProposalConnection! @auth(requires: ADMIN) @cacheControl(maxAge: 0)
   }
 
   type Mutation {

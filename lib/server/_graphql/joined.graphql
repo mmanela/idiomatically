@@ -1,3 +1,10 @@
+directive @cacheControl(maxAge: Int, scope: CacheControlScope) on OBJECT | FIELD_DEFINITION
+
+enum CacheControlScope {
+  PUBLIC
+  PRIVATE
+}
+
 enum UserRole {
   ADMIN
   CONTRIBUTOR
@@ -7,15 +14,15 @@ enum UserRole {
 directive @auth(requires: UserRole = ADMIN) on OBJECT | FIELD_DEFINITION
 
 type Query {
-  me: User
-  user(id: ID!): User @auth(requires: CONTRIBUTOR)
-  users(filter: String, limit: Int): [User]! @auth(requires: ADMIN)
-  idiom(id: ID, slug: String): Idiom
-  idioms(cursor: String, filter: String, locale: String, limit: Int): IdiomConnection!
-  languages: [Language!]!
-  countries(languageKey: String): [Country!]!
-  idiomChangeProposal(id: ID): IdiomChangeProposal! @auth(requires: ADMIN)
-  idiomChangeProposals(cursor: String, filter: String, limit: Int): IdiomChangeProposalConnection! @auth(requires: ADMIN)
+  me: User @cacheControl(maxAge: 0)
+  user(id: ID!): User @auth(requires: CONTRIBUTOR) @cacheControl(maxAge: 0)
+  users(filter: String, limit: Int): [User]! @auth(requires: ADMIN) @cacheControl(maxAge: 0)
+  idiom(id: ID, slug: String): Idiom @cacheControl(maxAge: 1800)
+  idioms(cursor: String, filter: String, locale: String, limit: Int): IdiomConnection! @cacheControl(maxAge: 1800)
+  languages: [Language!]! @cacheControl(maxAge: 3600)
+  countries(languageKey: String): [Country!]! @cacheControl(maxAge: 3600)
+  idiomChangeProposal(id: ID): IdiomChangeProposal! @auth(requires: ADMIN) @cacheControl(maxAge: 0)
+  idiomChangeProposals(cursor: String, filter: String, limit: Int): IdiomChangeProposalConnection! @auth(requires: ADMIN) @cacheControl(maxAge: 0)
 }
 
 type User {
@@ -119,14 +126,14 @@ type Idiom {
   updatedBy: User
 }
 
-type Language {
+type Language @cacheControl(maxAge: 3600) {
   languageName: String!
   languageNativeName: String!
   languageKey: String!
   countries: [Country!]!
 }
 
-type Country {
+type Country @cacheControl(maxAge: 3600) {
   countryKey: String!
   countryName: String!
   countryNativeName: String!

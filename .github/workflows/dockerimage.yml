@@ -11,4 +11,14 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Build the Docker image
+      env:
+        NODE_ENV: production 
+        PORT: 80
+        REACT_APP_SERVER: https://idiomatically.net
+        SERVER_URL: https://idiomatically.net
+        CLEINT_URL: https://idiomatically.net
+        MONGO_DB: Idiomatically
+        DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
       run: docker build . --file Dockerfile --tag idiomatically:$(date +%s) 

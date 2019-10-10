@@ -23,7 +23,7 @@ jobs:
         username: ${{ secrets.REGISTRY_USERNAME }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
 
-    - name: Build the Docker image
+    - name: Build and publish the Docker image
       env:
         NODE_ENV: production 
         PORT: 80
@@ -34,7 +34,9 @@ jobs:
         DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
         GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
         GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      run: docker build . --file Dockerfile -t idiomatically:${{ github.sha }} -t idiomatically893a.azurecr.io/idiomatically:production
+      run: | 
+        docker build . --file Dockerfile -t idiomatically:${{ github.sha }} -t idiomatically893a.azurecr.io/idiomatically:production
+        docker push idiomatically893a.azurecr.io/idiomatically:production
       
     - uses: azure/webapps-container-deploy@v1
       with:

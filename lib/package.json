@@ -33,6 +33,7 @@
     "cors": "^2.8.5",
     "countries-list": "^2.4.2",
     "country-language": "^0.1.7",
+    "cross-fetch": "^3.0.4",
     "customize-cra": "^0.2.13",
     "dotenv": "^7.0.0",
     "env-cmd": "^10.0.1",

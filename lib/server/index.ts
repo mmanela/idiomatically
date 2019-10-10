@@ -40,7 +40,7 @@ const start = async () => {
     const dbConnection = process.env.DB_CONNECTION;
     const googleClientId = process.env.GOOGLE_CLIENT_ID;
     const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const port = process.env.PORT || 8000;
+    const port = process.env.PORT ? parseInt(process.env.PORT) : 8000;
     const mongoConnection = await MongoClient.connect(dbConnection, { useNewUrlParser: true, useUnifiedTopology: true });
     const mongodb = mongoConnection.db(process.env.MONGO_DB);
     const dataProviders = createDataProviders(mongodb, isProd);
@@ -124,7 +124,7 @@ const start = async () => {
       })
     });
 
-    setupSSR(app, clientPath, schema, dataProviders);
+    setupSSR(app, clientPath, schema, dataProviders, port);
 
   } catch (e) {
     console.error(e);

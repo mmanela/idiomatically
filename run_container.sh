@@ -2,10 +2,10 @@
 
 if [[ $1 == "prod" ]]; then
     DockerFile="Dockerfile"
-    Port = 80
+    Port=80
 else
     DockerFile="Dockerfile.staging"
-    Port = 8000
+    Port=8000
 fi
 
 

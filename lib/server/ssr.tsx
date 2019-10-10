@@ -15,21 +15,23 @@ import { getSubTitle } from "../src/components/subTitles";
 import { ApolloProvider } from "@apollo/react-common";
 import { DataProviders } from "./dataProvider/dataProviders";
 import { GlobalContext, UserModel } from "./model/types";
+import { createHttpLink } from 'apollo-link-http';
+import fetch from 'cross-fetch';
 
 // When running in staging or prod we setup to run using SSR for improved performance
-export function setupSSR(app: express.Application, clientPath: string, schema: GraphQLSchema, dataProviders: DataProviders) {
+export function setupSSR(app: express.Application, clientPath: string, schema: GraphQLSchema, dataProviders: DataProviders, localPort: number) {
   app.use("^/$", (req, res, next) => {
-    render(req, res, schema, dataProviders, clientPath);
+    render(req, res, schema, dataProviders, clientPath, localPort);
   });
 
   app.use(express.static(path.resolve(clientPath), { maxAge: "30d" }));
 
   app.use("*", (req, res, next) => {
-    render(req, res, schema, dataProviders, clientPath);
+    render(req, res, schema, dataProviders, clientPath, localPort);
   });
 }
 
-function render(req: express.Request, res: express.Response, schema: GraphQLSchema, dataProviders: DataProviders, clientPath: string) {
+function render(req: express.Request, res: express.Response, schema: GraphQLSchema, dataProviders: DataProviders, clientPath: string, localPort: number) {
   const cache = new InMemoryCache();
 
   const subTitle = getSubTitle();
@@ -39,12 +41,20 @@ function render(req: express.Request, res: express.Response, schema: GraphQLSche
   };
   const client = new ApolloClient({
     ssrMode: true,
+    link: createHttpLink({
+      uri: `http://localhost:${localPort}/graphql`,
+      credentials: 'same-origin',
+      headers: {
+        cookie: req.header('Cookie'),
+      },
+      fetch: fetch
+    }),
     // Remember that this is the interface the SSR server will use to connect to the
     // API server, so we need to ensure it isn't firewalled, etc
-    link: new SchemaLink({
+   /* link: new SchemaLink({
       schema,
       context: globalContext
-    }),
+    }),*/
     cache: cache
   });
 

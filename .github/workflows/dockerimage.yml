@@ -9,7 +9,20 @@ jobs:
     runs-on: ubuntu-latest
  
     steps:
-    - uses: actions/checkout@v1
+    - name: 'Checkout Github Action' 
+      uses: actions/checkout@v1
+      
+    - name: 'Login via Azure CLI'
+      uses: azure/actions/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - uses: azure/docker-login@v1
+      with:
+        login-server: idiomatically893a.azurecr.io
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+
     - name: Build the Docker image
       env:
         NODE_ENV: production 
@@ -21,4 +34,13 @@ jobs:
         DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
         GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
         GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      run: docker build . --file Dockerfile --tag idiomatically:$(date +%s) 
+      run: docker build . --file Dockerfile -t idiomatically:${{ github.sha }} -t idiomatically893a.azurecr.io/idiomatically:production
+      
+    - uses: azure/webapps-container-deploy@v1
+      with:
+        app-name: 'Idiomatically'
+        images: 'idiomatically893a.azurecr.io/idiomatically:production'
+    
+    - name: Azure logout
+      run: |
+        az logout

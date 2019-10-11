@@ -9,6 +9,40 @@ jobs:
     runs-on: ubuntu-latest
  
     steps:
-    - uses: actions/checkout@v1
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag idiomatically:$(date +%s) 
+    - name: 'Checkout Github Action' 
+      uses: actions/checkout@v1
+      
+    - name: 'Login via Azure CLI'
+      uses: azure/actions/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - uses: azure/docker-login@v1
+      with:
+        login-server: idiomatically893a.azurecr.io
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+
+    - name: Build and publish the Docker image
+      env:
+        NODE_ENV: production 
+        PORT: 80
+        REACT_APP_SERVER: https://idiomatically.net
+        SERVER_URL: https://idiomatically.net
+        CLIENT_URL: https://idiomatically.net
+        MONGO_DB: Idiomatically
+        DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
+        GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      run: | 
+        docker build . --file Dockerfile -t idiomatically:${{ github.sha }} -t idiomatically893a.azurecr.io/idiomatically:production -e PORT -e NODE_ENV -e REACT_APP_SERVER -e SERVER_URL -e CLIENT_URL -e MONGO_DB -e DB_CONNECTION -e GOOGLE_CLIENT_ID -e GOOGLE_CLIENT_SECRET
+        docker push idiomatically893a.azurecr.io/idiomatically:production
+      
+    - uses: azure/webapps-container-deploy@v1
+      with:
+        app-name: 'Idiomatically'
+        images: 'idiomatically893a.azurecr.io/idiomatically:production'
+    
+    - name: Azure logout
+      run: |
+        az logout

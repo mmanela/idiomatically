@@ -2,6 +2,8 @@ FROM node:lts-alpine
 
 LABEL NAME=idiom
 
+ENV REACT_APP_SERVER https://idiomatically.net
+
 # Setup app
 WORKDIR /usr/src/app
 COPY lib/package*.json ./

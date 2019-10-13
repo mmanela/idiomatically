@@ -83,15 +83,16 @@ const renderIdiomListItem = (item: GetIdiomListQuery_idioms_edges) => {
     equivalentsCount = item.node.equivalents.length;
   const flagElement = <LanguageFlags languageInfo={idiom.language} showLabel={true} layoutMode="vertical" compactMode />;
 
-  let equivalentIdiomContent = "";
+  let equivalentIdiomContent: React.ReactNode;
   if (equivalentsCount === 1) {
     equivalentIdiomContent = `1 equivalent idiom`;
   } else if (equivalentsCount > 1) {
     equivalentIdiomContent = `${idiom.equivalents.length} equivalent idioms`;
   }
+  equivalentIdiomContent = <div className="equivalentCount">{equivalentIdiomContent}</div>;
 
   return (
-    <List.Item key={idiom.slug} extra={equivalentIdiomContent}>
+    <List.Item key={idiom.slug} extra={equivalentIdiomContent} className="idiomListItem">
       <List.Item.Meta
         className="idiomListDetails"
         title={<Link to={`/idioms/${idiom.slug}`}>{idiom.title}</Link>}

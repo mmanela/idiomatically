@@ -3,10 +3,20 @@
 .navCommandBar {
   border-bottom: none;
   align-self: flex-start;
+  width: 100%;
+}
 
-  .userMenuItem {
-    .profileImage {
-      margin-right: 10px;
+.ant-menu-item {
+  .profileImage {
+    margin-right: 10px;
+  }
+
+  .ant-btn {
+    padding-left: 0;
+    padding-right: 0;
+
+    & > .anticon + span {
+      margin-left: 0;
     }
   }
 }

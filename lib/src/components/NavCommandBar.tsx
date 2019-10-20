@@ -9,19 +9,12 @@ export interface NavCommandBarProps {}
 
 type NavBarCombinedProps = RouteComponentProps<any> & NavCommandBarProps;
 
-export const NavCommandBar: React.StatelessComponent<
-  NavBarCombinedProps
-> = props => {
+export const NavCommandBar: React.StatelessComponent<NavBarCombinedProps> = props => {
   const { currentUser } = useCurrentUser();
   const isLoggedIn = !!currentUser;
 
   return (
-    <Menu
-      onClick={handleClick}
-      mode="horizontal"
-      selectable={false}
-      className="navCommandBar"
-    >
+    <Menu onClick={handleClick} mode="horizontal" selectable={false} className="navCommandBar">
       <Menu.Item key="home">
         <Link to="/">
           <Icon type="home" />
@@ -34,24 +27,7 @@ export const NavCommandBar: React.StatelessComponent<
           About
         </Link>
       </Menu.Item>
-      <Menu.Item key="user" className="userMenuItem">
-        {!isLoggedIn && (
-          <a href={`${process.env.REACT_APP_SERVER}/auth/google`}>
-            <Icon type="login" />
-            Login
-          </a>
-        )}
-        {isLoggedIn && (
-          <Link to="/me">
-            <Avatar
-              src={currentUser!.avatar || ""}
-              size="small"
-              className="profileImage"
-            />
-            {currentUser!.name}
-          </Link>
-        )}
-      </Menu.Item>
+
       {isLoggedIn && (
         <Menu.Item>
           <Button
@@ -62,10 +38,24 @@ export const NavCommandBar: React.StatelessComponent<
               props.history.push("/new");
             }}
           >
-            Add an Idiom
+            Add an idiom
           </Button>
         </Menu.Item>
       )}
+      <Menu.Item key="user" className="userMenuItem">
+        {!isLoggedIn && (
+          <a href={`${process.env.REACT_APP_SERVER}/auth/google`}>
+            <Icon type="login" />
+            Login
+          </a>
+        )}
+        {isLoggedIn && (
+          <Link to="/me">
+            <Avatar src={currentUser!.avatar || ""} size="small" className="profileImage" />
+            {currentUser!.name}
+          </Link>
+        )}
+      </Menu.Item>
     </Menu>
   );
 };

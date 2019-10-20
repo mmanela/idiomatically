@@ -33,7 +33,10 @@ export interface IdiomListViewProps {
 export const IdiomListView: React.StatelessComponent<IdiomListViewProps> = props => {
   const { filter } = props;
   const [pageNumber, setPageNumber] = React.useState(1);
-  const [queryPage, loadResult] = useLazyQuery<GetIdiomListQuery, GetIdiomListQueryVariables>(getIdiomListQuery);
+  const [lastFilter, setLastFilter] = React.useState(props.filter);
+  const [queryPage, loadResult] = useLazyQuery<GetIdiomListQuery, GetIdiomListQueryVariables>(getIdiomListQuery, {
+    fetchPolicy: "cache-and-network"
+  });
   const pageSize = 10;
 
   // Based on the page number we get from state we calculate the bounds of the cursors
@@ -42,15 +45,15 @@ export const IdiomListView: React.StatelessComponent<IdiomListViewProps> = props
   const currCursorNum = (pageNumber - 1) * pageSize;
   const nextCursorNum = pageNumber * pageSize;
   const incomingEndCursorNum =
-    loadResult.data && loadResult.data.idioms.totalCount > 0
-      ? Number.parseInt(loadResult.data.idioms.pageInfo.endCursor)
-      : null;
+    loadResult.data && loadResult.data.idioms.totalCount > 0 ? Number.parseInt(loadResult.data.idioms.pageInfo.endCursor) : null;
   const changePage =
     incomingEndCursorNum != null && !(currCursorNum < incomingEndCursorNum && nextCursorNum >= incomingEndCursorNum);
-  if (!loadResult.called || (!loadResult.loading && loadResult.data && changePage)) {
+  const filterChanged = props.filter !== lastFilter;
+  if (!loadResult.called || (!loadResult.loading && loadResult.data && changePage) || filterChanged) {
     queryPage({
       variables: { filter, limit: pageSize, cursor: currCursorNum.toString() }
     });
+    setLastFilter(props.filter);
   }
   if (loadResult.loading) return <Spin delay={500} className="middleSpinner" tip="Loading..." />;
   if (loadResult.error) return <Alert message="Error" type="error" description={loadResult.error.message} showIcon />;

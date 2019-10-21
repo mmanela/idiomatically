@@ -1,5 +1,5 @@
 const subTitles = [
-  "Taking language with a grain of salt",
+  "Taking it with a grain of salt",
   "The horse of a different color",
   "The pot calling the kettle black",
   "Reaping what it sows",
@@ -14,7 +14,8 @@ const subTitles = [
   "Crying over spilt milk",
   "Catching more flies with honey than with vinegar",
   "Looking before it leaps",
-  "Saving up for a rainy-day"
+  "Saving up for a rainy-day", 
+  "Looking in a gift horse's mouth" 
 ];
 
 export const getSubTitle = () =>

@@ -58,7 +58,7 @@ export const IdiomListView: React.StatelessComponent<IdiomListViewProps> = props
   if (loadResult.loading) return <Spin delay={500} className="middleSpinner" tip="Loading..." />;
   if (loadResult.error) return <Alert message="Error" type="error" description={loadResult.error.message} showIcon />;
   if (!loadResult.data || loadResult.data.idioms.edges.length <= 0) {
-    return <Empty image={Empty.PRESENTED_IMAGE_DEFAULT} description="You looked for a needle in a haystack and didn't find it" />;
+    return <Empty image={Empty.PRESENTED_IMAGE_DEFAULT} description="Could not find a needle in the haystack." />;
   }
 
   return (

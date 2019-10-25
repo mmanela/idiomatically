@@ -19,6 +19,7 @@ export default gql`
   type IdiomChangeProposalConnection {
     edges: [IdiomChangeProposalEdge!]!
     pageInfo: PageInfo!
+    totalCount: Int!
   }
   
   type IdiomChangeProposalEdge {

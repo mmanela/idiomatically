@@ -2,7 +2,7 @@ import * as React from "react";
 import { Modal } from "antd";
 import { Redirect } from "react-router";
 
-const content: string = `Thanks for suggesting the change. We will review it and if all looks good, it will be published.`;
+const content: string = `Thanks for suggesting the change, we will review it shortly.`;
 function getContent(secondsToGo: number) {
   return (
     <>

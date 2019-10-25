@@ -154,7 +154,7 @@ export function commonFormItems(
         </Form.Item>
       )}
 
-      {!isEnglish && (
+      {!isEnglish && !isCreate && (
         <Form.Item
           label={
             <span>

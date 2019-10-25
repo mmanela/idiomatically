@@ -1,5 +1,5 @@
 import { Db, Collection, ObjectID, FilterQuery } from 'mongodb'
-import { Idiom, IdiomCreateInput, IdiomUpdateInput, QueryIdiomsArgs, OperationResult, IdiomOperationResult, OperationStatus, QueryIdiomArgs } from '../_graphql/types';
+import { Idiom, IdiomCreateInput, IdiomUpdateInput, QueryIdiomsArgs, OperationResult, IdiomOperationResult, OperationStatus, QueryIdiomArgs, IdiomChangeProposal, QueryIdiomChangeProposalsArgs } from '../_graphql/types';
 import { Languages } from './languages'
 import { UserModel, IdiomExpandOptions } from '../model/types';
 import { DbIdiom, mapDbIdiom, DbIdiomChangeProposal, IdiomProposalType } from './mapping';
@@ -39,10 +39,51 @@ export class IdiomDataProvider {
     private activeOnly(idiomFilter: FilterQuery<DbIdiom>): FilterQuery<DbIdiom> {
         const active = this.activeIdiomFilter;
 
-        if (idiomFilter instanceof ObjectID) {
-            idiomFilter = { _id: { $eq: idiomFilter } };
+        if (idiomFilter) {
+            if (idiomFilter instanceof ObjectID) {
+                idiomFilter = { _id: { $eq: idiomFilter } };
+            }
+            return { $and: [active, idiomFilter] };
         }
-        return { $and: [active, idiomFilter] };
+        else {
+            return active;
+        }
+    }
+
+    async queryIdiomChangeProposals(args: QueryIdiomChangeProposalsArgs): Promise<Paged<IdiomChangeProposal>> {
+        const filter = args && args.filter ? args.filter : undefined;
+        const limit = args && args.limit ? args.limit : 50;
+        let skip = args && args.cursor && Number.parseInt(args.cursor);
+        if (isNaN(skip)) {
+            skip = 0;
+        }
+
+        let totalCount = null;
+        let dbProposals: DbIdiomChangeProposal[];
+        let findFilter: FilterQuery<DbIdiom>;
+        let sortObj: object = { createdAt: -1 };
+
+        if (filter) {
+            const filterQuery = { type: { $eq: filter } };
+            findFilter = filterQuery;
+        }
+
+        totalCount = await this.changeProposalCollection.countDocuments(findFilter);
+        dbProposals = await this.changeProposalCollection
+            .find(findFilter)
+            .sort(sortObj)
+            .skip(skip)
+            .limit(limit)
+            .toArray();
+
+
+        return {
+            totalCount: totalCount,
+            limit: limit,
+            skip: skip,
+            count: dbProposals.length,
+            result: dbProposals.map<IdiomChangeProposal>(proposal => { return { id: proposal._id.toHexString(), body: JSON.stringify(proposal) } })
+        };
     }
 
     async deleteIdiom(currentUser: UserModel, idiomId: string): Promise<OperationResult> {
@@ -359,13 +400,8 @@ export class IdiomDataProvider {
             sortObj = { title: 1 };
         }
 
-        if (findFilter) {
-            findFilter = this.activeOnly(findFilter);
-            totalCount = await this.idiomCollection.countDocuments(findFilter);
-        }
-        else {
-            totalCount = await this.idiomCollection.estimatedDocumentCount();
-        }
+        findFilter = this.activeOnly(findFilter);
+        totalCount = await this.idiomCollection.countDocuments(findFilter);
 
         dbIdioms = await this.idiomCollection
             .find(findFilter)

@@ -52,6 +52,7 @@ export type IdiomChangeProposalConnection = {
    __typename?: 'IdiomChangeProposalConnection',
   edges: Array<IdiomChangeProposalEdge>,
   pageInfo: PageInfo,
+  totalCount: Scalars['Int'],
 };
 
 export type IdiomChangeProposalEdge = {
@@ -421,6 +422,7 @@ export type IdiomChangeProposalResolvers<ContextType = any, ParentType extends R
 export type IdiomChangeProposalConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IdiomChangeProposalConnection'] = ResolversParentTypes['IdiomChangeProposalConnection']> = {
   edges?: Resolver<Array<ResolversTypes['IdiomChangeProposalEdge']>, ParentType, ContextType>,
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>,
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>,
 };
 
 export type IdiomChangeProposalEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IdiomChangeProposalEdge'] = ResolversParentTypes['IdiomChangeProposalEdge']> = {

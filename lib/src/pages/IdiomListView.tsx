@@ -34,9 +34,7 @@ export const IdiomListView: React.StatelessComponent<IdiomListViewProps> = props
   const { filter } = props;
   const [pageNumber, setPageNumber] = React.useState(1);
   const [lastFilter, setLastFilter] = React.useState(props.filter);
-  const [queryPage, loadResult] = useLazyQuery<GetIdiomListQuery, GetIdiomListQueryVariables>(getIdiomListQuery, {
-    fetchPolicy: "cache-and-network"
-  });
+  const [queryPage, loadResult] = useLazyQuery<GetIdiomListQuery, GetIdiomListQueryVariables>(getIdiomListQuery);
   const pageSize = 10;
 
   // Based on the page number we get from state we calculate the bounds of the cursors

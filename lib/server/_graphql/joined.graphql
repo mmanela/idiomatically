@@ -49,11 +49,11 @@ type Login @auth(requires: ADMIN) {
 type Mutation {
   updateIdiom(idiom: IdiomUpdateInput!): IdiomOperationResult! @auth(requires: GENERAL)
   createIdiom(idiom: IdiomCreateInput!): IdiomOperationResult! @auth(requires: GENERAL)
-  deleteIdiom(idiomId: ID!): OperationResult! @auth(requires: ADMIN)
-  addEquivalent(idiomId: ID!, equivalentId: ID!): OperationResult! @auth(requires: GENERAL)
-  removeEquivalent(idiomId: ID!, equivalentId: ID!): OperationResult! @auth(requires: GENERAL)
-  acceptIdiomChangeProposal(proposalId: ID!): Boolean! @auth(requires: ADMIN)
-  rejectIdiomChangeProposal(proposalId: ID!): Boolean! @auth(requires: ADMIN)
+  deleteIdiom(idiomId: ID!): IdiomOperationResult! @auth(requires: ADMIN)
+  addEquivalent(idiomId: ID!, equivalentId: ID!): IdiomOperationResult! @auth(requires: GENERAL)
+  removeEquivalent(idiomId: ID!, equivalentId: ID!): IdiomOperationResult! @auth(requires: GENERAL)
+  acceptIdiomChangeProposal(proposalId: ID!, body: String): IdiomOperationResult! @auth(requires: ADMIN)
+  rejectIdiomChangeProposal(proposalId: ID!): IdiomOperationResult! @auth(requires: ADMIN)
 }
 
 enum OperationStatus {

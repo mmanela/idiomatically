@@ -1,19 +1,11 @@
 import { Db, Collection, ObjectID, FilterQuery } from 'mongodb'
-import { Idiom, IdiomCreateInput, IdiomUpdateInput, QueryIdiomsArgs, OperationResult, IdiomOperationResult, OperationStatus, QueryIdiomArgs, IdiomChangeProposal, QueryIdiomChangeProposalsArgs } from '../_graphql/types';
+import { Idiom, IdiomCreateInput, IdiomUpdateInput, QueryIdiomsArgs, OperationResult, IdiomOperationResult, OperationStatus, QueryIdiomArgs } from '../_graphql/types';
 import { Languages } from './languages'
 import { UserModel, IdiomExpandOptions } from '../model/types';
-import { DbIdiom, mapDbIdiom, DbIdiomChangeProposal, IdiomProposalType } from './mapping';
+import { DbIdiom, mapDbIdiom, DbIdiomChangeProposal, IdiomProposalType, Paged } from './mapping';
 import { transliterate, slugify } from 'transliteration';
 import { escapeRegex } from './utils';
 import { UserDataProvider } from './userDataProvider';
-
-export type Paged<T> = {
-    result: T[],
-    limit: number,
-    skip: number,
-    count: number,
-    totalCount: number
-}
 
 export class IdiomDataProvider {
 
@@ -50,50 +42,14 @@ export class IdiomDataProvider {
         }
     }
 
-    async queryIdiomChangeProposals(args: QueryIdiomChangeProposalsArgs): Promise<Paged<IdiomChangeProposal>> {
-        const filter = args && args.filter ? args.filter : undefined;
-        const limit = args && args.limit ? args.limit : 50;
-        let skip = args && args.cursor && Number.parseInt(args.cursor);
-        if (isNaN(skip)) {
-            skip = 0;
-        }
-
-        let totalCount = null;
-        let dbProposals: DbIdiomChangeProposal[];
-        let findFilter: FilterQuery<DbIdiom>;
-        let sortObj: object = { createdAt: -1 };
-
-        if (filter) {
-            const filterQuery = { type: { $eq: filter } };
-            findFilter = filterQuery;
-        }
-
-        totalCount = await this.changeProposalCollection.countDocuments(findFilter);
-        dbProposals = await this.changeProposalCollection
-            .find(findFilter)
-            .sort(sortObj)
-            .skip(skip)
-            .limit(limit)
-            .toArray();
-
-
-        return {
-            totalCount: totalCount,
-            limit: limit,
-            skip: skip,
-            count: dbProposals.length,
-            result: dbProposals.map<IdiomChangeProposal>(proposal => { return { id: proposal._id.toHexString(), body: JSON.stringify(proposal) } })
-        };
-    }
-
-    async deleteIdiom(currentUser: UserModel, idiomId: string): Promise<OperationResult> {
+    async deleteIdiom(currentUser: UserModel, idiomId: string | ObjectID, forceWrite?: boolean): Promise<IdiomOperationResult> {
         if (!idiomId) {
             throw new Error("Invalid idiomId");
         }
 
         const objectId = new ObjectID(idiomId);
 
-        if (this.isUserProvisional(currentUser)) {
+        if (this.isUserProvisional(currentUser) && !forceWrite) {
             const proposal: DbIdiomChangeProposal = {
                 userId: new ObjectID(currentUser.id),
                 createdAt: new Date(new Date().toUTCString()),
@@ -105,7 +61,9 @@ export class IdiomDataProvider {
         }
         else {
             const deleteResult = await this.idiomCollection.deleteOne({ _id: objectId });
-            await this.idiomCollection.updateMany({ equivalents: objectId }, { $pull: { equivalents: objectId } });
+            const itemsToUpdate = await this.idiomCollection.find({ equivalents: objectId }).toArray();
+            const itemIdsToUpdate = itemsToUpdate.map(x => x._id);
+            await this.idiomCollection.updateMany({ _id: { $in: itemIdsToUpdate } }, { $pull: { equivalents: objectId } });
 
             return deleteResult && deleteResult.deletedCount && deleteResult.deletedCount > 0
                 ? this.operationResult(OperationStatus.Success) : this.operationResult(OperationStatus.Failure);
@@ -148,35 +106,43 @@ export class IdiomDataProvider {
             countryKeys: createInput.countryKeys,
             transliteration: createInput.transliteration,
             literalTranslation: createInput.literalTranslation,
-            createdAt: new Date(new Date().toUTCString()),
             createdById: new ObjectID(currentUser.id)
         };
 
+        const relatedIdiomId = createInput.relatedIdiomId;
+
+        return this.createIdiomInternal(false, currentUser, dbIdiom, relatedIdiomId, idiomExpandOptions);
+    }
+
+    async createIdiomInternal(forceWrite: boolean, currentUser: UserModel, dbIdiom: DbIdiom, relatedIdiomId: string | ObjectID, idiomExpandOptions?: IdiomExpandOptions): Promise<IdiomOperationResult> {
+
+        dbIdiom.createdAt = new Date(new Date().toUTCString());
         this.validateAndNormalize(true, dbIdiom);
 
         // Look for dupe titles or slugs
-        const titleRegex = "^" + escapeRegex(createInput.title) + "$";
+        const titleRegex = "^" + escapeRegex(dbIdiom.title) + "$";
         const titleRegexObj = { $regex: titleRegex, $options: 'i' };
-        const dupeFilter = this.activeOnly({ $or: [{ title: titleRegexObj }, { slug: { $eq: idiomSlug } }] });
+        const dupeFilter = this.activeOnly({ $or: [{ title: titleRegexObj }, { slug: { $eq: dbIdiom.slug } }] });
         const dupeIdioms = await this.idiomCollection.find(dupeFilter).toArray();
         if (dupeIdioms) {
 
             // If dupe title, throw. Ideally this could be a fuzzy smart match in the future
-            if (dupeIdioms.some(idiom => idiom.title === createInput.title)) {
+            if (dupeIdioms.some(idiom => idiom.title === dbIdiom.title)) {
                 throw new Error("This idiom already exists");
             }
 
             // We could technically de-dupe the slug but I am not sure a real scenario exists here
             // where we get dupe so will handle when it arised.
-            if (dupeIdioms.some(idiom => idiom.slug === idiomSlug)) {
+            if (dupeIdioms.some(idiom => idiom.slug === dbIdiom.slug)) {
                 throw new Error("This idiom slug exists");
             }
         }
 
-        if (this.isUserProvisional(currentUser)) {
+        if (this.isUserProvisional(currentUser) && !forceWrite) {
             const proposal: DbIdiomChangeProposal = {
                 userId: new ObjectID(currentUser.id),
                 createdAt: new Date(new Date().toUTCString()),
+                equivalentId: relatedIdiomId ? new ObjectID(relatedIdiomId) : null,
                 type: IdiomProposalType.CreateIdiom,
                 idiomToCreate: dbIdiom
             };
@@ -191,8 +157,8 @@ export class IdiomDataProvider {
                 throw new Error("Failed to insert idiom");
             }
 
-            if (createInput.relatedIdiomId) {
-                await this.addIdiomEquivalent(currentUser, result.insertedId, createInput.relatedIdiomId);
+            if (relatedIdiomId) {
+                await this.addIdiomEquivalent(currentUser, result.insertedId, relatedIdiomId, forceWrite);
             }
 
             const resIdiom = await this.getIdiom(result.insertedId, idiomExpandOptions);
@@ -209,8 +175,6 @@ export class IdiomDataProvider {
             throw new Error("Invalid idiom");
         }
 
-        const objId = new ObjectID(updateInput.id);
-        const dbIdiom = await this.getDbIdiom(objId);
 
         const updates: Partial<DbIdiom> = {};
         for (const key of Object.keys(updateInput)) {
@@ -220,12 +184,19 @@ export class IdiomDataProvider {
             }
         }
 
+        return await this.updateIdiomInternal(false, currentUser, updateInput.id, updates, idiomExpandOptions);
+    }
+
+    async updateIdiomInternal(forceWrite: boolean, currentUser: UserModel, idiomId: string | ObjectID, updates: Partial<DbIdiom>, idiomExpandOptions?: IdiomExpandOptions): Promise<IdiomOperationResult> {
+
+        const objId = new ObjectID(idiomId);
+        const dbIdiom = await this.getDbIdiom(objId);
         // Set the language key since we don't let you change it
         updates.languageKey = dbIdiom.languageKey;
 
         this.validateAndNormalize(false, updates);
 
-        if (updates.title && updateInput.title !== dbIdiom.title) {
+        if (updates.title && updates.title !== dbIdiom.title) {
             const titleRegex = "^" + escapeRegex(updates.title) + "$";
             const titleRegexObj = { $regex: titleRegex, $options: 'i' };
             const dupeFilter = this.activeOnly({ title: titleRegexObj, _id: { $ne: objId } });
@@ -240,18 +211,18 @@ export class IdiomDataProvider {
 
         updates.updatedAt = new Date(new Date().toUTCString());
         updates.updateById = new ObjectID(currentUser.id);
-        if (this.isUserProvisional(currentUser)) {
+        if (this.isUserProvisional(currentUser) && !forceWrite) {
             const proposal: DbIdiomChangeProposal = {
                 userId: new ObjectID(currentUser.id),
                 createdAt: new Date(new Date().toUTCString()),
                 type: IdiomProposalType.UpdateIdiom,
+                idiomId: objId,
                 idiomToUpdate: updates
             };
             const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
             return this.idiomOperationResult(OperationStatus.Pending);
         }
         else {
-
             const result = await this.idiomCollection.updateOne({ _id: objId }, { $set: updates });
 
             if (result.matchedCount <= 0) {
@@ -434,7 +405,7 @@ export class IdiomDataProvider {
         };
     }
 
-    async removeIdiomEquivalent(currentUser: UserModel, idiomId: string, equivalentId: string): Promise<OperationResult> {
+    async removeIdiomEquivalent(currentUser: UserModel, idiomId: string | ObjectID, equivalentId: string | ObjectID, forceWrite?: boolean): Promise<IdiomOperationResult> {
         if (!idiomId || !equivalentId) {
             throw new Error("Empty id passed");
         }
@@ -447,7 +418,7 @@ export class IdiomDataProvider {
             throw new Error("Failed to resolve both idioms");
         }
 
-        if (this.isUserProvisional(currentUser)) {
+        if (this.isUserProvisional(currentUser) && !forceWrite) {
             const proposal: DbIdiomChangeProposal = {
                 userId: new ObjectID(currentUser.id),
                 createdAt: new Date(new Date().toUTCString()),
@@ -468,7 +439,7 @@ export class IdiomDataProvider {
 
     }
 
-    async addIdiomEquivalent(currentUser: UserModel, idiomId: string | ObjectID, equivalentId: string | ObjectID): Promise<OperationResult> {
+    async addIdiomEquivalent(currentUser: UserModel, idiomId: string | ObjectID, equivalentId: string | ObjectID, forceWrite?: boolean): Promise<IdiomOperationResult> {
         if (!idiomId || !equivalentId) {
             throw new Error("Empty id passed");
         }
@@ -481,7 +452,7 @@ export class IdiomDataProvider {
             throw new Error("Fails to resolve both idioms");
         }
 
-        if (this.isUserProvisional(currentUser)) {
+        if (this.isUserProvisional(currentUser) && !forceWrite) {
             const proposal: DbIdiomChangeProposal = {
                 userId: new ObjectID(currentUser.id),
                 createdAt: new Date(new Date().toUTCString()),
@@ -513,7 +484,7 @@ export class IdiomDataProvider {
         };
     }
 
-    private operationResult(status: OperationStatus, message?: string): OperationResult {
+    private operationResult(status: OperationStatus, message?: string): IdiomOperationResult {
         if (status == OperationStatus.Pending) {
             message = message || "Change is pending approval, thanks!";
         }

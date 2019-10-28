@@ -8,12 +8,13 @@ export default gql`
 
   type Mutation {
     acceptIdiomChangeProposal(
-      proposalId: ID!
-    ): Boolean! @auth(requires: ADMIN)
+      proposalId: ID!,
+      body: String
+    ): IdiomOperationResult! @auth(requires: ADMIN)
 
     rejectIdiomChangeProposal(
       proposalId: ID!
-    ): Boolean! @auth(requires: ADMIN)
+    ): IdiomOperationResult! @auth(requires: ADMIN)
   }
 
   type IdiomChangeProposalConnection {

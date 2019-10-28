@@ -4,6 +4,14 @@ import { ObjectID, ObjectId } from 'mongodb';
 import { Languages } from './languages'
 
 
+export type Paged<T> = {
+    result: T[],
+    limit: number,
+    skip: number,
+    count: number,
+    totalCount: number
+}
+
 /**
  * Represents a proposed creation or update to an idiom
  */

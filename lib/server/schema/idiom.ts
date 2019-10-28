@@ -17,11 +17,11 @@ export default gql`
 
     deleteIdiom(
       idiomId: ID!
-    ): OperationResult! @auth(requires: ADMIN)
+    ): IdiomOperationResult! @auth(requires: ADMIN)
 
-    addEquivalent(idiomId:ID!, equivalentId: ID!): OperationResult! @auth(requires: GENERAL)
+    addEquivalent(idiomId:ID!, equivalentId: ID!): IdiomOperationResult! @auth(requires: GENERAL)
 
-    removeEquivalent(idiomId:ID!, equivalentId: ID!): OperationResult! @auth(requires: GENERAL)
+    removeEquivalent(idiomId:ID!, equivalentId: ID!): IdiomOperationResult! @auth(requires: GENERAL)
   }
 
 

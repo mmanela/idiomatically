@@ -123,11 +123,11 @@ export type Mutation = {
    __typename?: 'Mutation',
   updateIdiom: IdiomOperationResult,
   createIdiom: IdiomOperationResult,
-  deleteIdiom: OperationResult,
-  addEquivalent: OperationResult,
-  removeEquivalent: OperationResult,
-  acceptIdiomChangeProposal: Scalars['Boolean'],
-  rejectIdiomChangeProposal: Scalars['Boolean'],
+  deleteIdiom: IdiomOperationResult,
+  addEquivalent: IdiomOperationResult,
+  removeEquivalent: IdiomOperationResult,
+  acceptIdiomChangeProposal: IdiomOperationResult,
+  rejectIdiomChangeProposal: IdiomOperationResult,
 };
 
 
@@ -159,7 +159,8 @@ export type MutationRemoveEquivalentArgs = {
 
 
 export type MutationAcceptIdiomChangeProposalArgs = {
-  proposalId: Scalars['ID']
+  proposalId: Scalars['ID'],
+  body?: Maybe<Scalars['String']>
 };
 
 
@@ -353,8 +354,8 @@ export type ResolversTypes = {
   IdiomOperationResult: ResolverTypeWrapper<IdiomOperationResult>,
   OperationStatus: OperationStatus,
   IdiomCreateInput: IdiomCreateInput,
-  OperationResult: ResolverTypeWrapper<OperationResult>,
   CacheControlScope: CacheControlScope,
+  OperationResult: ResolverTypeWrapper<OperationResult>,
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -382,8 +383,8 @@ export type ResolversParentTypes = {
   IdiomOperationResult: IdiomOperationResult,
   OperationStatus: OperationStatus,
   IdiomCreateInput: IdiomCreateInput,
-  OperationResult: OperationResult,
   CacheControlScope: CacheControlScope,
+  OperationResult: OperationResult,
 };
 
 export type CacheControlDirectiveResolver<Result, Parent, ContextType = any, Args = {   maxAge?: Maybe<Maybe<Scalars['Int']>>,
@@ -465,11 +466,11 @@ export type LoginResolvers<ContextType = any, ParentType extends ResolversParent
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   updateIdiom?: Resolver<ResolversTypes['IdiomOperationResult'], ParentType, ContextType, RequireFields<MutationUpdateIdiomArgs, 'idiom'>>,
   createIdiom?: Resolver<ResolversTypes['IdiomOperationResult'], ParentType, ContextType, RequireFields<MutationCreateIdiomArgs, 'idiom'>>,
-  deleteIdiom?: Resolver<ResolversTypes['OperationResult'], ParentType, ContextType, RequireFields<MutationDeleteIdiomArgs, 'idiomId'>>,
-  addEquivalent?: Resolver<ResolversTypes['OperationResult'], ParentType, ContextType, RequireFields<MutationAddEquivalentArgs, 'idiomId' | 'equivalentId'>>,
-  removeEquivalent?: Resolver<ResolversTypes['OperationResult'], ParentType, ContextType, RequireFields<MutationRemoveEquivalentArgs, 'idiomId' | 'equivalentId'>>,
-  acceptIdiomChangeProposal?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationAcceptIdiomChangeProposalArgs, 'proposalId'>>,
-  rejectIdiomChangeProposal?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRejectIdiomChangeProposalArgs, 'proposalId'>>,
+  deleteIdiom?: Resolver<ResolversTypes['IdiomOperationResult'], ParentType, ContextType, RequireFields<MutationDeleteIdiomArgs, 'idiomId'>>,
+  addEquivalent?: Resolver<ResolversTypes['IdiomOperationResult'], ParentType, ContextType, RequireFields<MutationAddEquivalentArgs, 'idiomId' | 'equivalentId'>>,
+  removeEquivalent?: Resolver<ResolversTypes['IdiomOperationResult'], ParentType, ContextType, RequireFields<MutationRemoveEquivalentArgs, 'idiomId' | 'equivalentId'>>,
+  acceptIdiomChangeProposal?: Resolver<ResolversTypes['IdiomOperationResult'], ParentType, ContextType, RequireFields<MutationAcceptIdiomChangeProposalArgs, 'proposalId'>>,
+  rejectIdiomChangeProposal?: Resolver<ResolversTypes['IdiomOperationResult'], ParentType, ContextType, RequireFields<MutationRejectIdiomChangeProposalArgs, 'proposalId'>>,
 };
 
 export type OperationResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['OperationResult'] = ResolversParentTypes['OperationResult']> = {

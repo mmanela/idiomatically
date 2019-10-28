@@ -132,6 +132,28 @@ export interface GetIdiomQueryVariables {
 // This file was automatically generated and should not be edited.
 
 // ====================================================
+// GraphQL mutation operation: DeleteIdiomMutation
+// ====================================================
+
+export interface DeleteIdiomMutation_deleteIdiom {
+  __typename: "IdiomOperationResult";
+  status: OperationStatus;
+  message: string | null;
+}
+
+export interface DeleteIdiomMutation {
+  deleteIdiom: DeleteIdiomMutation_deleteIdiom;
+}
+
+export interface DeleteIdiomMutationVariables {
+  id: string;
+}
+
+/* tslint:disable */
+/* eslint-disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
 // GraphQL query operation: GetIdiomListQuery
 // ====================================================
 

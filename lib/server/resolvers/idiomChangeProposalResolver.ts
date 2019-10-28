@@ -2,12 +2,12 @@ import {
     QueryResolvers, MutationResolvers, PageInfo, QueryIdiomChangeProposalArgs, QueryIdiomChangeProposalsArgs, MutationRejectIdiomChangeProposalArgs, MutationAcceptIdiomChangeProposalArgs, IdiomChangeProposalConnection, IdiomChangeProposalEdge
 } from "../_graphql/types";
 import { GlobalContext } from '../model/types';
-import { GraphQLResolveInfo } from 'graphql';;
+import { GraphQLResolveInfo } from 'graphql';
 
 export default {
     Query: {
         idiomChangeProposals: async (parent, args: QueryIdiomChangeProposalsArgs, context: GlobalContext, info) => {
-            const response = await context.dataProviders.idiom.queryIdiomChangeProposals(args);
+            const response = await context.dataProviders.changeProposal.queryIdiomChangeProposals(args);
             const nextEndPosition = response.skip + response.count;
             const hasNextPage = nextEndPosition < response.totalCount;
             let pageInfo: PageInfo = {
@@ -40,11 +40,13 @@ export default {
 
     Mutation: {
         acceptIdiomChangeProposal: async (parent, args: MutationAcceptIdiomChangeProposalArgs, context: GlobalContext, info) => {
-            return null;
+            const response = context.dataProviders.changeProposal.acceptIdiomChangeProposal(args);
+            return response;
         },
 
         rejectIdiomChangeProposal: async (parent, args: MutationRejectIdiomChangeProposalArgs, context: GlobalContext, info) => {
-            return null;
+            const response = context.dataProviders.changeProposal.rejectIdiomChangeProposal(args);
+            return response;
         }
 
     } as MutationResolvers

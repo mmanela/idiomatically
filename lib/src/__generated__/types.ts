@@ -132,6 +132,73 @@ export interface GetIdiomQueryVariables {
 // This file was automatically generated and should not be edited.
 
 // ====================================================
+// GraphQL query operation: GetChangeProposalsQuery
+// ====================================================
+
+export interface GetChangeProposalsQuery_idiomChangeProposals_pageInfo {
+  __typename: "PageInfo";
+  endCursor: string;
+  hasNextPage: boolean;
+}
+
+export interface GetChangeProposalsQuery_idiomChangeProposals_edges_node {
+  __typename: "IdiomChangeProposal";
+  id: string;
+  type: string;
+  body: string;
+  createdBy: string;
+  title: string | null;
+}
+
+export interface GetChangeProposalsQuery_idiomChangeProposals_edges {
+  __typename: "IdiomChangeProposalEdge";
+  node: GetChangeProposalsQuery_idiomChangeProposals_edges_node;
+}
+
+export interface GetChangeProposalsQuery_idiomChangeProposals {
+  __typename: "IdiomChangeProposalConnection";
+  totalCount: number;
+  pageInfo: GetChangeProposalsQuery_idiomChangeProposals_pageInfo;
+  edges: GetChangeProposalsQuery_idiomChangeProposals_edges[];
+}
+
+export interface GetChangeProposalsQuery {
+  idiomChangeProposals: GetChangeProposalsQuery_idiomChangeProposals;
+}
+
+export interface GetChangeProposalsQueryVariables {
+  filter?: string | null;
+  limit?: number | null;
+  cursor?: string | null;
+}
+
+/* tslint:disable */
+/* eslint-disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
+// GraphQL mutation operation: AcceptChangeProposalMutation
+// ====================================================
+
+export interface AcceptChangeProposalMutation_rejectIdiomChangeProposal {
+  __typename: "IdiomOperationResult";
+  status: OperationStatus;
+  message: string | null;
+}
+
+export interface AcceptChangeProposalMutation {
+  rejectIdiomChangeProposal: AcceptChangeProposalMutation_rejectIdiomChangeProposal;
+}
+
+export interface AcceptChangeProposalMutationVariables {
+  id: string;
+}
+
+/* tslint:disable */
+/* eslint-disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
 // GraphQL mutation operation: DeleteIdiomMutation
 // ====================================================
 

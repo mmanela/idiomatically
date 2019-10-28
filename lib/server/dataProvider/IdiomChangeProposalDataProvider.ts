@@ -107,7 +107,15 @@ export class IdiomChangeProposalDataProvider {
             limit: limit,
             skip: skip,
             count: dbProposals.length,
-            result: dbProposals.map<IdiomChangeProposal>(proposal => { return { id: proposal._id.toHexString(), body: JSON.stringify(proposal) }; })
+            result: dbProposals.map<IdiomChangeProposal>(proposal => {
+                return {
+                    id: proposal._id.toHexString(),
+                    type: proposal.type,
+                    createdBy: proposal.userName,
+                    title: proposal.title,
+                    body: JSON.stringify(proposal)
+                };
+            })
         };
     }
 }

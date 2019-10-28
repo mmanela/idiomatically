@@ -52,6 +52,7 @@ export class IdiomDataProvider {
         if (this.isUserProvisional(currentUser) && !forceWrite) {
             const proposal: DbIdiomChangeProposal = {
                 userId: new ObjectID(currentUser.id),
+                userName: currentUser.name,
                 createdAt: new Date(new Date().toUTCString()),
                 type: IdiomProposalType.DeleteIdiom,
                 idiomId: objectId
@@ -141,10 +142,12 @@ export class IdiomDataProvider {
         if (this.isUserProvisional(currentUser) && !forceWrite) {
             const proposal: DbIdiomChangeProposal = {
                 userId: new ObjectID(currentUser.id),
+                userName: currentUser.name,
                 createdAt: new Date(new Date().toUTCString()),
                 equivalentId: relatedIdiomId ? new ObjectID(relatedIdiomId) : null,
                 type: IdiomProposalType.CreateIdiom,
-                idiomToCreate: dbIdiom
+                idiomToCreate: dbIdiom,
+                title: dbIdiom.title
             };
             const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
             return this.idiomOperationResult(OperationStatus.Pending);
@@ -214,10 +217,12 @@ export class IdiomDataProvider {
         if (this.isUserProvisional(currentUser) && !forceWrite) {
             const proposal: DbIdiomChangeProposal = {
                 userId: new ObjectID(currentUser.id),
+                userName: currentUser.name,
                 createdAt: new Date(new Date().toUTCString()),
                 type: IdiomProposalType.UpdateIdiom,
                 idiomId: objId,
-                idiomToUpdate: updates
+                idiomToUpdate: updates,
+                title: dbIdiom.title
             };
             const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
             return this.idiomOperationResult(OperationStatus.Pending);
@@ -421,6 +426,7 @@ export class IdiomDataProvider {
         if (this.isUserProvisional(currentUser) && !forceWrite) {
             const proposal: DbIdiomChangeProposal = {
                 userId: new ObjectID(currentUser.id),
+                userName: currentUser.name,
                 createdAt: new Date(new Date().toUTCString()),
                 type: IdiomProposalType.DeleteEquivalent,
                 idiomId: idiomObjId,
@@ -455,6 +461,7 @@ export class IdiomDataProvider {
         if (this.isUserProvisional(currentUser) && !forceWrite) {
             const proposal: DbIdiomChangeProposal = {
                 userId: new ObjectID(currentUser.id),
+                userName: currentUser.name,
                 createdAt: new Date(new Date().toUTCString()),
                 type: IdiomProposalType.AddEquivalent,
                 idiomId: idiomObjId,

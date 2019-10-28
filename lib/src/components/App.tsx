@@ -1,14 +1,7 @@
 import * as React from "react";
 import { Idiom } from "../pages/Idiom";
 import "./App.scss";
-import {
-  Switch,
-  Route,
-  Link,
-  RouteProps,
-  withRouter,
-  RouteComponentProps
-} from "react-router-dom";
+import { Switch, Route, Link, RouteProps, withRouter, RouteComponentProps } from "react-router-dom";
 import { Layout, Input } from "antd";
 import { IdiomListView } from "../pages/IdiomListView";
 import { NavCommandBar } from "./NavCommandBar";
@@ -17,6 +10,7 @@ import { About } from "../pages/About";
 import { NewIdiom } from "../pages/NewIdiom";
 import { RouteChildrenProps } from "react-router";
 import { UpdateIdiom } from "../pages/UpdateIdiom";
+import { ChangeProposals } from "../pages/ChangeProposals";
 const { Header, Footer, Content } = Layout;
 const { Search } = Input;
 
@@ -37,9 +31,7 @@ function AppInternal(props: RouteComponentProps<any> & AppProps) {
           placeholder="Find an idiom"
           size="large"
           enterButton
-          onSearch={value =>
-            props.history.push({ pathname: "/idioms", search: `?q=${value}` })
-          }
+          onSearch={value => props.history.push({ pathname: "/idioms", search: `?q=${value}` })}
         />
       </Header>
       <Content>
@@ -48,24 +40,17 @@ function AppInternal(props: RouteComponentProps<any> & AppProps) {
           <Route exact path="/about" component={About} />
           <Route exact path="/idioms" render={renderListView} />
           <Route exact path="/idioms/:slug" component={renderIdiom} />
-          <Route
-            exact
-            path="/new"
-            render={props => renderNewIdiomForm(props)}
-          />
-          <Route
-            exact
-            path="/idioms/:slug/update"
-            render={props => renderUpdateIdiomForm(props)}
-          />
+          <Route exact path="/new" render={props => renderNewIdiomForm(props)} />
+          <Route exact path="/idioms/:slug/update" render={props => renderUpdateIdiomForm(props)} />
           <Route exact path="/me" component={Profile} />
+          <Route exact path="/admin/proposals" component={ChangeProposals} />
         </Switch>
       </Content>
 
       <Footer>
-        <span>Created by Matthew Manela (For the </span>
+        <span>Created by Matthew Manela (I </span>
         <span className="heart">♥</span>
-        <span> of Idioms)</span>
+        <span> Idioms)</span>
       </Footer>
     </Layout>
   );

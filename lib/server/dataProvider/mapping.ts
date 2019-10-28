@@ -23,7 +23,9 @@ export interface DbIdiomChangeProposal {
     idiomToCreate?: DbIdiom,
     idiomToUpdate?: Partial<DbIdiom>,
     userId: ObjectID,
-    createdAt?: Date
+    createdAt?: Date,
+    userName: string
+    title?: string;
 }
 
 export enum IdiomProposalType {

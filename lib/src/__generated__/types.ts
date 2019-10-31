@@ -180,17 +180,40 @@ export interface GetChangeProposalsQueryVariables {
 // GraphQL mutation operation: AcceptChangeProposalMutation
 // ====================================================
 
-export interface AcceptChangeProposalMutation_rejectIdiomChangeProposal {
+export interface AcceptChangeProposalMutation_acceptIdiomChangeProposal {
   __typename: "IdiomOperationResult";
   status: OperationStatus;
   message: string | null;
 }
 
 export interface AcceptChangeProposalMutation {
-  rejectIdiomChangeProposal: AcceptChangeProposalMutation_rejectIdiomChangeProposal;
+  acceptIdiomChangeProposal: AcceptChangeProposalMutation_acceptIdiomChangeProposal;
 }
 
 export interface AcceptChangeProposalMutationVariables {
+  id: string;
+  body?: string | null;
+}
+
+/* tslint:disable */
+/* eslint-disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
+// GraphQL mutation operation: RejectChangeProposalMutation
+// ====================================================
+
+export interface RejectChangeProposalMutation_rejectIdiomChangeProposal {
+  __typename: "IdiomOperationResult";
+  status: OperationStatus;
+  message: string | null;
+}
+
+export interface RejectChangeProposalMutation {
+  rejectIdiomChangeProposal: RejectChangeProposalMutation_rejectIdiomChangeProposal;
+}
+
+export interface RejectChangeProposalMutationVariables {
   id: string;
 }
 

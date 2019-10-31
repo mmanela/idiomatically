@@ -2,18 +2,18 @@ import * as React from "react";
 import {
   GetChangeProposalsQuery,
   GetChangeProposalsQueryVariables,
-  GetChangeProposalsQuery_idiomChangeProposals_edges
+  GetChangeProposalsQuery_idiomChangeProposals_edges,
+  AcceptChangeProposalMutation,
+  AcceptChangeProposalMutationVariables,
+  RejectChangeProposalMutation,
+  RejectChangeProposalMutationVariables
 } from "../__generated__/types";
 import gql from "graphql-tag";
 import "./ChangeProposals.scss";
 import { Alert, Spin, List, Empty, Icon } from "antd";
 import { Link } from "react-router-dom";
-import { useLazyQuery } from "@apollo/react-hooks";
-
-// @ts-ignore
-import JSONInput from "react-json-editor-ajrm";
-// @ts-ignore
-import locale from "react-json-editor-ajrm/locale/en";
+import { useLazyQuery, useMutation } from "@apollo/react-hooks";
+import { JsonEditor } from "../components/JsonEditor";
 
 export const getChangeProposalsQuery = gql`
   query GetChangeProposalsQuery($filter: String, $limit: Int, $cursor: String) {
@@ -45,8 +45,8 @@ export const acceptChangeProposalQuery = gql`
   }
 `;
 
-export const rejetChangeProposalQuery = gql`
-  mutation AcceptChangeProposalMutation($id: ID!) {
+export const rejectChangeProposalQuery = gql`
+  mutation RejectChangeProposalMutation($id: ID!) {
     rejectIdiomChangeProposal(proposalId: $id) {
       status
       message
@@ -57,18 +57,6 @@ export const rejetChangeProposalQuery = gql`
 export interface ChangeProposalsProps {
   filter: string | null;
 }
-
-const editorTheme = {
-  default: "#D4D4D4",
-  background: "#FCFDFD",
-  background_warning: "#FEECEB",
-  string: "#ff6600",
-  number: "#70CE35",
-  colon: "#49B8F7",
-  keys: "#096dd9",
-  keys_whiteSpace: "#835FB6",
-  primitive: "#386FA4"
-};
 
 export const ChangeProposals: React.StatelessComponent<ChangeProposalsProps> = props => {
   const { filter } = props;
@@ -130,41 +118,57 @@ interface ChangeProposalItemProps {
 export const ChangeProposalItem: React.StatelessComponent<ChangeProposalItemProps> = props => {
   const proposal = props.item.node;
   const [proposalBody, setProposalBody] = React.useState(proposal.body);
+  const [acceptProposalMutation, acceptProposalMutationResult] = useMutation<
+    AcceptChangeProposalMutation,
+    AcceptChangeProposalMutationVariables
+  >(acceptChangeProposalQuery);
+  const [rejectProposalMutation, rejectProposalMutationResult] = useMutation<
+    RejectChangeProposalMutation,
+    RejectChangeProposalMutationVariables
+  >(rejectChangeProposalQuery);
+
   const title = proposal.title ? `${proposal.id} - ${proposal.title}` : proposal.id;
   const extra = <div className="proposalType">{proposal.type}</div>;
+  const json = JSON.parse(proposalBody || proposal.body || "{}");
 
-  const editor = (
-    <JSONInput
-      id={`pid-${proposal.id}`}
-      placeholder={JSON.parse(proposal.body)}
-      colors={editorTheme}
-      locale={locale}
-      height="400px"
-      onChange={(value: any) => {
-        setProposalBody(value.plainText);
-      }}
-    />
-  );
+  const editor = <JsonEditor json={json} onChangeText={code => setProposalBody(code)} />;
+
+  const acceptProposal = () => {
+    acceptProposalMutation({ variables: { id: proposal.id, body: proposalBody } });
+  };
+
+  const rejectProposal = () => {
+    rejectProposalMutation({ variables: { id: proposal.id } });
+  };
+
+  const resetProposal = () => {
+    setProposalBody(proposal.body);
+  };
 
   const acceptAction = (
     <span>
-      <Icon type="check-circle" className="acceptButton proposalButton" theme="filled" />
-      Accept Proposal
+      <a onClick={acceptProposal}>
+        <Icon type="check-circle" className="acceptButton proposalButton" theme="filled" />
+        Accept Proposal
+      </a>
     </span>
   );
 
   const rejectAction = (
     <span>
-      <Icon type="close-circle" className="rejectButton proposalButton" theme="filled" />
-      Reject Proposal
+      <a onClick={rejectProposal}>
+        <Icon type="close-circle" className="rejectButton proposalButton" theme="filled" />
+        Reject Proposal
+      </a>
     </span>
   );
 
-  
   const resetAction = (
     <span>
-      <Icon type="clock-circle" className="resetButton proposalButton" theme="filled" />
-      Reset Proposal
+      <a onClick={resetProposal}>
+        <Icon type="clock-circle" className="resetButton proposalButton" theme="filled" />
+        Reset Proposal
+      </a>
     </span>
   );
 

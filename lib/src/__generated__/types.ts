@@ -144,10 +144,10 @@ export interface GetChangeProposalsQuery_idiomChangeProposals_pageInfo {
 export interface GetChangeProposalsQuery_idiomChangeProposals_edges_node {
   __typename: "IdiomChangeProposal";
   id: string;
-  type: string;
   body: string;
-  createdBy: string;
-  title: string | null;
+  readOnlyType: string;
+  readOnlyCreatedBy: string;
+  readOnlyTitle: string | null;
 }
 
 export interface GetChangeProposalsQuery_idiomChangeProposals_edges {

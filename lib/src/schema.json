@@ -1128,7 +1128,7 @@
             "deprecationReason": null
           },
           {
-            "name": "type",
+            "name": "readOnlyType",
             "description": null,
             "args": [],
             "type": {
@@ -1144,7 +1144,7 @@
             "deprecationReason": null
           },
           {
-            "name": "createdBy",
+            "name": "readOnlyCreatedBy",
             "description": null,
             "args": [],
             "type": {
@@ -1160,7 +1160,7 @@
             "deprecationReason": null
           },
           {
-            "name": "title",
+            "name": "readOnlyTitle",
             "description": null,
             "args": [],
             "type": {

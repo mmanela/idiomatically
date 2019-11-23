@@ -36,6 +36,7 @@ const client = new ApolloClient({
     }
   },
   cache: cache,
+  ssrForceFetchDelay: 300,
   resolvers: {}
 });
 

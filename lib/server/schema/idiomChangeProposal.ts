@@ -30,9 +30,9 @@ export default gql`
 
   type IdiomChangeProposal {
     id: ID!
-    type: String!
-    createdBy: String!
-    title: String
+    readOnlyType: String!
+    readOnlyCreatedBy: String!
+    readOnlyTitle: String
     body: String!
   }
 `;

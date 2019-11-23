@@ -1,62 +1,67 @@
-
 import * as React from "react";
 import "./Profile.scss";
-import { Avatar, Typography, Button, Spin } from 'antd';
+import { Avatar, Typography, Button, Spin } from "antd";
 import { useState } from "react";
 import { Redirect } from "react-router";
-import { useCurrentUser } from '../components/withCurrentUser';
+import { useCurrentUser } from "../components/withCurrentUser";
+import { UserRole } from "../__generated__/types";
+import { Link } from "react-router-dom";
 const { Title } = Typography;
 
-export interface ProfileProps {
-}
+export interface ProfileProps {}
 
 export const Profile: React.StatelessComponent<ProfileProps> = props => {
-    const { currentUser, currentUserLoading, resetOnLogout } = useCurrentUser();
-    const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { currentUser, currentUserLoading, resetOnLogout } = useCurrentUser();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-    const logOut = async () => {
-        setIsLoggingOut(true);
-        try {
-            await fetch(`${process.env.REACT_APP_SERVER}/logout`, { method: "POST", mode: "cors", credentials: "include" });
-        }
-        catch (e) {
-            console.error(e);
-        }
-
-        await resetOnLogout!();
-        setIsLoggingOut(false);
+  const logOut = async () => {
+    setIsLoggingOut(true);
+    try {
+      await fetch(`${process.env.REACT_APP_SERVER}/logout`, { method: "POST", mode: "cors", credentials: "include" });
+    } catch (e) {
+      console.error(e);
     }
 
-    if (currentUserLoading) {
-        return <Spin spinning delay={500} className="middleSpinner" tip="Loading..." />
-    }
-    else if (!currentUser) {
-        return <Redirect to="/" />;
-    }
-    return (
-        <>
-            <Title>{currentUser.name}</Title>
-            <div className="profileContent">
-                <Avatar className="profilePicture" size={200} src={currentUser.avatar || ""} shape="square" />
-                <div className="profileActions">
-                    <div>
-                        <h3>Role</h3>
-                        <span>{currentUser.role}</span>
-                    </div>
-                    <div>
-                        <h3>Actions</h3>
-                        <Button
-                            type="primary"
-                            icon="poweroff"
-                            loading={isLoggingOut}
-                            onClick={logOut}
-                        >
-                            Log out
-                    </Button>
-                    </div>
-                </div>
-            </div>
-        </>
+    await resetOnLogout!();
+    setIsLoggingOut(false);
+  };
 
-    );
+  if (currentUserLoading) {
+    return <Spin spinning delay={500} className="middleSpinner" tip="Loading..." />;
+  } else if (!currentUser) {
+    return <Redirect to="/" />;
+  }
+
+  const showAdminLinks = currentUser && !currentUserLoading && currentUser.role === UserRole.ADMIN;
+
+  return (
+    <>
+      <Title>{currentUser.name}</Title>
+      <div className="profileContent">
+        <Avatar className="profilePicture" size={200} src={currentUser.avatar || ""} shape="square" />
+        <div className="profileActions">
+          <div>
+            <h3>Role</h3>
+            <span>{currentUser.role}</span>
+          </div>
+          <div>
+            <h3>Actions</h3>
+            <ul>
+              {showAdminLinks && (
+                <li>
+                  <Link to="/admin/proposals">Review Proposals</Link>
+                </li>
+              )}
+
+              <li>
+                <Button type="primary" icon="poweroff" loading={isLoggingOut} onClick={logOut}>
+                  Log out
+                </Button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 };

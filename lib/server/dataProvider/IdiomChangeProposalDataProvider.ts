@@ -110,9 +110,9 @@ export class IdiomChangeProposalDataProvider {
             result: dbProposals.map<IdiomChangeProposal>(proposal => {
                 return {
                     id: proposal._id.toHexString(),
-                    type: proposal.type,
-                    createdBy: proposal.userName,
-                    title: proposal.title,
+                    readOnlyType: proposal.type,
+                    readOnlyCreatedBy: proposal.readOnlyCreatedBy,
+                    readOnlyTitle: proposal.readOnlyTitle,
                     body: JSON.stringify(proposal)
                 };
             })

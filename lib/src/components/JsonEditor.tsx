@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-
-import JSONEditor, { JSONEditorOptions } from "jsoneditor";
 import "jsoneditor/dist/jsoneditor.css";
+type JSONEditor = import("jsoneditor").default;
+type JSONEditorOptions = import("jsoneditor").JSONEditorOptions;
 
 export type JsonEditorProps = {
   json: string;
@@ -17,15 +17,18 @@ export class JsonEditor extends Component<JsonEditorProps> {
   }
 
   componentDidMount() {
+    const Editor = require("jsoneditor");
     const defaults: JSONEditorOptions = {
       mainMenuBar: false,
       mode: "form",
       navigationBar: false
     };
     const options = { ...defaults, ...this.props };
-    this.jsoneditor = new JSONEditor(this.containerRef.current!, options);
-    this.jsoneditor.set(this.props.json);
-    this.jsoneditor.expandAll();
+    this.jsoneditor = new Editor(this.containerRef.current!, options);
+    if (this.jsoneditor) {
+      this.jsoneditor.set(this.props.json);
+      this.jsoneditor.expandAll();
+    }
   }
 
   componentWillUnmount() {

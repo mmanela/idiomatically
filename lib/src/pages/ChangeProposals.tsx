@@ -26,10 +26,10 @@ export const getChangeProposalsQuery = gql`
       edges {
         node {
           id
-          type
           body
-          createdBy
-          title
+          readOnlyType
+          readOnlyCreatedBy
+          readOnlyTitle
         }
       }
     }
@@ -118,6 +118,8 @@ interface ChangeProposalItemProps {
 export const ChangeProposalItem: React.StatelessComponent<ChangeProposalItemProps> = props => {
   const proposal = props.item.node;
   const [proposalBody, setProposalBody] = React.useState(proposal.body);
+  const [confirmAccept, setConfirmAccept] = React.useState(false);
+  const [confirmReject, setConfirmReject] = React.useState(false);
   const [acceptProposalMutation, acceptProposalMutationResult] = useMutation<
     AcceptChangeProposalMutation,
     AcceptChangeProposalMutationVariables
@@ -127,21 +129,38 @@ export const ChangeProposalItem: React.StatelessComponent<ChangeProposalItemProp
     RejectChangeProposalMutationVariables
   >(rejectChangeProposalQuery);
 
-  const title = proposal.title ? `${proposal.id} - ${proposal.title}` : proposal.id;
-  const extra = <div className="proposalType">{proposal.type}</div>;
+  const error = (acceptProposalMutationResult && acceptProposalMutationResult.error && acceptProposalMutationResult.error.message)
+                || (rejectProposalMutationResult && rejectProposalMutationResult.error && rejectProposalMutationResult.error.message);
+
+  const title = proposal.readOnlyTitle ? `${proposal.id} - ${proposal.readOnlyTitle}` : proposal.id;
+  const extra = <div className="proposalType">{proposal.readOnlyType}</div>;
   const json = JSON.parse(proposalBody || proposal.body || "{}");
 
   const editor = <JsonEditor json={json} onChangeText={code => setProposalBody(code)} />;
 
   const acceptProposal = () => {
-    acceptProposalMutation({ variables: { id: proposal.id, body: proposalBody } });
+    if(confirmAccept) {
+      acceptProposalMutation({ variables: { id: proposal.id, body: proposalBody } });
+      setConfirmAccept(false);
+    }
+    else {
+      setConfirmAccept(true);
+    }
   };
 
   const rejectProposal = () => {
+    if(confirmReject) {
     rejectProposalMutation({ variables: { id: proposal.id } });
+    setConfirmReject(false);
+    }
+    else {
+      setConfirmReject(true);
+    }
   };
 
   const resetProposal = () => {
+    setConfirmAccept(false);
+    setConfirmReject(false);
     setProposalBody(proposal.body);
   };
 
@@ -149,7 +168,7 @@ export const ChangeProposalItem: React.StatelessComponent<ChangeProposalItemProp
     <span>
       <a onClick={acceptProposal}>
         <Icon type="check-circle" className="acceptButton proposalButton" theme="filled" />
-        Accept Proposal
+        {confirmAccept ? "Are you sure?" : "Accept Proposal"}
       </a>
     </span>
   );
@@ -158,7 +177,7 @@ export const ChangeProposalItem: React.StatelessComponent<ChangeProposalItemProp
     <span>
       <a onClick={rejectProposal}>
         <Icon type="close-circle" className="rejectButton proposalButton" theme="filled" />
-        Reject Proposal
+        {confirmReject ? "Are you sure?" : "Reject Proposal"}
       </a>
     </span>
   );
@@ -174,7 +193,9 @@ export const ChangeProposalItem: React.StatelessComponent<ChangeProposalItemProp
 
   return (
     <List.Item key={proposal.id} extra={extra} className="changeProposalItem" actions={[acceptAction, rejectAction, resetAction]}>
-      <List.Item.Meta className="itemDetails" title={title} description={"By " + proposal.createdBy} />
+      <List.Item.Meta className="itemDetails" title={title} description={"By " + proposal.readOnlyCreatedBy} />
+      
+      {error && <Alert message="Error" type="error" description={error} showIcon />}
       {editor}
     </List.Item>
   );

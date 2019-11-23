@@ -45,9 +45,9 @@ export type Idiom = {
 export type IdiomChangeProposal = {
    __typename?: 'IdiomChangeProposal',
   id: Scalars['ID'],
-  type: Scalars['String'],
-  createdBy: Scalars['String'],
-  title?: Maybe<Scalars['String']>,
+  readOnlyType: Scalars['String'],
+  readOnlyCreatedBy: Scalars['String'],
+  readOnlyTitle?: Maybe<Scalars['String']>,
   body: Scalars['String'],
 };
 
@@ -420,9 +420,9 @@ export type IdiomResolvers<ContextType = any, ParentType extends ResolversParent
 
 export type IdiomChangeProposalResolvers<ContextType = any, ParentType extends ResolversParentTypes['IdiomChangeProposal'] = ResolversParentTypes['IdiomChangeProposal']> = {
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>,
-  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  createdBy?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
-  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
+  readOnlyType?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
+  readOnlyCreatedBy?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
+  readOnlyTitle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
   body?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
 };
 

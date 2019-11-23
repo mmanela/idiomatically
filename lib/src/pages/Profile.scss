@@ -1,15 +1,22 @@
 @import "../components/App.scss";
 
-
 .profileContent {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
 
-    .profileActions {
-        margin-left: 40px;
+  .profileActions {
+    margin-left: 40px;
 
-        > div {
-            margin-bottom: 20px;
-        }
+    > div {
+      margin-bottom: 20px;
     }
+
+    ul {
+      padding-left: 0;
+      li {
+        list-style-type: none;
+        margin-bottom: 10px;
+      }
+    }
+  }
 }

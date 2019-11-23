@@ -10,6 +10,7 @@ import { About } from "../pages/About";
 import { NewIdiom } from "../pages/NewIdiom";
 import { RouteChildrenProps } from "react-router";
 import { UpdateIdiom } from "../pages/UpdateIdiom";
+import { ChangeProposals } from "../pages/ChangeProposals";
 //import { ChangeProposals } from "../pages/ChangeProposals";
 const { Header, Footer, Content } = Layout;
 const { Search } = Input;
@@ -43,7 +44,7 @@ function AppInternal(props: RouteComponentProps<any> & AppProps) {
           <Route exact path="/new" render={props => renderNewIdiomForm(props)} />
           <Route exact path="/idioms/:slug/update" render={props => renderUpdateIdiomForm(props)} />
           <Route exact path="/me" component={Profile} />
-          {/* <Route exact path="/admin/proposals" component={ChangeProposals} /> */} 
+          <Route exact path="/admin/proposals" component={ChangeProposals} />
         </Switch>
       </Content>
 

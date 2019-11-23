@@ -148,6 +148,7 @@ export interface GetChangeProposalsQuery_idiomChangeProposals_edges_node {
   readOnlyType: string;
   readOnlyCreatedBy: string;
   readOnlyTitle: string | null;
+  readOnlySlug: string | null;
 }
 
 export interface GetChangeProposalsQuery_idiomChangeProposals_edges {

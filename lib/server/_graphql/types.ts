@@ -48,6 +48,7 @@ export type IdiomChangeProposal = {
   readOnlyType: Scalars['String'],
   readOnlyCreatedBy: Scalars['String'],
   readOnlyTitle?: Maybe<Scalars['String']>,
+  readOnlySlug?: Maybe<Scalars['String']>,
   body: Scalars['String'],
 };
 
@@ -423,6 +424,7 @@ export type IdiomChangeProposalResolvers<ContextType = any, ParentType extends R
   readOnlyType?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
   readOnlyCreatedBy?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
   readOnlyTitle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
+  readOnlySlug?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
   body?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
 };
 

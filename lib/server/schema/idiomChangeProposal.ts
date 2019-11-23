@@ -33,6 +33,7 @@ export default gql`
     readOnlyType: String!
     readOnlyCreatedBy: String!
     readOnlyTitle: String
+    readOnlySlug: String
     body: String!
   }
 `;

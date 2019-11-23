@@ -6,14 +6,16 @@ import {
   AcceptChangeProposalMutation,
   AcceptChangeProposalMutationVariables,
   RejectChangeProposalMutation,
-  RejectChangeProposalMutationVariables
+  RejectChangeProposalMutationVariables,
+  OperationStatus
 } from "../__generated__/types";
 import gql from "graphql-tag";
 import "./ChangeProposals.scss";
-import { Alert, Spin, List, Empty, Icon } from "antd";
-import { Link } from "react-router-dom";
+import { Alert, Spin, List, Empty, Icon, Button } from "antd";
+import { Link, Redirect } from "react-router-dom";
 import { useLazyQuery, useMutation } from "@apollo/react-hooks";
 import { JsonEditor } from "../components/JsonEditor";
+import { useCurrentUser } from "../components/withCurrentUser";
 
 export const getChangeProposalsQuery = gql`
   query GetChangeProposalsQuery($filter: String, $limit: Int, $cursor: String) {
@@ -30,6 +32,7 @@ export const getChangeProposalsQuery = gql`
           readOnlyType
           readOnlyCreatedBy
           readOnlyTitle
+          readOnlySlug
         }
       }
     }
@@ -60,12 +63,19 @@ export interface ChangeProposalsProps {
 
 export const ChangeProposals: React.StatelessComponent<ChangeProposalsProps> = props => {
   const { filter } = props;
+  const { currentUser, currentUserLoading } = useCurrentUser();
   const [pageNumber, setPageNumber] = React.useState(1);
   const [lastFilter, setLastFilter] = React.useState(props.filter);
   const [queryPage, loadResult] = useLazyQuery<GetChangeProposalsQuery, GetChangeProposalsQueryVariables>(
     getChangeProposalsQuery
   );
   const pageSize = 10;
+
+  if (currentUserLoading) {
+    return <Spin spinning delay={500} className="middleSpinner" tip="Loading..." />;
+  } else if (!currentUser) {
+    return <Redirect to="/" />;
+  }
 
   // Based on the page number we get from state we calculate the bounds of the cursors
   // we then check if the data we current have has a endCursor that falls in that range. If so,
@@ -129,31 +139,43 @@ export const ChangeProposalItem: React.StatelessComponent<ChangeProposalItemProp
     RejectChangeProposalMutationVariables
   >(rejectChangeProposalQuery);
 
-  const error = (acceptProposalMutationResult && acceptProposalMutationResult.error && acceptProposalMutationResult.error.message)
-                || (rejectProposalMutationResult && rejectProposalMutationResult.error && rejectProposalMutationResult.error.message);
+  const proposalResolved =
+    (acceptProposalMutationResult &&
+      acceptProposalMutationResult.data &&
+      acceptProposalMutationResult.data.acceptIdiomChangeProposal.status === OperationStatus.SUCCESS) ||
+    (rejectProposalMutationResult &&
+      rejectProposalMutationResult.data &&
+      rejectProposalMutationResult.data.rejectIdiomChangeProposal.status === OperationStatus.SUCCESS);
+
+  if (proposalResolved) {
+    return null;
+  }
+
+  const error =
+    (acceptProposalMutationResult && acceptProposalMutationResult.error && acceptProposalMutationResult.error.message) ||
+    (rejectProposalMutationResult && rejectProposalMutationResult.error && rejectProposalMutationResult.error.message);
 
   const title = proposal.readOnlyTitle ? `${proposal.id} - ${proposal.readOnlyTitle}` : proposal.id;
+  const url = proposal.readOnlySlug ? `/idioms/${proposal.readOnlySlug}` : "";
   const extra = <div className="proposalType">{proposal.readOnlyType}</div>;
   const json = JSON.parse(proposalBody || proposal.body || "{}");
 
   const editor = <JsonEditor json={json} onChangeText={code => setProposalBody(code)} />;
 
   const acceptProposal = () => {
-    if(confirmAccept) {
+    if (confirmAccept) {
       acceptProposalMutation({ variables: { id: proposal.id, body: proposalBody } });
       setConfirmAccept(false);
-    }
-    else {
+    } else {
       setConfirmAccept(true);
     }
   };
 
   const rejectProposal = () => {
-    if(confirmReject) {
-    rejectProposalMutation({ variables: { id: proposal.id } });
-    setConfirmReject(false);
-    }
-    else {
+    if (confirmReject) {
+      rejectProposalMutation({ variables: { id: proposal.id } });
+      setConfirmReject(false);
+    } else {
       setConfirmReject(true);
     }
   };
@@ -166,35 +188,39 @@ export const ChangeProposalItem: React.StatelessComponent<ChangeProposalItemProp
 
   const acceptAction = (
     <span>
-      <a onClick={acceptProposal}>
+      <Button onClick={acceptProposal} type="link">
         <Icon type="check-circle" className="acceptButton proposalButton" theme="filled" />
         {confirmAccept ? "Are you sure?" : "Accept Proposal"}
-      </a>
+      </Button>
     </span>
   );
 
   const rejectAction = (
     <span>
-      <a onClick={rejectProposal}>
+      <Button onClick={rejectProposal} type="link">
         <Icon type="close-circle" className="rejectButton proposalButton" theme="filled" />
         {confirmReject ? "Are you sure?" : "Reject Proposal"}
-      </a>
+      </Button>
     </span>
   );
 
   const resetAction = (
     <span>
-      <a onClick={resetProposal}>
+      <Button onClick={resetProposal} type="link">
         <Icon type="clock-circle" className="resetButton proposalButton" theme="filled" />
         Reset Proposal
-      </a>
+      </Button>
     </span>
   );
 
   return (
     <List.Item key={proposal.id} extra={extra} className="changeProposalItem" actions={[acceptAction, rejectAction, resetAction]}>
-      <List.Item.Meta className="itemDetails" title={title} description={"By " + proposal.readOnlyCreatedBy} />
-      
+      <List.Item.Meta
+        className="itemDetails"
+        title={<Link to={url}>{title}</Link>}
+        description={"By " + proposal.readOnlyCreatedBy}
+      />
+
       {error && <Alert message="Error" type="error" description={error} showIcon />}
       {editor}
     </List.Item>

@@ -113,6 +113,7 @@ export class IdiomChangeProposalDataProvider {
                     readOnlyType: proposal.type,
                     readOnlyCreatedBy: proposal.readOnlyCreatedBy,
                     readOnlyTitle: proposal.readOnlyTitle,
+                    readOnlySlug: proposal.readOnlySlug,
                     body: JSON.stringify(proposal)
                 };
             })

@@ -147,7 +147,8 @@ export class IdiomDataProvider {
                 equivalentId: relatedIdiomId ? new ObjectID(relatedIdiomId) : null,
                 type: IdiomProposalType.CreateIdiom,
                 idiomToCreate: dbIdiom,
-                readOnlyTitle: dbIdiom.title
+                readOnlyTitle: dbIdiom.title,
+                readOnlySlug: dbIdiom.slug
             };
             const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
             return this.idiomOperationResult(OperationStatus.Pending);
@@ -222,7 +223,8 @@ export class IdiomDataProvider {
                 type: IdiomProposalType.UpdateIdiom,
                 idiomId: objId,
                 idiomToUpdate: updates,
-                readOnlyTitle: dbIdiom.title
+                readOnlyTitle: dbIdiom.title,
+                readOnlySlug: dbIdiom.slug
             };
             const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
             return this.idiomOperationResult(OperationStatus.Pending);
@@ -254,19 +256,19 @@ export class IdiomDataProvider {
             }
         }
 
-        if (updates.description !== undefined) {
-            if (updates.title.length > 10000) {
+        if (updates.description) {
+            if (updates.description.length > 10000) {
                 throw new Error("Description is too long")
             }
         }
 
-        if (updates.transliteration !== undefined) {
+        if (updates.transliteration) {
             if (updates.transliteration.length > 1000) {
                 throw new Error("Transliteration is too long")
             }
         }
 
-        if (updates.literalTranslation !== undefined) {
+        if (updates.literalTranslation) {
             if (updates.literalTranslation.length > 1000) {
                 throw new Error("LiteralTranslation is too long")
             }

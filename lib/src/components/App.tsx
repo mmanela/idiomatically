@@ -50,9 +50,8 @@ function AppInternal(props: RouteComponentProps<any> & AppProps) {
 
       <Footer>
         <span className="mainFooter">
-          <span>Created by Matthew Manela (</span>
+          <span>Created by Matthew Manela </span>
           <span className="heart">♥</span>
-          <span> Idioms)</span>
         </span>
         {createCommonsDisplay()}
       </Footer>
@@ -66,7 +65,7 @@ const createCommonsDisplay = () => {
       <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">
         <img
           alt="Creative Commons License"
-          style={{ borderWidth: 0, verticalAlign: "baseline" }}
+          style={{ borderWidth: 0, verticalAlign: "text-bottom" }}
           src="https://i.creativecommons.org/l/by-sa/4.0/80x15.png"
         />
       </a>

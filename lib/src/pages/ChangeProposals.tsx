@@ -98,7 +98,7 @@ export const ChangeProposals: React.StatelessComponent<ChangeProposalsProps> = p
   if (loadResult.loading) return <Spin delay={500} className="middleSpinner" tip="Loading..." />;
   if (loadResult.error) return <Alert message="Error" type="error" description={loadResult.error.message} showIcon />;
   if (!loadResult.data || loadResult.data.idiomChangeProposals.edges.length <= 0) {
-    return <Empty image={Empty.PRESENTED_IMAGE_DEFAULT} description="Could not find a needle in the haystack." />;
+    return <Empty image={Empty.PRESENTED_IMAGE_DEFAULT} description="Could not find a needle in a haystack." />;
   }
 
   return (

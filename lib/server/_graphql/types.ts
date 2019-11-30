@@ -172,12 +172,6 @@ export type MutationRejectIdiomChangeProposalArgs = {
   proposalId: Scalars['ID']
 };
 
-export type OperationResult = {
-   __typename?: 'OperationResult',
-  status: OperationStatus,
-  message?: Maybe<Scalars['String']>,
-};
-
 export enum OperationStatus {
   Success = 'SUCCESS',
   Failure = 'FAILURE',
@@ -360,7 +354,6 @@ export type ResolversTypes = {
   OperationStatus: OperationStatus,
   IdiomCreateInput: IdiomCreateInput,
   CacheControlScope: CacheControlScope,
-  OperationResult: ResolverTypeWrapper<OperationResult>,
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -389,7 +382,6 @@ export type ResolversParentTypes = {
   OperationStatus: OperationStatus,
   IdiomCreateInput: IdiomCreateInput,
   CacheControlScope: CacheControlScope,
-  OperationResult: OperationResult,
 };
 
 export type CacheControlDirectiveResolver<Result, Parent, ContextType = any, Args = {   maxAge?: Maybe<Maybe<Scalars['Int']>>,
@@ -482,11 +474,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   rejectIdiomChangeProposal?: Resolver<ResolversTypes['IdiomOperationResult'], ParentType, ContextType, RequireFields<MutationRejectIdiomChangeProposalArgs, 'proposalId'>>,
 };
 
-export type OperationResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['OperationResult'] = ResolversParentTypes['OperationResult']> = {
-  status?: Resolver<ResolversTypes['OperationStatus'], ParentType, ContextType>,
-  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>,
-};
-
 export type PageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['PageInfo'] = ResolversParentTypes['PageInfo']> = {
   hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>,
   endCursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>,
@@ -524,7 +511,6 @@ export type Resolvers<ContextType = any> = {
   Language?: LanguageResolvers<ContextType>,
   Login?: LoginResolvers<ContextType>,
   Mutation?: MutationResolvers<ContextType>,
-  OperationResult?: OperationResultResolvers<ContextType>,
   PageInfo?: PageInfoResolvers<ContextType>,
   Query?: QueryResolvers<ContextType>,
   User?: UserResolvers<ContextType>,

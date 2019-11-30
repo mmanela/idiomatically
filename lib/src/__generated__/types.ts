@@ -245,6 +245,52 @@ export interface DeleteIdiomMutationVariables {
 // This file was automatically generated and should not be edited.
 
 // ====================================================
+// GraphQL mutation operation: AddEquivalentIdiomMutation
+// ====================================================
+
+export interface AddEquivalentIdiomMutation_addEquivalent {
+  __typename: "IdiomOperationResult";
+  status: OperationStatus;
+  message: string | null;
+}
+
+export interface AddEquivalentIdiomMutation {
+  addEquivalent: AddEquivalentIdiomMutation_addEquivalent;
+}
+
+export interface AddEquivalentIdiomMutationVariables {
+  idiomId: string;
+  equivalentId: string;
+}
+
+/* tslint:disable */
+/* eslint-disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
+// GraphQL mutation operation: RemoveEquivalentIdiomMutation
+// ====================================================
+
+export interface RemoveEquivalentIdiomMutation_removeEquivalent {
+  __typename: "IdiomOperationResult";
+  status: OperationStatus;
+  message: string | null;
+}
+
+export interface RemoveEquivalentIdiomMutation {
+  removeEquivalent: RemoveEquivalentIdiomMutation_removeEquivalent;
+}
+
+export interface RemoveEquivalentIdiomMutationVariables {
+  idiomId: string;
+  equivalentId: string;
+}
+
+/* tslint:disable */
+/* eslint-disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
 // GraphQL query operation: GetIdiomListQuery
 // ====================================================
 

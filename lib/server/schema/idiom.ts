@@ -21,9 +21,8 @@ export default gql`
 
     addEquivalent(idiomId:ID!, equivalentId: ID!): IdiomOperationResult! @auth(requires: GENERAL)
 
-    removeEquivalent(idiomId:ID!, equivalentId: ID!): IdiomOperationResult! @auth(requires: GENERAL)
+    removeEquivalent(idiomId:ID!, equivalentId: ID!): IdiomOperationResult! @auth(requires: ADMIN)
   }
-
 
   enum OperationStatus {
     SUCCESS
@@ -31,11 +30,6 @@ export default gql`
     PENDING
     PENDINGFAILURE
   } 
-
-  type OperationResult {
-    status: OperationStatus!
-    message: String
-  }
 
   type IdiomOperationResult {
     status: OperationStatus!

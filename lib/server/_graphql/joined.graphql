@@ -63,11 +63,6 @@ enum OperationStatus {
   PENDINGFAILURE
 }
 
-type OperationResult {
-  status: OperationStatus!
-  message: String
-}
-
 type IdiomOperationResult {
   status: OperationStatus!
   message: String

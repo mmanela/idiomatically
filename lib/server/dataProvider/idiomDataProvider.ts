@@ -1,5 +1,5 @@
 import { Db, Collection, ObjectID, FilterQuery } from 'mongodb'
-import { Idiom, IdiomCreateInput, IdiomUpdateInput, QueryIdiomsArgs, OperationResult, IdiomOperationResult, OperationStatus, QueryIdiomArgs } from '../_graphql/types';
+import { Idiom, IdiomCreateInput, IdiomUpdateInput, QueryIdiomsArgs, IdiomOperationResult, OperationStatus, QueryIdiomArgs } from '../_graphql/types';
 import { Languages } from './languages'
 import { UserModel, IdiomExpandOptions } from '../model/types';
 import { DbIdiom, mapDbIdiom, DbIdiomChangeProposal, IdiomProposalType, Paged } from './mapping';

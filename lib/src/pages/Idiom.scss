@@ -43,22 +43,33 @@ article.idiom {
     margin-bottom: 1rem;
   }
 
-  ul.equivilentList {
+  ul.equivalentList {
     list-style: none;
     padding: 0;
     margin-left: 20px;
 
     a {
       color: black;
-      margin-left: 10px;
+      margin-left: 15px;
     }
 
     a:hover {
       color: #1890ff;
     }
 
-    .equivilentItem {
+    .equivalentItem {
       display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+
+      .equivalentItemContent {
+        display: flex;
+      }
+
+      .removeEquivalentButton {
+        color: red;
+        padding-bottom: 10px;
+      }
     }
   }
 

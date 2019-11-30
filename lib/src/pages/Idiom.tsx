@@ -1,7 +1,7 @@
 import * as React from "react";
 import "./Idiom.scss";
 import { LanguageFlags } from "../components/LanguageFlags";
-import { Typography, Alert, Spin, Button, PageHeader } from "antd";
+import { Typography, Alert, Spin, Button, PageHeader, Icon } from "antd";
 import { RouteChildrenProps, Redirect } from "react-router";
 import { History } from "history";
 import { getIdiomQuery } from "../fragments/getIdiom";
@@ -11,7 +11,14 @@ import {
   UserRole,
   DeleteIdiomMutation,
   DeleteIdiomMutationVariables,
-  OperationStatus
+  OperationStatus,
+  GetIdiomQuery_idiom,
+  AddEquivalentIdiomMutation,
+  AddEquivalentIdiomMutationVariables,
+  RemoveEquivalentIdiomMutation,
+  RemoveEquivalentIdiomMutationVariables,
+  GetCurrentUser_me,
+  GetIdiomQuery_idiom_equivalents
 } from "../__generated__/types";
 import { Link } from "react-router-dom";
 import { useCurrentUser } from "../components/withCurrentUser";
@@ -23,6 +30,24 @@ const { Title, Paragraph } = Typography;
 export const deleteIdiomQuery = gql`
   mutation DeleteIdiomMutation($id: ID!) {
     deleteIdiom(idiomId: $id) {
+      status
+      message
+    }
+  }
+`;
+
+export const addIdiomEquivalentQuery = gql`
+  mutation AddEquivalentIdiomMutation($idiomId: ID!, $equivalentId: ID!) {
+    addEquivalent(idiomId: $idiomId, equivalentId: $equivalentId) {
+      status
+      message
+    }
+  }
+`;
+
+export const removeEquivalentQuery = gql`
+  mutation RemoveEquivalentIdiomMutation($idiomId: ID!, $equivalentId: ID!) {
+    removeEquivalent(idiomId: $idiomId, equivalentId: $equivalentId) {
       status
       message
     }
@@ -127,20 +152,10 @@ export const Idiom: React.StatelessComponent<IdiomCombinedProps> = props => {
 
         <Title level={4}>Equivalents</Title>
         <Paragraph className="info">This is how you express this idiom across languages and locales.</Paragraph>
-        <ul className="equivilentList">
-          {idiom.equivalents.length > 0 &&
-            idiom.equivalents.map(x => (
-              <li key={x.slug}>
-                <div className="equivilentItem">
-                  <LanguageFlags languageInfo={x.language} compactMode={true} size={"small"} layoutMode={"horizontal"} />
-                  <Link to={"/idioms/" + x.slug}>{x.title}</Link>
-                </div>
-              </li>
-            ))}
-        </ul>
+        {idiom.equivalents.length > 0 && <EquivalentIdiomList idiom={idiom} user={currentUser} />}
         {idiom.equivalents.length <= 0 && (
           <>
-            <Paragraph className="content">No equivilent idioms across languages found yet...</Paragraph>
+            <Paragraph className="content">No equivilent idioms across languages yet...</Paragraph>
           </>
         )}
         <Paragraph className="content addEquivalent">
@@ -150,6 +165,82 @@ export const Idiom: React.StatelessComponent<IdiomCombinedProps> = props => {
         </Paragraph>
       </PageHeader>
     </article>
+  );
+};
+
+interface EquivalentListProps {
+  user?: GetCurrentUser_me | null;
+  idiom: GetIdiomQuery_idiom;
+}
+
+const EquivalentIdiomList: React.StatelessComponent<EquivalentListProps> = props => {
+  const [addEquivalentIdiomMutation, addEquivalentIdiomMutationResult] = useMutation<
+    AddEquivalentIdiomMutation,
+    AddEquivalentIdiomMutationVariables
+  >(addIdiomEquivalentQuery);
+
+  return (
+    <ul className="equivalentList">
+      {props.idiom.equivalents.length > 0 &&
+        props.idiom.equivalents.map(x => <EquivalentIdiomItem equivalentIdiom={x} idiom={props.idiom} user={props.user} />)}
+    </ul>
+  );
+};
+
+interface EquivalentItemProps {
+  user?: GetCurrentUser_me | null;
+  equivalentIdiom: GetIdiomQuery_idiom_equivalents;
+  idiom: GetIdiomQuery_idiom;
+}
+const EquivalentIdiomItem: React.StatelessComponent<EquivalentItemProps> = props => {
+  const equivalent = props.equivalentIdiom;
+  const [confirmRemove, setConfirmRemove] = React.useState(false);
+  const [removeEquivalentIdiomMutation, removeEquivalentMutationResult] = useMutation<
+    RemoveEquivalentIdiomMutation,
+    RemoveEquivalentIdiomMutationVariables
+  >(removeEquivalentQuery);
+
+  const equivalentRemoved =
+    removeEquivalentMutationResult &&
+    removeEquivalentMutationResult.data &&
+    removeEquivalentMutationResult.data.removeEquivalent.status === OperationStatus.SUCCESS;
+
+  if (equivalentRemoved) {
+    return null;
+  }
+
+  const isAdmin = props.user && props.user.role === UserRole.ADMIN;
+
+  const removeEquivalentHandler = (equivalentId: string) => {
+    if (confirmRemove) {
+      removeEquivalentIdiomMutation({ variables: { idiomId: props.idiom.id, equivalentId: equivalentId } });
+      setConfirmRemove(false);
+    } else {
+      setConfirmRemove(true);
+    }
+  };
+
+  return (
+    <li key={equivalent.slug}>
+      <div className="equivalentItem">
+        <div className="equivalentItemContent">
+          <LanguageFlags
+            languageInfo={equivalent.language}
+            compactMode={true}
+            showLabel={true}
+            size={"small"}
+            layoutMode={"horizontal"}
+          />
+          <Link to={"/idioms/" + equivalent.slug}>{equivalent.title}</Link>
+        </div>
+        {isAdmin && (
+          <Button onClick={() => removeEquivalentHandler(equivalent.id)} type="link" className="removeEquivalentButton">
+            <Icon type="delete" className="removeEquivalentIcon" theme="filled" />
+            {confirmRemove ? "Are you sure?" : "Remove"}
+          </Button>
+        )}
+      </div>
+    </li>
   );
 };
 

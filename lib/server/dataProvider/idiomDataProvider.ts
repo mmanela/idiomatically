@@ -7,6 +7,9 @@ import { transliterate, slugify } from 'transliteration';
 import { escapeRegex } from './utils';
 import { UserDataProvider } from './userDataProvider';
 
+// Max number of proposals one user can have before we prevent more
+const MaxPendingProposals = 50;
+
 export class IdiomDataProvider {
 
     private changeProposalCollection: Collection<DbIdiomChangeProposal>;
@@ -150,8 +153,7 @@ export class IdiomDataProvider {
                 readOnlyTitle: dbIdiom.title,
                 readOnlySlug: dbIdiom.slug
             };
-            const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
-            return this.idiomOperationResult(OperationStatus.Pending);
+            return await this.submitChangeProposal(proposal);
         }
         else {
 
@@ -226,8 +228,7 @@ export class IdiomDataProvider {
                 readOnlyTitle: dbIdiom.title,
                 readOnlySlug: dbIdiom.slug
             };
-            const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
-            return this.idiomOperationResult(OperationStatus.Pending);
+            return await this.submitChangeProposal(proposal);
         }
         else {
             const result = await this.idiomCollection.updateOne({ _id: objId }, { $set: updates });
@@ -434,8 +435,7 @@ export class IdiomDataProvider {
                 idiomId: idiomObjId,
                 equivalentId: equivalentObjId
             };
-            const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
-            return this.operationResult(OperationStatus.Pending);
+            return await this.submitChangeProposal(proposal);
         }
         else {
             var bulk = this.idiomCollection.initializeOrderedBulkOp();
@@ -469,8 +469,7 @@ export class IdiomDataProvider {
                 idiomId: idiomObjId,
                 equivalentId: equivalentObjId
             };
-            const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
-            return this.operationResult(OperationStatus.Pending);
+            return await this.submitChangeProposal(proposal);
         }
         else {
             var bulk = this.idiomCollection.initializeOrderedBulkOp();
@@ -480,6 +479,23 @@ export class IdiomDataProvider {
 
             return !result.hasWriteErrors() ? this.operationResult(OperationStatus.Success) : this.operationResult(OperationStatus.Failure);
         }
+    }
+
+    /**
+     * Submits the change proposal but first checks to make sure this user
+     * does not have too many pending. 
+     */
+    private async submitChangeProposal(proposal: DbIdiomChangeProposal) {
+
+        // Get pending count for this user
+        const pendingProspoalCount = await this.changeProposalCollection.countDocuments({ userId: { $eq: proposal.userId } });
+
+        if (pendingProspoalCount > MaxPendingProposals) {
+            return this.operationResult(OperationStatus.Pendingfailure, `You have too many changes pending approval with ${pendingProspoalCount}. Please try again later`);
+        }
+
+        const provisionalResult = await this.changeProposalCollection.insertOne(proposal);
+        return this.operationResult(OperationStatus.Pending, 'Thanks for suggesting the change, we will review it shortly.');
     }
 
     private idiomOperationResult(status: OperationStatus, idiom?: Idiom, message?: string): IdiomOperationResult {

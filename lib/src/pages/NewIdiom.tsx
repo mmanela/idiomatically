@@ -79,7 +79,9 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
 
   const [languageKey, setLanguageKey] = useState("");
 
-  const [createIdiom, { data, error, loading, client }] = useMutation<CreateIdiomMutation, CreateIdiomMutationVariables>(createIdiomQuery);
+  const [createIdiom, { data, error, loading, client }] = useMutation<CreateIdiomMutation, CreateIdiomMutationVariables>(
+    createIdiomQuery
+  );
   const [getEquivalentIdiom, equivalentLoadInfo] = useLazyQuery<GetIdiomQuery, GetIdiomQueryVariables>(getIdiomQuery);
 
   const handleSubmit = async (
@@ -130,14 +132,19 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
     <div>
       <Title level={2}>Add an Idiom</Title>
       <Paragraph>
-        A goal of Idiomatically is to catalog and relate Idioms across countries and cultures. For that reason, it is important to give
-        idioms from non-English alphabets in their native characters. Then provide an english character transliteration and translation of
-        that Idiom.
+        A goal of Idiomatically is to catalog and relate Idioms across countries and cultures. For that reason, it is important to
+        give idioms from non-English alphabets in their native characters. Then provide an english character transliteration and
+        translation of that Idiom.
       </Paragraph>
-      {data && data.createIdiom.idiom && data.createIdiom.idiom.slug && <Redirect to={`/idioms/${data.createIdiom.idiom.slug}`} />}
-      {data && !loading && !error && data.createIdiom.status === OperationStatus.PENDING && (
-        <PendingOperationNotification redirect={`/idioms`} delay={10} />
+      {data && data.createIdiom.idiom && data.createIdiom.idiom.slug && (
+        <Redirect to={`/idioms/${data.createIdiom.idiom.slug}`} />
       )}
+      {data &&
+        !loading &&
+        !error &&
+        (data.createIdiom.status === OperationStatus.PENDING || data.createIdiom.status === OperationStatus.PENDINGFAILURE) && (
+          <PendingOperationNotification operationStatus={data.createIdiom.status} redirect={`/idioms`} />
+        )}
 
       {(loading || currentUserLoading) && <Spin className="middleSpinner" delay={500} spinning tip="Loading..." />}
       {error && <Alert type="error" message={getErrorMessage(error)} showIcon />}

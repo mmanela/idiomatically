@@ -181,7 +181,8 @@ export type OperationResult = {
 export enum OperationStatus {
   Success = 'SUCCESS',
   Failure = 'FAILURE',
-  Pending = 'PENDING'
+  Pending = 'PENDING',
+  Pendingfailure = 'PENDINGFAILURE'
 }
 
 export type PageInfo = {

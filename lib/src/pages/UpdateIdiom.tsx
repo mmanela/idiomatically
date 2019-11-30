@@ -73,7 +73,9 @@ const UpdateIdiomComponent: React.StatelessComponent<FormProps> = props => {
   const { currentUser, currentUserLoading } = useCurrentUser();
   const { getFieldDecorator } = props.form;
 
-  const [updateIdiom, { data, error, loading }] = useMutation<UpdateIdiomMutation, UpdateIdiomMutationVariables>(updateIdiomQuery);
+  const [updateIdiom, { data, error, loading }] = useMutation<UpdateIdiomMutation, UpdateIdiomMutationVariables>(
+    updateIdiomQuery
+  );
   const idiomLoadInfo = useQuery<GetIdiomQuery, GetIdiomQueryVariables>(getIdiomQuery, {
     variables: { slug: props.slug }
   });
@@ -130,13 +132,20 @@ const UpdateIdiomComponent: React.StatelessComponent<FormProps> = props => {
     <div>
       <Title level={2}>Update an Idiom</Title>
       {data && !loading && !error && data.updateIdiom.idiom && <Redirect to={`/idioms/${data.updateIdiom.idiom.slug}`} />}
-      {data && !loading && !error && data.updateIdiom.status === OperationStatus.PENDING && (
-        <PendingOperationNotification redirect={`/idioms/${props.slug}`} />
-      )}
+      {data &&
+        !loading &&
+        !error &&
+        (data.updateIdiom.status === OperationStatus.PENDING || data.updateIdiom.status === OperationStatus.PENDINGFAILURE) && (
+          <PendingOperationNotification operationStatus={data.updateIdiom.status} redirect={`/idioms/${props.slug}`} />
+        )}
 
       {(loading || currentUserLoading) && <Spin className="middleSpinner" delay={500} spinning tip="Loading..." />}
       {error && <Alert type="error" message={getErrorMessage(error)} showIcon />}
-      <Form labelAlign="left" {...formItemLayout} onSubmit={e => handleSubmit(e, props, updateIdiom, idiomLoadInfo.data!.idiom!.id)}>
+      <Form
+        labelAlign="left"
+        {...formItemLayout}
+        onSubmit={e => handleSubmit(e, props, updateIdiom, idiomLoadInfo.data!.idiom!.id)}
+      >
         {commonFormItems(getFieldDecorator, loading, undefined, undefined, idiomLoadInfo.data.idiom)}
       </Form>
     </div>

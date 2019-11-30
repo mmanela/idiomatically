@@ -60,6 +60,7 @@ enum OperationStatus {
   SUCCESS
   FAILURE
   PENDING
+  PENDINGFAILURE
 }
 
 type OperationResult {

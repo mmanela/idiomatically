@@ -29,6 +29,7 @@ export default gql`
     SUCCESS
     FAILURE
     PENDING
+    PENDINGFAILURE
   } 
 
   type OperationResult {

@@ -553,6 +553,7 @@ export interface FullIdiomEntry {
 export enum OperationStatus {
   FAILURE = "FAILURE",
   PENDING = "PENDING",
+  PENDINGFAILURE = "PENDINGFAILURE",
   SUCCESS = "SUCCESS",
 }
 

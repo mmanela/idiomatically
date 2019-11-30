@@ -49,13 +49,31 @@ function AppInternal(props: RouteComponentProps<any> & AppProps) {
       </Content>
 
       <Footer>
-        <span>Created by Matthew Manela (I </span>
-        <span className="heart">♥</span>
-        <span> Idioms)</span>
+        <span className="mainFooter">
+          <span>Created by Matthew Manela (</span>
+          <span className="heart">♥</span>
+          <span> Idioms)</span>
+        </span>
+        {createCommonsDisplay()}
       </Footer>
     </Layout>
   );
 }
+
+const createCommonsDisplay = () => {
+  return (
+    <span className="creativeCommons">
+      <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">
+        <img
+          alt="Creative Commons License"
+          style={{ borderWidth: 0, verticalAlign: "baseline" }}
+          src="https://i.creativecommons.org/l/by-sa/4.0/80x15.png"
+        />
+      </a>
+    </span>
+  );
+};
+
 // Wrap the app with the router to get access to the history object
 export const App = withRouter(AppInternal);
 const renderIdiom = (props: RouteChildrenProps<any>) => {

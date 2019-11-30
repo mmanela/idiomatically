@@ -19,29 +19,32 @@ export interface LanguageSelectProps {
   onChange?: (value: string, option: React.ReactElement<any> | React.ReactElement<any>[]) => void;
 }
 
-export const LanguageSelect: React.StatelessComponent<LanguageSelectProps> = React.forwardRef<{}, LanguageSelectProps>((props, ref) => {
-  return (
-    <Query<GetLanguagesQuery> query={getLanguagesQuery}>
-      {({ loading, data, error }) => {
-        if (loading) return <Spin delay={250} />;
+export const LanguageSelect: React.StatelessComponent<LanguageSelectProps> = React.forwardRef<{}, LanguageSelectProps>(
+  (props, ref) => {
+    return (
+      <Query<GetLanguagesQuery> query={getLanguagesQuery}>
+        {({ loading, data, error }) => {
+          if (loading) return <Spin delay={250} />;
 
-        const options = buildOptions(data!);
-        return (
-          <Select
-            onChange={props.onChange}
-            // This ensure the box opens so you can type right away
-            showAction={["focus", "click"]}
-            showSearch
-            placeholder="Please select a language"
-            optionFilterProp="title"
-          >
-            {options}
-          </Select>
-        );
-      }}
-    </Query>
-  );
-});
+          const options = buildOptions(data!);
+          return (
+            <Select
+              onChange={props.onChange}
+              // This ensure the box opens so you can type right away
+              showAction={["focus", "click"]}
+              showSearch
+              placeholder="Please select a language"
+              optionFilterProp="title"
+              showArrow={false}
+            >
+              {options}
+            </Select>
+          );
+        }}
+      </Query>
+    );
+  }
+);
 function buildOptions(data: GetLanguagesQuery) {
   return data.languages.map(lang => {
     const key = lang.languageKey;

@@ -1,7 +1,6 @@
 import * as React from "react";
 import "./Idiom.scss";
 import { LanguageFlags } from "../components/LanguageFlags";
-import { Typography, Alert, Spin, Button, PageHeader, Icon } from "antd";
 import { RouteChildrenProps, Redirect } from "react-router";
 import { History } from "history";
 import { getIdiomQuery } from "../fragments/getIdiom";
@@ -18,14 +17,21 @@ import {
   RemoveEquivalentIdiomMutation,
   RemoveEquivalentIdiomMutationVariables,
   GetCurrentUser_me,
-  GetIdiomQuery_idiom_equivalents
+  GetIdiomQuery_idiom_equivalents,
+  FindIdiomsQuery,
+  FindIdiomsQueryVariables,
+  FindIdiomsQuery_idioms_edges,
+  FindIdiomsQuery_idioms_edges_node
 } from "../__generated__/types";
 import { Link } from "react-router-dom";
 import { useCurrentUser } from "../components/withCurrentUser";
-import { useQuery, useMutation } from "@apollo/react-hooks";
+import { useQuery, useMutation, useLazyQuery } from "@apollo/react-hooks";
 import gql from "graphql-tag";
 import { useState } from "react";
-const { Title, Paragraph } = Typography;
+import { Typography, Alert, Spin, Button, PageHeader, Icon, Select } from "antd";
+import { MINIMAL_IDIOM_ENTRY } from "../fragments/fragments";
+const { Option } = Select;
+const { Title, Paragraph, Text } = Typography;
 
 export const deleteIdiomQuery = gql`
   mutation DeleteIdiomMutation($id: ID!) {
@@ -52,6 +58,24 @@ export const removeEquivalentQuery = gql`
       message
     }
   }
+`;
+
+export const findIdiomsQuery = gql`
+  query FindIdiomsQuery($filter: String) {
+    idioms(filter: $filter, limit: 10) {
+      totalCount
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+      edges {
+        node {
+          ...MinimalIdiomEntry
+        }
+      }
+    }
+  }
+  ${MINIMAL_IDIOM_ENTRY}
 `;
 
 enum DeleteActionState {
@@ -152,19 +176,106 @@ export const Idiom: React.StatelessComponent<IdiomCombinedProps> = props => {
 
         <Title level={4}>Equivalents</Title>
         <Paragraph className="info">This is how you express this idiom across languages and locales.</Paragraph>
-        {idiom.equivalents.length > 0 && <EquivalentIdiomList idiom={idiom} user={currentUser} />}
-        {idiom.equivalents.length <= 0 && (
-          <>
-            <Paragraph className="content">No equivilent idioms across languages yet...</Paragraph>
-          </>
-        )}
-        <Paragraph className="content addEquivalent">
-          <Button type="link" icon="plus-circle" onClick={e => handleAddEquivilentClick(e, data.idiom!.id, props.history)}>
-            {currentUser ? "Add an equivilent idiom" : "Login to connect this to other idioms"}
-          </Button>
-        </Paragraph>
+        <EquivalentIdiomList idiom={idiom} user={currentUser} />
+        <AddEquivalentIdiomList idiom={idiom} user={currentUser} history={props.history} />
       </PageHeader>
     </article>
+  );
+};
+
+interface AddEquivalentListProps {
+  user?: GetCurrentUser_me | null;
+  idiom: GetIdiomQuery_idiom;
+  history: History;
+}
+
+type IdiomFindItem = { title: string; slug: string; id: string };
+const AddEquivalentIdiomList: React.StatelessComponent<AddEquivalentListProps> = props => {
+  const [selectedIdiom, setSelectedIdiom] = React.useState<FindIdiomsQuery_idioms_edges_node | null>(null);
+  const [findQueryData, findQueryLoadResult] = useLazyQuery<FindIdiomsQuery, FindIdiomsQueryVariables>(findIdiomsQuery);
+  const [addEquivalentIdiomMutation, addEquivalentIdiomMutationResult] = useMutation<
+    AddEquivalentIdiomMutation,
+    AddEquivalentIdiomMutationVariables
+  >(addIdiomEquivalentQuery);
+
+  const fetching = findQueryLoadResult.loading;
+  const findData =
+    (!findQueryLoadResult.error &&
+      findQueryLoadResult.data &&
+      findQueryLoadResult.data.idioms &&
+      findQueryLoadResult.data.idioms.edges) ||
+    [];
+
+  const fetchUser = (value: string) => {
+    findQueryData({ variables: { filter: value } });
+  };
+  const handleChange = (id: string) => {
+    const matches = findData.filter(x => x.node.id === id);
+    const idiom = matches && matches[0] ? matches[0].node : null;
+    setSelectedIdiom(idiom);
+  };
+
+  if (!props.user) {
+    return (
+      <Button type="link" icon="plus-circle" onClick={e => loginClick(e, props.idiom!.slug, props.history)}>
+        Login to correlate with other idioms
+      </Button>
+    );
+  }
+
+  return (
+    <>
+      <Title level={4}>Correlate Idiom</Title>
+      <Paragraph className="content addEquivalent addExisting">
+        <Text strong>With existing idiom...</Text>
+        <Text className="addEquivalentDescription">Search to find an idiom to correlate this with</Text>
+        <div>
+          <Select<string>
+            mode="default"
+            showSearch
+            value={selectedIdiom ? selectedIdiom.id! : undefined}
+            placeholder="Find an idiom"
+            notFoundContent={fetching ? <Spin size="small" /> : null}
+            filterOption={false}
+            onSearch={fetchUser}
+            onChange={handleChange}
+            style={{ width: "400px" }}
+          >
+            {findData.map(d => (
+              <Option key={d.node.id} value={d.node.id}>
+                {d.node.title}
+              </Option>
+            ))}
+          </Select>
+        </div>
+        {selectedIdiom && (
+          <div className="equivalentItem">
+            <div className="equivalentItemContent">
+              <LanguageFlags
+                languageInfo={selectedIdiom.language}
+                compactMode={true}
+                showLabel={true}
+                size={"small"}
+                layoutMode={"horizontal"}
+              />
+              <Link target="_blank" to={"/idioms/" + selectedIdiom.slug}>
+                {selectedIdiom.title}
+              </Link>
+            </div>
+            <Button type="primary">Add</Button>
+          </div>
+        )}
+      </Paragraph>
+      <Paragraph className="content addEquivalent addNew">
+        <Text strong>With a new idiom...</Text>
+        <Text className="addEquivalentDescription">If the idiom doesn't exist here yet, please add it</Text>
+        <div>
+          <Button type="link" icon="plus-circle" onClick={e => handleAddEquivalentClick(e, props.idiom!.id, props.history)}>
+            Add idiom
+          </Button>
+        </div>
+      </Paragraph>
+    </>
   );
 };
 
@@ -174,10 +285,9 @@ interface EquivalentListProps {
 }
 
 const EquivalentIdiomList: React.StatelessComponent<EquivalentListProps> = props => {
-  const [addEquivalentIdiomMutation, addEquivalentIdiomMutationResult] = useMutation<
-    AddEquivalentIdiomMutation,
-    AddEquivalentIdiomMutationVariables
-  >(addIdiomEquivalentQuery);
+  if (props.idiom.equivalents.length <= 0) {
+    return <Paragraph className="content">No equivalent idioms across languages yet...</Paragraph>;
+  }
 
   return (
     <ul className="equivalentList">
@@ -244,6 +354,11 @@ const EquivalentIdiomItem: React.StatelessComponent<EquivalentItemProps> = props
   );
 };
 
-const handleAddEquivilentClick = (e: React.MouseEvent<any, any>, idiomId: string, history: History) => {
-  history.push(`/new?equivilentIdiomId=${idiomId}`);
+const handleAddEquivalentClick = (e: React.MouseEvent<any, any>, idiomId: string, history: History) => {
+  history.push(`/new?equivalentIdiomId=${idiomId}`);
+};
+
+const loginClick = (e: React.MouseEvent<any, any>, idiomSlug: string, history: History) => {
+  const returnUrl = `/idioms/${idiomSlug}`;
+  window.location.href = `${process.env.REACT_APP_SERVER}/login?returnTo=${returnUrl}`;
 };

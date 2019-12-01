@@ -43,10 +43,33 @@ article.idiom {
     margin-bottom: 1rem;
   }
 
-  ul.equivalentList {
-    list-style: none;
-    padding: 0;
-    margin-left: 20px;
+  .addEquivalentDescription {
+    font-size: 0.8rem;
+    display: block;
+    color: black;
+  }
+
+  .addExisting {
+    .equivalentItem {
+      margin-top: 10px;
+    }
+  }
+
+  .equivalentItem {
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    .equivalentItemContent {
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .removeEquivalentButton {
+      color: red;
+      padding-bottom: 10px;
+    }
 
     a {
       color: black;
@@ -56,27 +79,27 @@ article.idiom {
     a:hover {
       color: #1890ff;
     }
+  }
 
-    .equivalentItem {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-
-      .equivalentItemContent {
-        display: flex;
-        align-items: flex-start;
-      }
-
-      .removeEquivalentButton {
-        color: red;
-        padding-bottom: 10px;
-      }
-    }
+  .equivalentList {
+    list-style: none;
+    padding: 0;
+    margin-left: 20px;
   }
 
   .addEquivalent {
-    button {
-      padding-left: 0px;
+    &.addNew {
+      button {
+        padding-left: 0px;
+      }
+    }
+
+    &.addExisting {
+      margin-bottom: 30px;
+      margin-top: 10px;
+      button {
+        margin-left: 10px;
+      }
     }
   }
 }

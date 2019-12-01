@@ -34,3 +34,19 @@ fragment FullIdiomEntry on Idiom {
         }
     }
 }`;
+
+export const MINIMAL_IDIOM_ENTRY = gql`
+fragment MinimalIdiomEntry on Idiom {
+    id
+    slug
+    title
+    language {
+        languageKey
+        languageName
+        countries {
+            countryKey
+            countryName
+            emojiFlag
+        }
+    } 
+}`;

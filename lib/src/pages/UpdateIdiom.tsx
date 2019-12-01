@@ -108,7 +108,7 @@ const UpdateIdiomComponent: React.StatelessComponent<FormProps> = props => {
   const userNoLongerSignedIn = isAuthenticationError(error);
   const userNeedsToAuthenticate = (!currentUser && !currentUserLoading) || userNoLongerSignedIn;
   if (userNeedsToAuthenticate) {
-    window.location.href = `${process.env.REACT_APP_SERVER}/auth/google`;
+    window.location.href = `${process.env.REACT_APP_SERVER}/login?/idioms/${props.slug}/update`;
     return <></>;
   }
 

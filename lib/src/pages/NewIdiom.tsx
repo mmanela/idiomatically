@@ -57,7 +57,7 @@ export const createIdiomQuery = gql`
 `;
 
 export interface NewIdiomProps {
-  equivilentIdiomId?: string;
+  equivalentIdiomId?: string;
 }
 
 type FormProps = NewIdiomProps & WrappedFormInternalProps<IDictionary<string | string[]>>;
@@ -113,7 +113,7 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
   const userNoLongerSignedIn = isAuthenticationError(error);
   const userNeedsToAuthenticate = (!currentUser && !currentUserLoading) || userNoLongerSignedIn;
   if (userNeedsToAuthenticate) {
-    window.location.href = `${process.env.REACT_APP_SERVER}/auth/google`;
+    window.location.href = `${process.env.REACT_APP_SERVER}/login?returnTo=/new`;
     return <></>;
   }
 
@@ -122,9 +122,9 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
   }
 
   let equivilentIdiom: FullIdiomEntry | null = null;
-  if (props.equivilentIdiomId) {
+  if (props.equivalentIdiomId) {
     equivilentIdiom = client!.readFragment<FullIdiomEntry>({
-      id: "Idiom:" + props.equivilentIdiomId,
+      id: "Idiom:" + props.equivalentIdiomId,
       fragment: FULL_IDIOM_ENTRY
     });
   }
@@ -163,10 +163,10 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
     </div>
   );
 
-  if (props.equivilentIdiomId) {
+  if (props.equivalentIdiomId) {
     // Get the idiom
     if (!equivalentLoadInfo.called) {
-      getEquivalentIdiom({ variables: { id: props.equivilentIdiomId } });
+      getEquivalentIdiom({ variables: { id: props.equivalentIdiomId } });
     }
 
     if (equivalentLoadInfo.loading) {

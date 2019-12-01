@@ -11,7 +11,6 @@ import { NewIdiom } from "../pages/NewIdiom";
 import { RouteChildrenProps } from "react-router";
 import { UpdateIdiom } from "../pages/UpdateIdiom";
 import { ChangeProposals } from "../pages/ChangeProposals";
-//import { ChangeProposals } from "../pages/ChangeProposals";
 const { Header, Footer, Content } = Layout;
 const { Search } = Input;
 
@@ -88,9 +87,9 @@ const renderListView = (props: RouteProps) => {
 
 const renderNewIdiomForm = (props: RouteProps) => {
   const params = new URLSearchParams(props.location!.search);
-  const equivilentIdiomId = params.get("equivilentIdiomId");
+  const equivalentIdiomId = params.get("equivalentIdiomId");
 
-  return <NewIdiom equivilentIdiomId={equivilentIdiomId!} />;
+  return <NewIdiom equivalentIdiomId={equivalentIdiomId!} />;
 };
 
 const renderUpdateIdiomForm = (props: RouteChildrenProps<any>) => {

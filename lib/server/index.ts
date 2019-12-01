@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import * as http from 'http';
+import * as url from 'url';
 import express from 'express';
 import { ApolloServer, makeExecutableSchema } from 'apollo-server-express';
 import typeDefs from './schema';
@@ -97,6 +98,23 @@ const start = async () => {
 
     app.get("/admin", ensureLoggedIn('/auth/google'), (req, res) => {
       res.send('Admin eyes only!');
+    });
+
+    app.get("/login", (req, res) => {
+      const authUrl = "/auth/google";
+      const returnTo = req.query["returnTo"];
+      const url_parts = returnTo ? url.parse(returnTo) : null;
+      const path = url_parts ? url_parts.pathname : "";
+      const returnPath = clientUrl + path;
+      if (!req.isAuthenticated || !req.isAuthenticated()) {
+        if (req.session) {
+          req.session.returnTo = returnPath;
+        }
+        return res.redirect(authUrl);
+      }
+      else {
+        return res.redirect(returnPath);
+      }
     });
 
     // GET /auth/google

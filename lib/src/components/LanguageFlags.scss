@@ -29,6 +29,7 @@
   }
 
   .flagAfterText {
+    color: rgba(0, 0, 0, 0.65);
     align-items: flex-start;
     margin-right: 10px;
     vertical-align: middle;
@@ -41,7 +42,7 @@
 
 .flagOverflowTooltip {
   .flagList {
-    .flagImage:not(:first-child)  {
+    .flagImage:not(:first-child) {
       margin-left: 5px;
     }
   }

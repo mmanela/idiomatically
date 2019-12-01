@@ -368,7 +368,13 @@ export class IdiomDataProvider {
         if (filter) {
             const filterRegex = escapeRegex(filter);
             const filterRegexObj = { $regex: filterRegex, $options: 'i' };
-            const filterQuery: FilterQuery<DbIdiom> = { $or: [{ title: filterRegexObj }, { description: filterRegexObj }, { literalTranslation: filterRegexObj }] };
+            const filterQuery: FilterQuery<DbIdiom> = {
+                $or: [
+                    { title: filterRegexObj },
+                    { description: filterRegexObj },
+                    { slug: filterRegexObj },
+                    { literalTranslation: filterRegexObj }]
+            };
             if (findFilter) {
                 findFilter = { $and: [findFilter, filterQuery] };
             }

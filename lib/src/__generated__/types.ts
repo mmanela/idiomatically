@@ -291,6 +291,62 @@ export interface RemoveEquivalentIdiomMutationVariables {
 // This file was automatically generated and should not be edited.
 
 // ====================================================
+// GraphQL query operation: FindIdiomsQuery
+// ====================================================
+
+export interface FindIdiomsQuery_idioms_pageInfo {
+  __typename: "PageInfo";
+  endCursor: string;
+  hasNextPage: boolean;
+}
+
+export interface FindIdiomsQuery_idioms_edges_node_language_countries {
+  __typename: "Country";
+  countryKey: string;
+  countryName: string;
+  emojiFlag: string;
+}
+
+export interface FindIdiomsQuery_idioms_edges_node_language {
+  __typename: "Language";
+  languageKey: string;
+  languageName: string;
+  countries: FindIdiomsQuery_idioms_edges_node_language_countries[];
+}
+
+export interface FindIdiomsQuery_idioms_edges_node {
+  __typename: "Idiom";
+  id: string;
+  slug: string;
+  title: string;
+  language: FindIdiomsQuery_idioms_edges_node_language;
+}
+
+export interface FindIdiomsQuery_idioms_edges {
+  __typename: "IdiomEdge";
+  node: FindIdiomsQuery_idioms_edges_node;
+}
+
+export interface FindIdiomsQuery_idioms {
+  __typename: "IdiomConnection";
+  totalCount: number;
+  pageInfo: FindIdiomsQuery_idioms_pageInfo;
+  edges: FindIdiomsQuery_idioms_edges[];
+}
+
+export interface FindIdiomsQuery {
+  idioms: FindIdiomsQuery_idioms;
+}
+
+export interface FindIdiomsQueryVariables {
+  filter?: string | null;
+}
+
+/* tslint:disable */
+/* eslint-disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
 // GraphQL query operation: GetIdiomListQuery
 // ====================================================
 
@@ -586,6 +642,36 @@ export interface FullIdiomEntry {
   description: string | null;
   language: FullIdiomEntry_language;
   equivalents: FullIdiomEntry_equivalents[];
+}
+
+/* tslint:disable */
+/* eslint-disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
+// GraphQL fragment: MinimalIdiomEntry
+// ====================================================
+
+export interface MinimalIdiomEntry_language_countries {
+  __typename: "Country";
+  countryKey: string;
+  countryName: string;
+  emojiFlag: string;
+}
+
+export interface MinimalIdiomEntry_language {
+  __typename: "Language";
+  languageKey: string;
+  languageName: string;
+  countries: MinimalIdiomEntry_language_countries[];
+}
+
+export interface MinimalIdiomEntry {
+  __typename: "Idiom";
+  id: string;
+  slug: string;
+  title: string;
+  language: MinimalIdiomEntry_language;
 }
 
 /* tslint:disable */

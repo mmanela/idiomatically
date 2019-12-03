@@ -15,7 +15,9 @@ const { Header, Footer, Content } = Layout;
 const { Search } = Input;
 
 if (typeof window === "undefined") {
-  (global as any).window = {};
+  (global as any).window = {
+    location: {}
+  };
 }
 
 export interface AppProps {

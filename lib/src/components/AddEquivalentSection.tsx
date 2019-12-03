@@ -1,5 +1,4 @@
 import React from "react";
-import { LanguageFlags } from "./LanguageFlags";
 import { History } from "history";
 import {
   OperationStatus,
@@ -11,11 +10,12 @@ import {
   FindIdiomsQueryVariables,
   FindIdiomsQuery_idioms_edges_node
 } from "../__generated__/types";
-import { Link } from "react-router-dom";
 import { useMutation, useLazyQuery } from "@apollo/react-hooks";
 import { MINIMAL_IDIOM_ENTRY } from "../fragments/fragments";
 import gql from "graphql-tag";
+import "./AddEquivalentSection.scss";
 import { Alert, Spin, Button, Select, Typography } from "antd";
+import { IdiomRenderer } from "./IdiomRenderer";
 const { Option } = Select;
 const { Title, Paragraph, Text } = Typography;
 
@@ -56,7 +56,7 @@ type SelectedIdiomState = {
   submitting?: boolean;
   status?: OperationStatus;
 };
-export const AddEquivalentIdiomSection: React.StatelessComponent<AddEquivalentListProps> = props => {
+export const AddEquivalentSection: React.StatelessComponent<AddEquivalentListProps> = props => {
   const [selectedIdiomState, setSelectedIdiomState] = React.useState<SelectedIdiomState>({});
   const [findQueryData, findQueryLoadResult] = useLazyQuery<FindIdiomsQuery, FindIdiomsQueryVariables>(findIdiomsQuery);
   const [addEquivalentIdiomMutation, addEquivalentIdiomMutationResult] = useMutation<
@@ -97,6 +97,17 @@ export const AddEquivalentIdiomSection: React.StatelessComponent<AddEquivalentLi
       </Button>
     );
   }
+
+  const actions = (
+    <Button
+      disabled={!selectedIdiomState.idiom || selectedIdiomState.submitting}
+      type="primary"
+      onClick={() => addEquivalent(selectedIdiomState.idiom!.id)}
+    >
+      {addEquivalentIdiomMutationResult.loading ? <Spin size="small" /> : "Add"}
+    </Button>
+  );
+
   return (
     <>
       <Title level={4}>Correlate Idiom</Title>
@@ -113,15 +124,11 @@ export const AddEquivalentIdiomSection: React.StatelessComponent<AddEquivalentLi
             filterOption={false}
             onSearch={fetchUser}
             onChange={handleChange}
-            style={{ width: "400px" }}
+            className="findSelectControl"
           >
             {findData.map(d => (
               <Option key={d.node.id} value={d.node.id}>
-                {
-                  <div>
-                    <span>{d.node.language.languageName}</span> - <span>{d.node.title}</span>
-                  </div>
-                }
+                <IdiomRenderer idiom={d.node} hideFlags={true} disableLink={true} />
               </Option>
             ))}
           </Select>
@@ -135,27 +142,7 @@ export const AddEquivalentIdiomSection: React.StatelessComponent<AddEquivalentLi
         )}
 
         {selectedIdiomState.idiom && selectedIdiomState.status === undefined && (
-          <div className="equivalentItem">
-            <div className="equivalentItemContent">
-              <LanguageFlags
-                languageInfo={selectedIdiomState.idiom.language}
-                compactMode={true}
-                showLabel={true}
-                size={"small"}
-                layoutMode={"horizontal"}
-              />
-              <Link target="_blank" to={"/idioms/" + selectedIdiomState.idiom.slug}>
-                {selectedIdiomState.idiom.title}
-              </Link>
-            </div>
-            <Button
-              disabled={!selectedIdiomState.idiom || selectedIdiomState.submitting}
-              type="primary"
-              onClick={() => addEquivalent(selectedIdiomState.idiom!.id)}
-            >
-              {addEquivalentIdiomMutationResult.loading ? <Spin size="small" /> : "Add"}
-            </Button>
-          </div>
+          <IdiomRenderer idiom={selectedIdiomState.idiom} actions={actions} />
         )}
       </Paragraph>
       <Paragraph className="content addEquivalent addNew">

@@ -15,9 +15,9 @@ import { useCurrentUser } from "../components/withCurrentUser";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 import gql from "graphql-tag";
 import { useState } from "react";
-import { Typography, Alert, Spin, Button, PageHeader } from "antd";
-import { AddEquivalentIdiomSection } from "../components/AddEquivalentIdiomSection";
+import { AddEquivalentSection } from "../components/AddEquivalentSection";
 import { EquivalentIdiomList } from "../components/EquivalentIdiomList";
+import { Typography, Alert, Spin, Button, PageHeader, Icon } from "antd";
 const { Title, Paragraph } = Typography;
 
 export const deleteIdiomQuery = gql`
@@ -64,21 +64,11 @@ export const Idiom: React.StatelessComponent<IdiomCombinedProps> = props => {
 
   const { idiom } = data;
   const buttons = [
-    showEdit && (
-      <Button
-        key="1"
-        type="default"
-        onClick={() => {
-          props.history.push("/idioms/" + idiom.slug + "/update");
-        }}
-      >
-        Edit
-      </Button>
-    ),
     showDelete && (
       <Button
         key="2"
-        type="danger"
+        className="deleteIdiomButton"
+        type="default"
         onClick={() => {
           if (deleteConfirmation === DeleteActionState.Proposed) {
             deleteIdiom({ variables: { id: idiom.id } });
@@ -87,16 +77,20 @@ export const Idiom: React.StatelessComponent<IdiomCombinedProps> = props => {
           }
         }}
       >
-        {deleteConfirmation === DeleteActionState.Proposed ? "Are you sure?" : "Delete"}
+        {deleteConfirmation === DeleteActionState.Proposed ? "Are you sure?" : <Icon type="delete" theme="filled" />}
       </Button>
     )
   ];
-
+  const editConfig = {
+    onStart: () => {
+      props.history.push("/idioms/" + idiom.slug + "/update");
+    }
+  };
   return (
     <article className="idiom">
       <PageHeader
         title={
-          <Title level={3} copyable>
+          <Title level={3} copyable editable={showEdit ? editConfig : false}>
             {idiom.title}
           </Title>
         }
@@ -128,7 +122,7 @@ export const Idiom: React.StatelessComponent<IdiomCombinedProps> = props => {
         <Title level={4}>Equivalents</Title>
         <Paragraph className="info">This is how you express this idiom across languages and locales.</Paragraph>
         <EquivalentIdiomList idiom={idiom} user={currentUser} />
-        <AddEquivalentIdiomSection idiom={idiom} user={currentUser} history={props.history} />
+        <AddEquivalentSection idiom={idiom} user={currentUser} history={props.history} />
       </PageHeader>
     </article>
   );

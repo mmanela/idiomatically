@@ -15,7 +15,6 @@ import { IDictionary } from "../types";
 import { FormEvent, useState } from "react";
 import { Redirect } from "react-router";
 import { FULL_IDIOM_ENTRY } from "../fragments/fragments";
-import { LanguageFlags } from "../components/LanguageFlags";
 import { getIdiomQuery } from "../fragments/getIdiom";
 import { commonFormItems } from "../components/commonFormItems";
 import { getErrorMessage, isAuthenticationError } from "../utilities/errorUtils";
@@ -23,6 +22,7 @@ import { MutationFunction } from "@apollo/react-common";
 import { useCurrentUser } from "../components/withCurrentUser";
 import { useMutation, useLazyQuery } from "@apollo/react-hooks";
 import { PendingOperationNotification } from "../components/PendingOperationNotification";
+import { IdiomRenderer } from "../components/IdiomRenderer";
 const { Title, Paragraph } = Typography;
 
 export const createIdiomQuery = gql`
@@ -132,8 +132,8 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
     <div>
       <Title level={2}>Add an Idiom</Title>
       <Paragraph>
-        A goal of Idiomatically is to catalog and coerelate idioms across countries and cultures. For that reason, it is important to
-        write idioms from non-English alphabets in their native characters. Then provide english character transliteration and
+        A goal of Idiomatically is to catalog and coerelate idioms across countries and cultures. For that reason, it is important
+        to write idioms from non-English alphabets in their native characters. Then provide english character transliteration and
         translation of that idiom.
       </Paragraph>
       {data && data.createIdiom.idiom && data.createIdiom.idiom.slug && (
@@ -150,10 +150,9 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
       {error && <Alert type="error" message={getErrorMessage(error)} showIcon />}
       <Form labelAlign="left" {...formItemLayout} onSubmit={e => handleSubmit(e, props, createIdiom, equivilentIdiom)}>
         {equivilentIdiom && (
-          <Form.Item label="Equivalent for">
+          <Form.Item label="Add an equivalent idiom for" colon>
             <div className="equivalentEntry">
-              <LanguageFlags languageInfo={equivilentIdiom.language} layoutMode="horizontal" compactMode size="small" />
-              <span className="ant-form-text">{equivilentIdiom.title}</span>
+              <IdiomRenderer idiom={equivilentIdiom} />
             </div>
           </Form.Item>
         )}

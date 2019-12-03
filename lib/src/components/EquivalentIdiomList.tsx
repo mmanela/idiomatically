@@ -1,5 +1,4 @@
 import React from "react";
-import { LanguageFlags } from "./LanguageFlags";
 import {
   UserRole,
   OperationStatus,
@@ -9,10 +8,11 @@ import {
   GetCurrentUser_me,
   GetIdiomQuery_idiom_equivalents
 } from "../__generated__/types";
-import { Link } from "react-router-dom";
 import { useMutation } from "@apollo/react-hooks";
 import { Button, Icon, Typography } from "antd";
 import gql from "graphql-tag";
+import "./EquivalentIdiomList.scss";
+import { IdiomRenderer } from "./IdiomRenderer";
 const { Paragraph } = Typography;
 
 export const removeEquivalentQuery = gql`
@@ -52,7 +52,8 @@ export const EquivalentIdiomList: React.StatelessComponent<EquivalentListProps> 
 
   return (
     <ul className="equivalentList">
-      {ordered.length > 0 && ordered.map(x => <EquivalentIdiomItem equivalentIdiom={x} idiom={props.idiom} user={props.user} />)}
+      {ordered.length > 0 &&
+        ordered.map(x => <EquivalentIdiomItem key={x.slug} equivalentIdiom={x} idiom={props.idiom} user={props.user} />)}
     </ul>
   );
 };
@@ -85,26 +86,16 @@ const EquivalentIdiomItem: React.StatelessComponent<EquivalentItemProps> = props
       setConfirmRemove(true);
     }
   };
+
+  const actions = isAdmin && (
+    <Button onClick={() => removeEquivalentHandler(equivalent.id)} type="link" className="removeEquivalentButton">
+      <Icon type="delete" className="removeEquivalentIcon" theme="filled" />
+      {confirmRemove ? "Are you sure?" : "Remove"}
+    </Button>
+  );
   return (
-    <li key={equivalent.slug}>
-      <div className="equivalentItem">
-        <div className="equivalentItemContent">
-          <LanguageFlags
-            languageInfo={equivalent.language}
-            compactMode={true}
-            showLabel={true}
-            size={"small"}
-            layoutMode={"horizontal"}
-          />
-          <Link to={"/idioms/" + equivalent.slug}>{equivalent.title}</Link>
-        </div>
-        {isAdmin && (
-          <Button onClick={() => removeEquivalentHandler(equivalent.id)} type="link" className="removeEquivalentButton">
-            <Icon type="delete" className="removeEquivalentIcon" theme="filled" />
-            {confirmRemove ? "Are you sure?" : "Remove"}
-          </Button>
-        )}
-      </div>
+    <li>
+      <IdiomRenderer idiom={equivalent} actions={actions} layoutMode="vertical" />
     </li>
   );
 };

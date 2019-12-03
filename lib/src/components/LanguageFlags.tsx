@@ -2,10 +2,7 @@ import * as React from "react";
 import { parse as emoji } from "twemoji-parser";
 import { Tooltip, Avatar } from "antd";
 import "./LanguageFlags.scss";
-import {
-  FullIdiomEntry_language,
-  FullIdiomEntry_language_countries
-} from "../__generated__/types";
+import { FullIdiomEntry_language, FullIdiomEntry_language_countries } from "../__generated__/types";
 
 type FlagSize = "small" | "default" | "large";
 export interface FlagCountry {
@@ -23,11 +20,10 @@ export interface LanguageFlagsProps {
   showLabel?: boolean;
   layoutMode?: "horizontal" | "vertical";
   compactMode?: boolean;
+  hideFlags?: boolean;
 }
 
-export const LanguageFlags: React.StatelessComponent<
-  LanguageFlagsProps
-> = props => {
+export const LanguageFlags: React.StatelessComponent<LanguageFlagsProps> = props => {
   const languageLabel = `${props.languageInfo.languageName}`;
   const layoutMode = props.layoutMode || "horizontal";
   const size = props.size || "default";
@@ -35,16 +31,12 @@ export const LanguageFlags: React.StatelessComponent<
   return (
     <div className={["flagAvatarContainer", layoutMode, size].join(" ")}>
       {props.showLabel && <div className="flagAfterText">{languageLabel}</div>}
-      {renderFlag(props.languageInfo.countries, size, props.compactMode)}
+      {!props.hideFlags && renderFlag(props.languageInfo.countries, size, props.compactMode)}
     </div>
   );
 };
 
-const renderFlag = (
-  countries: FullIdiomEntry_language_countries[],
-  size?: FlagSize,
-  compactMode?: boolean
-) => {
+const renderFlag = (countries: FullIdiomEntry_language_countries[], size?: FlagSize, compactMode?: boolean) => {
   if (compactMode) {
     // Just pick first country for now, in the future we may want some idea
     // of default country that best represents the idiom
@@ -56,11 +48,7 @@ const renderFlag = (
           <Tooltip
             className="flagOverflow"
             placement="top"
-            title={
-              <div className="flagOverflowTooltip">
-                {renderFlagList(countries.slice(1), size)}
-              </div>
-            }
+            title={<div className="flagOverflowTooltip">{renderFlagList(countries.slice(1), size)}</div>}
             arrowPointAtCenter
           >
             <span className="flagOverflowText">+{countries.length - 1}</span>
@@ -73,28 +61,16 @@ const renderFlag = (
   }
 };
 
-const renderFlagList = (
-  countries: FullIdiomEntry_language_countries[],
-  size?: FlagSize
-) => (
+const renderFlagList = (countries: FullIdiomEntry_language_countries[], size?: FlagSize) => (
   <div className="flagList">{countries.map(f => getCountryFlag(f, size))}</div>
 );
 
-const getCountryFlag = (
-  country: FullIdiomEntry_language_countries,
-  size?: FlagSize
-) => {
+const getCountryFlag = (country: FullIdiomEntry_language_countries, size?: FlagSize) => {
   const emojiResults = emoji(country.emojiFlag);
   const flagEmoji = emojiResults ? emojiResults[0].url : undefined;
 
   return (
-    <Tooltip
-      className="flagImage"
-      placement="top"
-      title={country.countryName}
-      key={country.countryKey}
-      arrowPointAtCenter
-    >
+    <Tooltip className="flagImage" placement="top" title={country.countryName} key={country.countryKey} arrowPointAtCenter>
       <Avatar src={flagEmoji} size={size} />
     </Tooltip>
   );

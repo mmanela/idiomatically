@@ -15,7 +15,8 @@ article.idiom {
       font-size: 19px;
       vertical-align: middle;
     }
-    i.anticon-copy {
+    i.anticon-copy,
+    i.anticon-edit {
       color: #ccc;
 
       &:hover {
@@ -43,71 +44,11 @@ article.idiom {
     margin-bottom: 1rem;
   }
 
-  .addEquivalentDescription {
-    font-size: 0.8rem;
-    display: block;
-    color: black;
-  }
+  .deleteIdiomButton {
+    color: red;
 
-  .addExisting {
-    .equivalentItem {
-      margin-top: 10px;
-    }
-
-    .addEquivalentResult {
-      margin-top: 10px;
-    }
-
-    .addExistingFindBox {
-      margin-top: 2px;
-    }
-  }
-
-  .equivalentItem {
-    font-size: 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-
-    .equivalentItemContent {
-      display: flex;
-      align-items: flex-start;
-    }
-
-    .removeEquivalentButton {
-      color: red;
-      padding-bottom: 10px;
-    }
-
-    a {
-      color: black;
-      margin-left: 15px;
-    }
-
-    a:hover {
-      color: #1890ff;
-    }
-  }
-
-  .equivalentList {
-    list-style: none;
-    padding: 0;
-    margin-left: 20px;
-  }
-
-  .addEquivalent {
-    &.addNew {
-      button {
-        padding-left: 0px;
-      }
-    }
-
-    &.addExisting {
-      margin-bottom: 30px;
-      margin-top: 10px;
-      button {
-        margin-left: 10px;
-      }
+    &:hover {
+      border-color: red;
     }
   }
 }

@@ -44,7 +44,7 @@ export const NavCommandBar: React.StatelessComponent<NavBarCombinedProps> = prop
       )}
       <Menu.Item key="user" className="userMenuItem">
         {!isLoggedIn && (
-          <a href={`${process.env.REACT_APP_SERVER}/login?returnTo=${window.location.pathname}`}>
+          <a href={`${process.env.REACT_APP_SERVER}/login?returnTo=${props.history.location.pathname}`}>
             <Icon type="login" />
             Login
           </a>

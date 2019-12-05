@@ -115,7 +115,7 @@ export const Idiom: React.StatelessComponent<IdiomCombinedProps> = props => {
         {idiom.description && (
           <>
             <Title level={4}>Description</Title>
-            <Paragraph className="content">{idiom.description}</Paragraph>
+            <Paragraph className="content description">{idiom.description}</Paragraph>
           </>
         )}
 

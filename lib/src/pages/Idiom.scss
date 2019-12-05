@@ -38,6 +38,10 @@ article.idiom {
   .content {
     margin-left: 20px;
     color: #000;
+
+    &.description {
+      white-space: pre-wrap;
+    }
   }
 
   .flagAvatarContainer {

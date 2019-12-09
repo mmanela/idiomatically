@@ -1,5 +1,5 @@
 .idiomRendererItem {
-  font-size: 14px;
+  font-size: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -14,7 +14,7 @@
     }
 
     &.horizontal {
-      .idiomFlag {  
+      .idiomFlag {
         word-break: break-word;
       }
 
@@ -24,6 +24,7 @@
     }
 
     .idiomFlag {
+      font-size: 0.8rem;
       margin-right: 15px;
       .flagAvatarContainer {
         margin-bottom: 0;

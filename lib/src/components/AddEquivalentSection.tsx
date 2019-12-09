@@ -110,10 +110,11 @@ export const AddEquivalentSection: React.StatelessComponent<AddEquivalentListPro
 
   return (
     <>
-      <Title level={4}>Correlate Idiom</Title>
+      <Title level={4}>Contribute</Title>
+      <Paragraph className="info">Add idioms that are equivalent to this one in other languages and locales.</Paragraph>
       <Paragraph className="content addEquivalent addExisting">
-        <Text strong>With an existing idiom...</Text>
-        <Text className="addEquivalentDescription">Search to find an idiom to correlate this with</Text>
+        <Text strong>Find an existing idiom...</Text>
+        <Text className="addEquivalentDescription">Search to find an idiom to correlate with</Text>
         <div className="addExistingFindBox">
           <Select<string>
             mode="default"
@@ -146,8 +147,8 @@ export const AddEquivalentSection: React.StatelessComponent<AddEquivalentListPro
         )}
       </Paragraph>
       <Paragraph className="content addEquivalent addNew">
-        <Text strong>With a new idiom...</Text>
-        <Text className="addEquivalentDescription">If the idiom doesn't exist here yet, please add it</Text>
+        <Text strong>Add a new idiom...</Text>
+        <Text className="addEquivalentDescription">If the idiom doesn't exist on the site yet, please add it</Text>
         <div>
           <Button type="link" icon="plus-circle" onClick={e => handleAddEquivalentClick(e, props.idiom!.id, props.history)}>
             Add idiom

@@ -357,7 +357,7 @@ export class IdiomDataProvider {
         let totalCount = null;
         let dbIdioms: DbIdiom[];
         let findFilter: FilterQuery<DbIdiom>;
-        let sortObj: object = { createdAt: -1 };
+        let sortObj: object = { "equivCount": -1 };
         let users: UserModel[];
 
         if (locale) {
@@ -388,13 +388,13 @@ export class IdiomDataProvider {
         findFilter = this.activeOnly(findFilter);
         totalCount = await this.idiomCollection.countDocuments(findFilter);
 
-        dbIdioms = await this.idiomCollection
-            .find(findFilter)
-            .sort(sortObj)
-            .skip(skip)
+        dbIdioms = await this.idiomCollection.aggregate([
+            { $match: findFilter },
+            { $addFields: { equivCount: { $size: { "$ifNull": ["$equivalents", []] } } } },
+            { $sort: sortObj }
+        ]).skip(skip)
             .limit(limit)
             .toArray();
-
 
         let dbEquivalents: DbIdiom[] = [];
         if (dbIdioms) {

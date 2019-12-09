@@ -14,6 +14,7 @@ import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import expressSession from 'express-session';
 import { ensureLoggedIn } from 'connect-ensure-login';
 import MemoryStoreFactory from 'memorystore'
+import MongoStoreFactory from 'connect-mongo';
 import { Profile } from 'passport';
 import cors from 'cors';
 import { User, UserRole } from './_graphql/types';
@@ -77,7 +78,7 @@ const start = async () => {
     });
 
     const app = express();
-    setupAuthAndSession(app, serverUrl, clientUrl, dataProviders, isProd, googleClientId, googleClientSecret);
+    setupAuthAndSession(mongoConnection, app, serverUrl, clientUrl, dataProviders, isProd, googleClientId, googleClientSecret);
 
     server.applyMiddleware({ app, cors: false });
     const httpServer = http.createServer(app);
@@ -151,7 +152,7 @@ const start = async () => {
 
 start();
 
-function setupAuthAndSession(app: express.Application, serverUrl: string, clientUrl: string, dataProviders: DataProviders, isProd: boolean, googleClientId: string, googleClientSecret: string) {
+function setupAuthAndSession(mongoConnection: MongoClient, app: express.Application, serverUrl: string, clientUrl: string, dataProviders: DataProviders, isProd: boolean, googleClientId: string, googleClientSecret: string) {
 
   // Use the GoogleStrategy within Passport.
   //   Strategies in Passport require a `verify` function, which accept
@@ -195,7 +196,7 @@ function setupAuthAndSession(app: express.Application, serverUrl: string, client
   });
 
   const sessionLength = 7 * 24 * 60 * 60 * 1000; // 7 days
-  const SessionMemoryStore = MemoryStoreFactory(expressSession);
+  const SessionMongoStore = MongoStoreFactory(expressSession);
   const sessionOptions: expressSession.SessionOptions = {
     // Random guid formatted with "N"
     secret: 'f60262180a5f481b8564318be9cb3ce6',
@@ -205,12 +206,15 @@ function setupAuthAndSession(app: express.Application, serverUrl: string, client
       secure: false,
       maxAge: sessionLength
     },
-    store: new SessionMemoryStore({
-      checkPeriod: sessionLength
+    store: new SessionMongoStore({
+      client: mongoConnection,
+      collection: isProd ? 'sessions' : "dev_sessions",
+      touchAfter: 6 * 3600 // time period in seconds
     }),
   };
+
   if (isProd) {
-    app.set('trust proxy', 1); // trust first proxy
+    app.set('trust proxy', 1); // trust first proxyD
     sessionOptions.cookie.secure = true; // serve secure cookies
   }
 

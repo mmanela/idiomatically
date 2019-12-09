@@ -90,7 +90,7 @@ export const Idiom: React.StatelessComponent<IdiomCombinedProps> = props => {
     <article className="idiom">
       <PageHeader
         title={
-          <Title level={3} copyable editable={showEdit ? editConfig : false}>
+          <Title level={3} editable={showEdit ? editConfig : false}>
             {idiom.title}
           </Title>
         }

@@ -65,7 +65,7 @@ export const Profile: React.StatelessComponent<ProfileProps> = props => {
     <>
       <Title>{currentUser.name}</Title>
       <div className="profileContent">
-        <Avatar className="profilePicture" size={200} src={currentUser.avatar || ""} shape="square" />
+        <Avatar className="profilePicture" size={150} src={currentUser.avatar || ""} shape="square" />
         <div className="profileActions">
           <div>
             <h3>Role</h3>

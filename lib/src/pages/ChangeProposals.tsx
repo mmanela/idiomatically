@@ -157,7 +157,7 @@ export const ChangeProposalItem: React.StatelessComponent<ChangeProposalItemProp
 
   const title = proposal.readOnlyTitle ? `${proposal.id} - ${proposal.readOnlyTitle}` : proposal.id;
   const url = proposal.readOnlySlug ? `/idioms/${proposal.readOnlySlug}` : "";
-  const extra = <div className="proposalType">{proposal.readOnlyType}</div>;
+  const extra = <span className="proposalType">{proposal.readOnlyType}</span>;
   const json = JSON.parse(proposalBody || proposal.body || "{}");
 
   const editor = <JsonEditor json={json} onChangeText={code => setProposalBody(code)} />;
@@ -213,13 +213,15 @@ export const ChangeProposalItem: React.StatelessComponent<ChangeProposalItemProp
     </span>
   );
 
+  const itemDescription = (
+    <div>
+      {extra} <span>By {proposal.readOnlyCreatedBy}</span>
+    </div>
+  );
+
   return (
-    <List.Item key={proposal.id} extra={extra} className="changeProposalItem" actions={[acceptAction, rejectAction, resetAction]}>
-      <List.Item.Meta
-        className="itemDetails"
-        title={<Link to={url}>{title}</Link>}
-        description={"By " + proposal.readOnlyCreatedBy}
-      />
+    <List.Item key={proposal.id} className="changeProposalItem" actions={[acceptAction, rejectAction, resetAction]}>
+      <List.Item.Meta className="itemDetails" title={<Link to={url}>{title}</Link>} description={itemDescription} />
 
       {error && <Alert message="Error" type="error" description={error} showIcon />}
       {editor}

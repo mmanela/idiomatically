@@ -1,26 +1,33 @@
 @import "../components/App.scss";
 
 .changeProposalsListView {
-  .itemDetails {
-    h4 {
-      font-size: 15px;
-      margin-bottom: 0px;
+  .changeProposalItem {
+    .itemDetails {
+      h4 {
+        font-size: 15px;
+        margin-bottom: 0px;
+      }
     }
-  }
-  .proposalType {
-    font-weight: bold;
-    color: darkorange;
-  }
+    .proposalType {
+      font-weight: bold;
+      color: darkorange;
+      margin-right: 10px;
+    }
 
-  .proposalButton {
-    margin-right: 8px;
-    color: #333;
-  }
+    .proposalButton {
+      margin-right: 8px;
+      color: #333;
+    }
 
-  .acceptButton {
-    color: green;
-  }
-  .rejectButton {
-    color: red;
-  }
+    .acceptButton {
+      color: green;
+    }
+    .rejectButton {
+      color: red;
+    }
+
+    li {
+      padding: 0px;
+    }
+}
 }

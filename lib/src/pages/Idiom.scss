@@ -8,6 +8,24 @@ article.idiom {
     padding-top: 0px;
   }
 
+  .markdown {
+    line-height: 18px;
+
+    ul, ol {
+      line-height: 14px;
+    }
+
+    h1 {
+      font-size: 1.1rem;
+      margin: 0px;
+    }
+
+    h2,h3,h4,h5 {
+      font-size: 1rem;
+      margin: 0;
+    }
+  }
+
   h3 {
     margin-top: 6px;
 

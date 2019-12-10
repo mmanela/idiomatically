@@ -15,6 +15,8 @@ import { useCurrentUser } from "../components/withCurrentUser";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 import gql from "graphql-tag";
 import { useState } from "react";
+import marked from "marked";
+import dompurify from "dompurify";
 import { AddEquivalentSection } from "../components/AddEquivalentSection";
 import { EquivalentIdiomList } from "../components/EquivalentIdiomList";
 import { Typography, Alert, Spin, Button, PageHeader, Icon } from "antd";
@@ -63,6 +65,12 @@ export const Idiom: React.StatelessComponent<IdiomCombinedProps> = props => {
     return <Alert message="Oops!" description="It looks like you went barking up the wrong tree." type="warning" showIcon />;
 
   const { idiom } = data;
+
+  let renderedDescription = idiom.description;
+  if (idiom && idiom.description) {
+    renderedDescription = dompurify.sanitize(marked(idiom.description));
+  }
+
   const buttons = [
     showDelete && (
       <Button
@@ -112,10 +120,12 @@ export const Idiom: React.StatelessComponent<IdiomCombinedProps> = props => {
           </>
         )}
 
-        {idiom.description && (
+        {renderedDescription && (
           <>
             <Title level={4}>Description</Title>
-            <Paragraph className="content description">{idiom.description}</Paragraph>
+            <Paragraph className="content description">
+              <div className="markdown" dangerouslySetInnerHTML={{ __html: renderedDescription }}></div>
+            </Paragraph>
           </>
         )}
 

@@ -111,7 +111,7 @@ export function commonFormItems(
         label={
           <span>
             Description&nbsp;
-            <Tooltip title="Details about the idiom">
+            <Tooltip title="Details about the idiom (markdown supported)">
               <Icon type="question-circle-o" />
             </Tooltip>
           </span>
@@ -126,7 +126,7 @@ export function commonFormItems(
               max: 10000
             }
           ]
-        })(<TextArea rows={10} />)}
+        })(<TextArea rows={15} />)}
       </Form.Item>
 
       {!isEnglish && (

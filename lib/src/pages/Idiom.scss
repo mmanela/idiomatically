@@ -9,7 +9,6 @@ article.idiom {
   }
 
   .markdown {
-    line-height: 16px;
 
     ul, ol {
       line-height: 12px;
@@ -21,15 +20,19 @@ article.idiom {
     }
     h2 {
       font-size: 0.9rem;
+      margin: 0;
     }
     h3 {
       font-size: 0.8rem;
+      margin: 0;
     }
     h4 {
       font-size: 0.7rem;
+      margin: 0;
     }
     h5 {
       font-size: 0.6rem;
+      margin: 0;
     }
   }
 

@@ -16,7 +16,7 @@ import { useQuery, useMutation } from "@apollo/react-hooks";
 import gql from "graphql-tag";
 import { useState } from "react";
 import marked from "marked";
-import dompurify from "dompurify";
+import dompurifyFactory from "dompurify";
 import { AddEquivalentSection } from "../components/AddEquivalentSection";
 import { EquivalentIdiomList } from "../components/EquivalentIdiomList";
 import { Typography, Alert, Spin, Button, PageHeader, Icon } from "antd";
@@ -68,6 +68,7 @@ export const Idiom: React.StatelessComponent<IdiomCombinedProps> = props => {
 
   let renderedDescription = idiom.description;
   if (idiom && idiom.description) {
+    const dompurify = dompurifyFactory(window);
     renderedDescription = dompurify.sanitize(marked(idiom.description));
   }
 

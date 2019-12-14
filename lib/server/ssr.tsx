@@ -15,11 +15,20 @@ import { getSubTitle } from "../src/components/subTitles";
 import { ApolloProvider } from "@apollo/react-common";
 import { DataProviders } from "./dataProvider/dataProviders";
 import { GlobalContext, UserModel } from "./model/types";
-import { createHttpLink } from 'apollo-link-http';
-import fetch from 'cross-fetch';
+import { createHttpLink } from "apollo-link-http";
+import fetch from "cross-fetch";
+import { JSDOM } from "jsdom";
 
 // When running in staging or prod we setup to run using SSR for improved performance
-export function setupSSR(app: express.Application, clientPath: string, schema: GraphQLSchema, dataProviders: DataProviders, localPort: number) {
+export function setupSSR(
+  app: express.Application,
+  clientPath: string,
+  schema: GraphQLSchema,
+  dataProviders: DataProviders,
+  localPort: number
+) {
+  (global as any).window = new JSDOM("").window;
+
   app.use("^/$", (req, res, next) => {
     render(req, res, schema, dataProviders, clientPath, localPort);
   });
@@ -31,7 +40,14 @@ export function setupSSR(app: express.Application, clientPath: string, schema: G
   });
 }
 
-function render(req: express.Request, res: express.Response, schema: GraphQLSchema, dataProviders: DataProviders, clientPath: string, localPort: number) {
+function render(
+  req: express.Request,
+  res: express.Response,
+  schema: GraphQLSchema,
+  dataProviders: DataProviders,
+  clientPath: string,
+  localPort: number
+) {
   const cache = new InMemoryCache();
 
   const subTitle = getSubTitle();
@@ -43,15 +59,15 @@ function render(req: express.Request, res: express.Response, schema: GraphQLSche
     ssrMode: true,
     link: createHttpLink({
       uri: `http://localhost:${localPort}/graphql`,
-      credentials: 'same-origin',
+      credentials: "same-origin",
       headers: {
-        cookie: req.header('Cookie'),
+        cookie: req.header("Cookie")
       },
       fetch: fetch
     }),
     // Remember that this is the interface the SSR server will use to connect to the
     // API server, so we need to ensure it isn't firewalled, etc
-   /* link: new SchemaLink({
+    /* link: new SchemaLink({
       schema,
       context: globalContext
     }),*/
@@ -94,6 +110,7 @@ function getHtml(content: string, state: NormalizedCacheObject, clientPath: stri
     }
     const htmlToInject = (
       <>
+        <script>window = </script>
         <div id="root" dangerouslySetInnerHTML={{ __html: content }} />
         <script
           dangerouslySetInnerHTML={{

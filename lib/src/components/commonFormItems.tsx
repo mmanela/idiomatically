@@ -128,7 +128,7 @@ export function commonFormItems(
                 required: true
               }
             ]
-          })(<Input />)}
+          })(<Input autoComplete="off" />)}
         </Form.Item>
       )}
 

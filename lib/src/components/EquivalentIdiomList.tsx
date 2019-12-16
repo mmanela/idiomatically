@@ -90,7 +90,7 @@ const EquivalentIdiomItem: React.StatelessComponent<EquivalentItemProps> = props
   const actions = isAdmin && (
     <Button onClick={() => removeEquivalentHandler(equivalent.id)} type="link" className="removeEquivalentButton">
       <Icon type="delete" className="removeEquivalentIcon" theme="filled" />
-      {confirmRemove ? "Are you sure?" : "Remove"}
+      {confirmRemove ? "Are you sure?" : ""}
     </Button>
   );
   return (

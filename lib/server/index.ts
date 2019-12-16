@@ -143,7 +143,7 @@ const start = async () => {
       })
     });
 
-    setupSSR(app, clientPath, schema, dataProviders, port);
+    setupSSR(app, clientPath, port);
 
   } catch (e) {
     console.error(e);

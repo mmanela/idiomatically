@@ -1,7 +1,6 @@
 import "./NavCommandBar.scss";
 import * as React from "react";
 import { Menu, Icon, Avatar, Button } from "antd";
-import { ClickParam } from "antd/lib/menu";
 import { Link, RouteComponentProps } from "react-router-dom";
 import { useCurrentUser } from "./withCurrentUser";
 
@@ -14,7 +13,7 @@ export const NavCommandBar: React.StatelessComponent<NavBarCombinedProps> = prop
   const isLoggedIn = !!currentUser;
 
   return (
-    <Menu onClick={handleClick} mode="horizontal" selectable={false} className="navCommandBar">
+    <Menu mode="horizontal" selectable={false} className="navCommandBar">
       <Menu.Item key="home">
         <Link to="/">
           <Icon type="home" />
@@ -58,9 +57,4 @@ export const NavCommandBar: React.StatelessComponent<NavBarCombinedProps> = prop
       </Menu.Item>
     </Menu>
   );
-};
-
-const handleClick = (e: ClickParam) => {
-  if (e.key === "user") {
-  }
 };

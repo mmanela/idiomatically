@@ -6,55 +6,33 @@ import { InMemoryCache, NormalizedCacheObject } from "apollo-cache-inmemory";
 import { StaticRouter } from "react-router";
 import { App } from "./../src/components/App";
 import { renderToStaticMarkup } from "react-dom/server";
-import { SchemaLink } from "apollo-link-schema";
-import { GraphQLSchema } from "graphql";
-import { IdiomDataProvider } from "./dataProvider";
 import * as fs from "fs";
 import * as path from "path";
 import { getSubTitle } from "../src/components/subTitles";
 import { ApolloProvider } from "@apollo/react-common";
-import { DataProviders } from "./dataProvider/dataProviders";
-import { GlobalContext, UserModel } from "./model/types";
 import { createHttpLink } from "apollo-link-http";
 import fetch from "cross-fetch";
 import { JSDOM } from "jsdom";
 
 // When running in staging or prod we setup to run using SSR for improved performance
-export function setupSSR(
-  app: express.Application,
-  clientPath: string,
-  schema: GraphQLSchema,
-  dataProviders: DataProviders,
-  localPort: number
-) {
+export function setupSSR(app: express.Application, clientPath: string, localPort: number) {
   (global as any).window = new JSDOM("").window;
 
   app.use("^/$", (req, res, next) => {
-    render(req, res, schema, dataProviders, clientPath, localPort);
+    render(req, res, clientPath, localPort);
   });
 
   app.use(express.static(path.resolve(clientPath), { maxAge: "30d" }));
 
   app.use("*", (req, res, next) => {
-    render(req, res, schema, dataProviders, clientPath, localPort);
+    render(req, res, clientPath, localPort);
   });
 }
 
-function render(
-  req: express.Request,
-  res: express.Response,
-  schema: GraphQLSchema,
-  dataProviders: DataProviders,
-  clientPath: string,
-  localPort: number
-) {
+function render(req: express.Request, res: express.Response, clientPath: string, localPort: number) {
   const cache = new InMemoryCache();
 
   const subTitle = getSubTitle();
-  const globalContext: GlobalContext = {
-    dataProviders: dataProviders,
-    currentUser: req.user as UserModel
-  };
   const client = new ApolloClient({
     ssrMode: true,
     link: createHttpLink({

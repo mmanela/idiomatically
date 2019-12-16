@@ -107,28 +107,6 @@ export function commonFormItems(
         })(<CountrySelect initialValue={existingCountries} languageKey={languageKey} />)}
       </Form.Item>
 
-      <Form.Item
-        label={
-          <span>
-            Description&nbsp;
-            <Tooltip title="Details about the idiom (markdown supported)">
-              <Icon type="question-circle-o" />
-            </Tooltip>
-          </span>
-        }
-      >
-        {getFieldDecorator("description", {
-          initialValue: existingValues.description,
-          rules: [
-            {
-              message: "Please enter a valid description",
-              whitespace: true,
-              max: 10000
-            }
-          ]
-        })(<TextArea rows={15} />)}
-      </Form.Item>
-
       {!isEnglish && (
         <Form.Item
           label={
@@ -153,6 +131,28 @@ export function commonFormItems(
           })(<Input />)}
         </Form.Item>
       )}
+
+      <Form.Item
+        label={
+          <span>
+            Description&nbsp;
+            <Tooltip title="Details about the idiom (markdown supported)">
+              <Icon type="question-circle-o" />
+            </Tooltip>
+          </span>
+        }
+      >
+        {getFieldDecorator("description", {
+          initialValue: existingValues.description,
+          rules: [
+            {
+              message: "Please enter a valid description",
+              whitespace: true,
+              max: 10000
+            }
+          ]
+        })(<TextArea rows={15} />)}
+      </Form.Item>
 
       {!isEnglish && !isCreate && (
         <Form.Item

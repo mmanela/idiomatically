@@ -122,7 +122,7 @@ export function commonFormItems(
             initialValue: existingValues.literalTranslation,
             rules: [
               {
-                message: "The literal translation is too long",
+                message: "The literal translation is required",
                 whitespace: true,
                 max: 1000,
                 required: true

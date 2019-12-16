@@ -82,7 +82,9 @@ export const IdiomListView: React.StatelessComponent<IdiomListViewProps> = props
 const renderIdiomListItem = (item: GetIdiomListQuery_idioms_edges) => {
   const idiom = item.node,
     equivalentsCount = item.node.equivalents.length;
-  const flagElement = <LanguageFlags languageInfo={idiom.language} showLabel={true} layoutMode="vertical" compactMode />;
+  const flagElement = (
+    <LanguageFlags languageInfo={idiom.language} showLabel={true} size="small" layoutMode="horizontal" compactMode />
+  );
 
   let equivalentIdiomContent: React.ReactNode;
   if (equivalentsCount === 1) {
@@ -93,12 +95,22 @@ const renderIdiomListItem = (item: GetIdiomListQuery_idioms_edges) => {
   equivalentIdiomContent = <div className="equivalentCount">{equivalentIdiomContent}</div>;
 
   return (
-    <List.Item key={idiom.slug} extra={equivalentIdiomContent} className="idiomListItem">
+    <List.Item key={idiom.slug} className="idiomListItem">
       <List.Item.Meta
         className="idiomListDetails"
-        title={<Link to={`/idioms/${idiom.slug}`}>{idiom.title}</Link>}
+        title={
+          <div>
+            <div className="itemHeader">
+              {flagElement}
+              {equivalentIdiomContent}
+            </div>
+
+            <Link className="idiomListTitle" to={`/idioms/${idiom.slug}`}>
+              {idiom.title}
+            </Link>
+          </div>
+        }
         description={<div>{idiom.literalTranslation}</div>}
-        avatar={flagElement}
       />
     </List.Item>
   );

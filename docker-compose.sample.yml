@@ -5,6 +5,6 @@ services:
     image: idiomatically
     build: .
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
     ports:
       - 8000:8000

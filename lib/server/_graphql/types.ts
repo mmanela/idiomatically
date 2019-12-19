@@ -198,6 +198,7 @@ export type Query = {
   idiom?: Maybe<Idiom>,
   idioms: IdiomConnection,
   languages: Array<Language>,
+  languagesWithIdioms: Array<Language>,
   countries: Array<Country>,
   idiomChangeProposal: IdiomChangeProposal,
   idiomChangeProposals: IdiomChangeProposalConnection,
@@ -259,6 +260,8 @@ export enum UserRole {
   Contributor = 'CONTRIBUTOR',
   General = 'GENERAL'
 }
+
+
 
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
@@ -486,6 +489,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   idiom?: Resolver<Maybe<ResolversTypes['Idiom']>, ParentType, ContextType, QueryIdiomArgs>,
   idioms?: Resolver<ResolversTypes['IdiomConnection'], ParentType, ContextType, QueryIdiomsArgs>,
   languages?: Resolver<Array<ResolversTypes['Language']>, ParentType, ContextType>,
+  languagesWithIdioms?: Resolver<Array<ResolversTypes['Language']>, ParentType, ContextType>,
   countries?: Resolver<Array<ResolversTypes['Country']>, ParentType, ContextType, QueryCountriesArgs>,
   idiomChangeProposal?: Resolver<ResolversTypes['IdiomChangeProposal'], ParentType, ContextType, QueryIdiomChangeProposalArgs>,
   idiomChangeProposals?: Resolver<ResolversTypes['IdiomChangeProposalConnection'], ParentType, ContextType, QueryIdiomChangeProposalsArgs>,

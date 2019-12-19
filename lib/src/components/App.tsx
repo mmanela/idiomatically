@@ -2,7 +2,7 @@ import * as React from "react";
 import { Idiom } from "../pages/Idiom";
 import "./App.scss";
 import { Switch, Route, Link, RouteProps, withRouter, RouteComponentProps } from "react-router-dom";
-import { Layout, Input } from "antd";
+import { Layout } from "antd";
 import { IdiomListView } from "../pages/IdiomListView";
 import { NavCommandBar } from "./NavCommandBar";
 import { Profile } from "../pages/Profile";
@@ -11,14 +11,18 @@ import { NewIdiom } from "../pages/NewIdiom";
 import { RouteChildrenProps } from "react-router";
 import { UpdateIdiom } from "../pages/UpdateIdiom";
 import { ChangeProposals } from "../pages/ChangeProposals";
+import { SearchBox } from "./SearchBox";
 const { Header, Footer, Content } = Layout;
-const { Search } = Input;
 
 export interface AppProps {
   subTitle?: string;
 }
 
 function AppInternal(props: RouteComponentProps<any> & AppProps) {
+  const params = new URLSearchParams(props.location!.search);
+  const filter = params.get("q");
+  const lang = params.get("lang");
+
   return (
     <Layout className="container">
       <Header>
@@ -27,18 +31,13 @@ function AppInternal(props: RouteComponentProps<any> & AppProps) {
         </h1>
         <h2>{props.subTitle}</h2>
         <NavCommandBar {...props} />
-        <Search
-          placeholder="Find an idiom"
-          size="large"
-          enterButton
-          onSearch={value => props.history.push({ pathname: "/idioms", search: `?q=${value}` })}
-        />
+        <SearchBox history={props.history} filter={filter} language={lang} />
       </Header>
       <Content>
         <Switch>
-          <Route exact path="/" render={renderListView} />
+          <Route exact path="/" render={props => renderListView(props, filter, lang)} />
           <Route exact path="/about" component={About} />
-          <Route exact path="/idioms" render={renderListView} />
+          <Route exact path="/idioms" render={props => renderListView(props, filter, lang)} />
           <Route exact path="/idioms/:slug" component={renderIdiom} />
           <Route exact path="/new" render={props => renderNewIdiomForm(props)} />
           <Route exact path="/idioms/:slug/update" render={props => renderUpdateIdiomForm(props)} />
@@ -78,11 +77,8 @@ const renderIdiom = (props: RouteChildrenProps<any>) => {
   const { slug } = props!.match!.params;
   return <Idiom {...props} slug={slug} />;
 };
-const renderListView = (props: RouteProps) => {
-  const params = new URLSearchParams(props.location!.search);
-  const filter = params.get("q");
-
-  return <IdiomListView filter={filter} />;
+const renderListView = (props: RouteProps, filter: string | null, lang: string | null) => {
+  return <IdiomListView filter={filter} language={lang} />;
 };
 
 const renderNewIdiomForm = (props: RouteProps) => {

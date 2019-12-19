@@ -12,6 +12,9 @@ export default {
         return [];
       }
       return Languages.Instance.getLangugage(args.languageKey).countries;
-    }
+    },
+    languagesWithIdioms: async (parent, args, context: GlobalContext) => {
+      return await context.dataProviders.idiom.getLanguagesWithIdioms();
+    },
   } as QueryResolvers
 };

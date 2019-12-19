@@ -3,6 +3,85 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
+// GraphQL mutation operation: AddEquivalentIdiomMutation
+// ====================================================
+
+export interface AddEquivalentIdiomMutation_addEquivalent {
+  __typename: "IdiomOperationResult";
+  status: OperationStatus;
+  message: string | null;
+}
+
+export interface AddEquivalentIdiomMutation {
+  addEquivalent: AddEquivalentIdiomMutation_addEquivalent;
+}
+
+export interface AddEquivalentIdiomMutationVariables {
+  idiomId: string;
+  equivalentId: string;
+}
+
+/* tslint:disable */
+/* eslint-disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
+// GraphQL query operation: FindIdiomsQuery
+// ====================================================
+
+export interface FindIdiomsQuery_idioms_pageInfo {
+  __typename: "PageInfo";
+  endCursor: string;
+  hasNextPage: boolean;
+}
+
+export interface FindIdiomsQuery_idioms_edges_node_language_countries {
+  __typename: "Country";
+  countryKey: string;
+  countryName: string;
+  emojiFlag: string;
+}
+
+export interface FindIdiomsQuery_idioms_edges_node_language {
+  __typename: "Language";
+  languageKey: string;
+  languageName: string;
+  countries: FindIdiomsQuery_idioms_edges_node_language_countries[];
+}
+
+export interface FindIdiomsQuery_idioms_edges_node {
+  __typename: "Idiom";
+  id: string;
+  slug: string;
+  title: string;
+  language: FindIdiomsQuery_idioms_edges_node_language;
+}
+
+export interface FindIdiomsQuery_idioms_edges {
+  __typename: "IdiomEdge";
+  node: FindIdiomsQuery_idioms_edges_node;
+}
+
+export interface FindIdiomsQuery_idioms {
+  __typename: "IdiomConnection";
+  totalCount: number;
+  pageInfo: FindIdiomsQuery_idioms_pageInfo;
+  edges: FindIdiomsQuery_idioms_edges[];
+}
+
+export interface FindIdiomsQuery {
+  idioms: FindIdiomsQuery_idioms;
+}
+
+export interface FindIdiomsQueryVariables {
+  filter?: string | null;
+}
+
+/* tslint:disable */
+/* eslint-disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
 // GraphQL query operation: GetCountriesQuery
 // ====================================================
 
@@ -26,6 +105,29 @@ export interface GetCountriesQueryVariables {
 // This file was automatically generated and should not be edited.
 
 // ====================================================
+// GraphQL mutation operation: RemoveEquivalentIdiomMutation
+// ====================================================
+
+export interface RemoveEquivalentIdiomMutation_removeEquivalent {
+  __typename: "IdiomOperationResult";
+  status: OperationStatus;
+  message: string | null;
+}
+
+export interface RemoveEquivalentIdiomMutation {
+  removeEquivalent: RemoveEquivalentIdiomMutation_removeEquivalent;
+}
+
+export interface RemoveEquivalentIdiomMutationVariables {
+  idiomId: string;
+  equivalentId: string;
+}
+
+/* tslint:disable */
+/* eslint-disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
 // GraphQL query operation: GetLanguagesQuery
 // ====================================================
 
@@ -38,6 +140,25 @@ export interface GetLanguagesQuery_languages {
 
 export interface GetLanguagesQuery {
   languages: GetLanguagesQuery_languages[];
+}
+
+/* tslint:disable */
+/* eslint-disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
+// GraphQL query operation: GetLanguagesWithIdioms
+// ====================================================
+
+export interface GetLanguagesWithIdioms_languagesWithIdioms {
+  __typename: "Language";
+  languageName: string;
+  languageNativeName: string;
+  languageKey: string;
+}
+
+export interface GetLanguagesWithIdioms {
+  languagesWithIdioms: GetLanguagesWithIdioms_languagesWithIdioms[];
 }
 
 /* tslint:disable */
@@ -238,108 +359,6 @@ export interface DeleteIdiomMutation {
 
 export interface DeleteIdiomMutationVariables {
   id: string;
-}
-
-/* tslint:disable */
-/* eslint-disable */
-// This file was automatically generated and should not be edited.
-
-// ====================================================
-// GraphQL mutation operation: AddEquivalentIdiomMutation
-// ====================================================
-
-export interface AddEquivalentIdiomMutation_addEquivalent {
-  __typename: "IdiomOperationResult";
-  status: OperationStatus;
-  message: string | null;
-}
-
-export interface AddEquivalentIdiomMutation {
-  addEquivalent: AddEquivalentIdiomMutation_addEquivalent;
-}
-
-export interface AddEquivalentIdiomMutationVariables {
-  idiomId: string;
-  equivalentId: string;
-}
-
-/* tslint:disable */
-/* eslint-disable */
-// This file was automatically generated and should not be edited.
-
-// ====================================================
-// GraphQL mutation operation: RemoveEquivalentIdiomMutation
-// ====================================================
-
-export interface RemoveEquivalentIdiomMutation_removeEquivalent {
-  __typename: "IdiomOperationResult";
-  status: OperationStatus;
-  message: string | null;
-}
-
-export interface RemoveEquivalentIdiomMutation {
-  removeEquivalent: RemoveEquivalentIdiomMutation_removeEquivalent;
-}
-
-export interface RemoveEquivalentIdiomMutationVariables {
-  idiomId: string;
-  equivalentId: string;
-}
-
-/* tslint:disable */
-/* eslint-disable */
-// This file was automatically generated and should not be edited.
-
-// ====================================================
-// GraphQL query operation: FindIdiomsQuery
-// ====================================================
-
-export interface FindIdiomsQuery_idioms_pageInfo {
-  __typename: "PageInfo";
-  endCursor: string;
-  hasNextPage: boolean;
-}
-
-export interface FindIdiomsQuery_idioms_edges_node_language_countries {
-  __typename: "Country";
-  countryKey: string;
-  countryName: string;
-  emojiFlag: string;
-}
-
-export interface FindIdiomsQuery_idioms_edges_node_language {
-  __typename: "Language";
-  languageKey: string;
-  languageName: string;
-  countries: FindIdiomsQuery_idioms_edges_node_language_countries[];
-}
-
-export interface FindIdiomsQuery_idioms_edges_node {
-  __typename: "Idiom";
-  id: string;
-  slug: string;
-  title: string;
-  language: FindIdiomsQuery_idioms_edges_node_language;
-}
-
-export interface FindIdiomsQuery_idioms_edges {
-  __typename: "IdiomEdge";
-  node: FindIdiomsQuery_idioms_edges_node;
-}
-
-export interface FindIdiomsQuery_idioms {
-  __typename: "IdiomConnection";
-  totalCount: number;
-  pageInfo: FindIdiomsQuery_idioms_pageInfo;
-  edges: FindIdiomsQuery_idioms_edges[];
-}
-
-export interface FindIdiomsQuery {
-  idioms: FindIdiomsQuery_idioms;
-}
-
-export interface FindIdiomsQueryVariables {
-  filter?: string | null;
 }
 
 /* tslint:disable */

@@ -1,6 +1,6 @@
 import { Db, Collection, ObjectID, FilterQuery } from 'mongodb'
 import { Idiom, IdiomCreateInput, IdiomUpdateInput, QueryIdiomsArgs, IdiomOperationResult, OperationStatus, QueryIdiomArgs } from '../_graphql/types';
-import { Languages } from './languages'
+import { Languages, LanguageModel } from './languages'
 import { UserModel, IdiomExpandOptions } from '../model/types';
 import { DbIdiom, mapDbIdiom, DbIdiomChangeProposal, IdiomProposalType, Paged } from './mapping';
 import { transliterate, slugify } from 'transliteration';
@@ -345,6 +345,11 @@ export class IdiomDataProvider {
         }
     }
 
+    async getLanguagesWithIdioms(): Promise<LanguageModel[]> {
+        const usedLanguages = await this.idiomCollection.distinct("languageKey") as string[];
+        return usedLanguages.sort().map(x => Languages.Instance.getLangugage(x));
+    }
+
     async queryIdioms(args: QueryIdiomsArgs, idiomExpandOptions: IdiomExpandOptions): Promise<Paged<Idiom>> {
         const filter = args && args.filter ? args.filter : undefined;
         const limit = args && args.limit ? args.limit : 50;
@@ -361,8 +366,7 @@ export class IdiomDataProvider {
         let users: UserModel[];
 
         if (locale) {
-            const localeRegex = "^" + escapeRegex(locale);
-            findFilter = { locale: { $regex: localeRegex } };
+            findFilter = { languageKey: { $eq: locale } };
         }
 
         if (filter) {

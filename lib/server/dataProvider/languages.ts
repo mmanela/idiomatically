@@ -1,15 +1,15 @@
 import * as countryLanguage from 'country-language'
-import { languagesAll, languages as langaugesList, countries, Country } from 'countries-list';
+import { languagesAll, languages as langaugesList, countries, Country, Language } from 'countries-list';
 
 
-interface LanguageModel {
+export interface LanguageModel {
     languageName: string,
     languageNativeName: string,
     languageKey: string,
     countries: CountryModel[]
 }
 
-interface CountryModel {
+export interface CountryModel {
     countryKey: string,
     countryName: string,
     countryNativeName: string,
@@ -56,7 +56,7 @@ export class Languages {
                     continue;
                 }
 
-                const language = languagesAll[langCode] || langaugesList[langCode];
+                const language: Language = languagesAll[langCode] || langaugesList[langCode];
                 if (language.name == null) {
                     continue;
                 }

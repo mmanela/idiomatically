@@ -20,6 +20,7 @@ type Query {
   idiom(id: ID, slug: String): Idiom @cacheControl(maxAge: 1800)
   idioms(cursor: String, filter: String, locale: String, limit: Int): IdiomConnection! @cacheControl(maxAge: 1800)
   languages: [Language!]! @cacheControl(maxAge: 3600)
+  languagesWithIdioms: [Language!]! @cacheControl(maxAge: 1800)
   countries(languageKey: String): [Country!]! @cacheControl(maxAge: 3600)
   idiomChangeProposal(id: ID): IdiomChangeProposal! @auth(requires: ADMIN) @cacheControl(maxAge: 0)
   idiomChangeProposals(cursor: String, filter: String, limit: Int): IdiomChangeProposalConnection! @auth(requires: ADMIN) @cacheControl(maxAge: 0)
@@ -51,7 +52,7 @@ type Mutation {
   createIdiom(idiom: IdiomCreateInput!): IdiomOperationResult! @auth(requires: GENERAL)
   deleteIdiom(idiomId: ID!): IdiomOperationResult! @auth(requires: ADMIN)
   addEquivalent(idiomId: ID!, equivalentId: ID!): IdiomOperationResult! @auth(requires: GENERAL)
-  removeEquivalent(idiomId: ID!, equivalentId: ID!): IdiomOperationResult! @auth(requires: GENERAL)
+  removeEquivalent(idiomId: ID!, equivalentId: ID!): IdiomOperationResult! @auth(requires: ADMIN)
   acceptIdiomChangeProposal(proposalId: ID!, body: String): IdiomOperationResult! @auth(requires: ADMIN)
   rejectIdiomChangeProposal(proposalId: ID!): IdiomOperationResult! @auth(requires: ADMIN)
 }

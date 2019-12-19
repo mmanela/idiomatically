@@ -3,6 +3,7 @@ import { gql } from 'apollo-server-express';
 export default gql`
   type Query {
     languages: [Language!]! @cacheControl(maxAge: 3600)
+    languagesWithIdioms: [Language!]! @cacheControl(maxAge: 1800)
     countries(languageKey: String): [Country!]! @cacheControl(maxAge: 3600)
   }
 

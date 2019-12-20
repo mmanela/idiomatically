@@ -34,3 +34,12 @@
        the rendering of the dropdown I don't have a way to set the width */
   width: 150px !important;
 }
+
+@media screen and (max-width: 900px) {
+  .languageOptionContainer {
+    /* This is a sad day in CSS but unless I totally take over 
+         the rendering of the dropdown I don't have a way to set the width */
+    left: auto !important;
+    right: 10px;
+  }
+}

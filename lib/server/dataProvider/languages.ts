@@ -46,7 +46,7 @@ export class Languages {
             this.countryMap.set(countryModel.countryKey.toLowerCase(), countryModel);
 
             // We are using a second library here to get extra country info. 
-            // We are combing two libraries since countries-list has the emoji data we want
+            // We are combining two libraries since countries-list has the emoji data we want
             // but is missing the full mapping of languages to countries. To get that
             // we are using  country-language :/
             const extraCountryInfo = countryLanguage.getCountry(countryCode);

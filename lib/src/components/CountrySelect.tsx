@@ -1,11 +1,11 @@
 import * as React from "react";
-import { Select, Spin } from "antd";
+import { Select } from "antd";
 import gql from "graphql-tag";
-import { Query } from "@apollo/react-components";
 import {
   GetCountriesQuery,
   GetCountriesQueryVariables
 } from "../__generated__/types";
+import { useQuery } from "@apollo/react-hooks";
 const { Option } = Select;
 
 export const getCountriesQuery = gql`
@@ -27,36 +27,32 @@ export interface CountrySelectProps {
   ) => void;
 }
 
-export const CountrySelect: React.StatelessComponent<
+export const CountrySelect: React.StatelessComponent<CountrySelectProps> = React.forwardRef<
+  {},
   CountrySelectProps
-> = React.forwardRef<{}, CountrySelectProps>((props, ref) => {
-  return (
-    <Query<GetCountriesQuery, GetCountriesQueryVariables>
-      query={getCountriesQuery}
-      variables={{ languageKey: props.languageKey }}
-    >
-      {({ loading, data, error }) => {
-        if (loading) return <Spin delay={250} />;
+>((props, ref) => {
+  const { data, loading } = useQuery<
+    GetCountriesQuery,
+    GetCountriesQueryVariables
+  >(getCountriesQuery, { variables: { languageKey: props.languageKey } });
 
-        const options = buildOptions(data!);
-        return (
-          <Select
-            defaultValue={props.initialValue}
-            onChange={props.onChange}
-            mode="multiple"
-            placeholder={
-              props.languageKey
-                ? "Please select a country"
-                : "You must first select a language"
-            }
-            disabled={!props.languageKey}
-            optionFilterProp="title"
-          >
-            {options}
-          </Select>
-        );
-      }}
-    </Query>
+  const options = data ? buildOptions(data!) : undefined;
+  return (
+    <Select
+      loading={loading}
+      defaultValue={props.initialValue}
+      onChange={props.onChange}
+      mode="multiple"
+      placeholder={
+        props.languageKey
+          ? "Please select a country"
+          : "You must first select a language"
+      }
+      disabled={!props.languageKey}
+      optionFilterProp="title"
+    >
+      {options}
+    </Select>
   );
 });
 function buildOptions(data: GetCountriesQuery) {

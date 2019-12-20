@@ -1,8 +1,8 @@
 import * as React from "react";
-import { Select, Spin } from "antd";
+import { Select } from "antd";
 import gql from "graphql-tag";
-import { Query } from "@apollo/react-components";
 import { GetLanguagesQuery } from "../__generated__/types";
+import { useQuery } from "@apollo/react-hooks";
 const { Option } = Select;
 
 export const getLanguagesQuery = gql`
@@ -16,35 +16,34 @@ export const getLanguagesQuery = gql`
 `;
 
 export interface LanguageSelectProps {
-  onChange?: (value: string, option: React.ReactElement<any> | React.ReactElement<any>[]) => void;
+  onChange?: (
+    value: string,
+    option: React.ReactElement<any> | React.ReactElement<any>[]
+  ) => void;
 }
 
-export const LanguageSelect: React.StatelessComponent<LanguageSelectProps> = React.forwardRef<{}, LanguageSelectProps>(
-  (props, ref) => {
-    return (
-      <Query<GetLanguagesQuery> query={getLanguagesQuery}>
-        {({ loading, data, error }) => {
-          if (loading) return <Spin delay={250} />;
+export const LanguageSelect: React.StatelessComponent<LanguageSelectProps> = 
+React.forwardRef<{},LanguageSelectProps>((props, ref) => {
+  const { data, loading } = useQuery<GetLanguagesQuery>(
+    getLanguagesQuery
+  );
 
-          const options = buildOptions(data!);
-          return (
-            <Select
-              onChange={props.onChange}
-              // This ensure the box opens so you can type right away
-              showAction={["focus", "click"]}
-              showSearch
-              placeholder="Please select a language"
-              optionFilterProp="title"
-              showArrow={false}
-            >
-              {options}
-            </Select>
-          );
-        }}
-      </Query>
-    );
-  }
-);
+  const options = data ? buildOptions(data!) : undefined;
+  return (
+    <Select
+      loading={loading}
+      onChange={props.onChange}
+      // This ensure the box opens so you can type right away
+      showAction={["focus", "click"]}
+      showSearch
+      placeholder="Please select a language"
+      optionFilterProp="title"
+      showArrow={false}
+    >
+      {options}
+    </Select>
+  );
+});
 function buildOptions(data: GetLanguagesQuery) {
   return data.languages.map(lang => {
     const key = lang.languageKey;

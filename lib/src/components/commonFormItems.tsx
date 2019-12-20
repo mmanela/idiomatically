@@ -9,12 +9,12 @@ import * as React from "react";
 export const tailFormItemLayout = {
   wrapperCol: {
     xs: {
-      span: 24,
+      span: 4,
       offset: 0
     },
     sm: {
-      span: 16,
-      offset: 8
+      span: 4,
+      offset: 10
     }
   }
 };

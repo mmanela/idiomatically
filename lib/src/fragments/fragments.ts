@@ -40,6 +40,7 @@ fragment MinimalIdiomEntry on Idiom {
     id
     slug
     title
+    literalTranslation
     language {
         languageKey
         languageName

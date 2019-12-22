@@ -54,6 +54,7 @@ export interface FindIdiomsQuery_idioms_edges_node {
   id: string;
   slug: string;
   title: string;
+  literalTranslation: string | null;
   language: FindIdiomsQuery_idioms_edges_node_language;
 }
 
@@ -690,6 +691,7 @@ export interface MinimalIdiomEntry {
   id: string;
   slug: string;
   title: string;
+  literalTranslation: string | null;
   language: MinimalIdiomEntry_language;
 }
 

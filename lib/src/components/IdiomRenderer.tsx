@@ -1,16 +1,11 @@
 import React from "react";
 import { LanguageFlags } from "./LanguageFlags";
-import {
-  GetIdiomQuery_idiom,
-  FindIdiomsQuery_idioms_edges_node,
-  FullIdiomEntry,
-  MinimalIdiomEntry
-} from "../__generated__/types";
 import { Link } from "react-router-dom";
 import "./IdiomRenderer.scss";
+import { MinimalIdiomEntry } from "../__generated__/types";
 
 type IdiomRendererProps = {
-  idiom: GetIdiomQuery_idiom | FindIdiomsQuery_idioms_edges_node | FullIdiomEntry | MinimalIdiomEntry;
+  idiom: MinimalIdiomEntry;
   actions?: React.ReactNode;
   layoutMode?: "horizontal" | "vertical";
   hideFlags?: boolean;
@@ -36,11 +31,15 @@ export const IdiomRenderer = (props: IdiomRendererProps) => {
             {props.disableLink ? (
               <span>{props.idiom.title}</span>
             ) : (
-              <Link to={"/idioms/" + props.idiom.slug}>{props.idiom.title}</Link>
+              <Link to={"/idioms/" + props.idiom.slug}>
+                {props.idiom.title}
+              </Link>
             )}
           </div>
         </div>
-        {props.actions && <div className="idiomRendererActions">{props.actions}</div>}
+        {props.actions && (
+          <div className="idiomRendererActions">{props.actions}</div>
+        )}
       </div>
     </div>
   );

@@ -4,14 +4,20 @@ import "./IdiomListRenderer.scss";
 import { List } from "antd";
 import { Link } from "react-router-dom";
 import { LanguageFlags } from "../components/LanguageFlags";
+import { ListSize } from "antd/lib/list";
 
 export interface IdiomListRendererProps {
+  listSize?: ListSize;
+  paginationSize?: "small" | "default";
   idioms: (FullIdiomEntry | MinimalIdiomEntry)[];
   onPageChange?: (page: number, size?: number) => void;
   pageNumber?: number;
   pageSize: number;
   totalCount: number;
   className?: string;
+  renderIdiomListItem?: (
+    item: FullIdiomEntry | MinimalIdiomEntry
+  ) => React.ReactNode;
 }
 
 export const IdiomListRenderer: React.StatelessComponent<IdiomListRendererProps> = props => {
@@ -19,16 +25,21 @@ export const IdiomListRenderer: React.StatelessComponent<IdiomListRendererProps>
     <List
       className={"idiomListRenderer " + props.className}
       itemLayout="horizontal"
-      size="large"
+      size={props.listSize || "large"}
       pagination={{
         defaultCurrent: props.pageNumber,
         onChange: props.onPageChange,
         pageSize: props.pageSize,
         hideOnSinglePage: true,
-        total: props.totalCount
+        total: props.totalCount,
+        size: props.paginationSize || "default"
       }}
       dataSource={props.idioms}
-      renderItem={renderIdiomListItem}
+      renderItem={item =>
+        props.renderIdiomListItem
+          ? props.renderIdiomListItem(item)
+          : renderIdiomListItem(item)
+      }
     />
   );
 };
@@ -39,7 +50,10 @@ function isFullIdiom(
   return (item as FullIdiomEntry).equivalents !== undefined;
 }
 
-const renderIdiomListItem = (item: FullIdiomEntry | MinimalIdiomEntry) => {
+export const renderIdiomListItem = (
+  item: FullIdiomEntry | MinimalIdiomEntry,
+  actions?: React.ReactNode[]
+) => {
   const idiom = item;
   let equivalentsCount = 0;
   if (isFullIdiom(idiom)) {
@@ -67,7 +81,7 @@ const renderIdiomListItem = (item: FullIdiomEntry | MinimalIdiomEntry) => {
   );
 
   return (
-    <List.Item key={idiom.slug} className="idiomListItem">
+    <List.Item key={idiom.slug} className="idiomListItem" actions={actions}>
       <List.Item.Meta
         className="idiomListDetails"
         title={

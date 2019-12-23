@@ -1,9 +1,28 @@
-.equivalentList {
-  list-style: none;
-  padding: 0;
-  margin-left: 20px;
-  .removeEquivalentButton {
-    color: red;
-    padding-bottom: 10px;
+.idiom {
+  .equivalentList {
+    padding: 0;
+    margin-left: 20px;
+
+    .idiomListItem {
+      .itemHeader {
+        font-size: 0.8rem;
+      }
+
+      .flagAvatarContainer {
+        margin-bottom: 0px;
+      }
+
+      .idiomListTitle {
+        font-size: 1rem;
+      }
+
+      .ant-list-item-meta-description {
+        font-size: 0.85rem;
+      }
+    }
+    .removeEquivalentButton {
+      color: red;
+      padding-bottom: 10px;
+    }
   }
 }

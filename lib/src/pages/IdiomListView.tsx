@@ -107,6 +107,7 @@ export const IdiomListView: React.StatelessComponent<IdiomListViewProps> = props
 
   return (
     <IdiomListRenderer
+      className="idiomListView"
       pageSize={pageSize}
       totalCount={loadResult.data.idioms.totalCount}
       idioms={idioms}

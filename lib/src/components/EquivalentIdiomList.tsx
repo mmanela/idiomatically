@@ -6,13 +6,16 @@ import {
   RemoveEquivalentIdiomMutation,
   RemoveEquivalentIdiomMutationVariables,
   GetCurrentUser_me,
-  GetIdiomQuery_idiom_equivalents
+  GetIdiomQuery_idiom_equivalents,
+  FullIdiomEntry,
+  MinimalIdiomEntry
 } from "../__generated__/types";
 import { useMutation } from "@apollo/react-hooks";
 import { Button, Icon, Typography } from "antd";
 import gql from "graphql-tag";
 import "./EquivalentIdiomList.scss";
 import { IdiomRenderer } from "./IdiomRenderer";
+import { IdiomListRenderer, renderIdiomListItem } from "./IdiomListRenderer";
 const { Paragraph } = Typography;
 
 export const removeEquivalentQuery = gql`
@@ -31,7 +34,11 @@ interface EquivalentListProps {
 
 export const EquivalentIdiomList: React.StatelessComponent<EquivalentListProps> = props => {
   if (props.idiom.equivalents.length <= 0) {
-    return <Paragraph className="content">No equivalent idioms across languages yet...</Paragraph>;
+    return (
+      <Paragraph className="content">
+        No equivalent idioms across languages yet...
+      </Paragraph>
+    );
   }
 
   const ordered = props.idiom.equivalents.sort((a, b) => {
@@ -51,51 +58,71 @@ export const EquivalentIdiomList: React.StatelessComponent<EquivalentListProps> 
   });
 
   return (
-    <ul className="equivalentList">
-      {ordered.length > 0 &&
-        ordered.map(x => <EquivalentIdiomItem key={x.slug} equivalentIdiom={x} idiom={props.idiom} user={props.user} />)}
-    </ul>
+    <IdiomListRenderer
+      listSize="small"
+      paginationSize="small"
+      idioms={ordered}
+      pageSize={5}
+      totalCount={ordered.length}
+      className="equivalentList"
+      renderIdiomListItem={(item: FullIdiomEntry | MinimalIdiomEntry) => {
+        return (
+          <EquivalentIdiomItem
+            equivalentIdiom={item}
+            idiom={props.idiom}
+            user={props.user}
+          />
+        );
+      }}
+    />
   );
 };
 
 interface EquivalentItemProps {
   user?: GetCurrentUser_me | null;
-  equivalentIdiom: GetIdiomQuery_idiom_equivalents;
+  equivalentIdiom: MinimalIdiomEntry;
   idiom: GetIdiomQuery_idiom;
 }
 const EquivalentIdiomItem: React.StatelessComponent<EquivalentItemProps> = props => {
   const equivalent = props.equivalentIdiom;
   const [confirmRemove, setConfirmRemove] = React.useState(false);
-  const [removeEquivalentIdiomMutation, removeEquivalentMutationResult] = useMutation<
+  const [
+    removeEquivalentIdiomMutation,
+    removeEquivalentMutationResult
+  ] = useMutation<
     RemoveEquivalentIdiomMutation,
     RemoveEquivalentIdiomMutationVariables
   >(removeEquivalentQuery);
   const equivalentRemoved =
     removeEquivalentMutationResult &&
     removeEquivalentMutationResult.data &&
-    removeEquivalentMutationResult.data.removeEquivalent.status === OperationStatus.SUCCESS;
+    removeEquivalentMutationResult.data.removeEquivalent.status ===
+      OperationStatus.SUCCESS;
   if (equivalentRemoved) {
     return null;
   }
   const isAdmin = props.user && props.user.role === UserRole.ADMIN;
   const removeEquivalentHandler = (equivalentId: string) => {
     if (confirmRemove) {
-      removeEquivalentIdiomMutation({ variables: { idiomId: props.idiom.id, equivalentId: equivalentId } });
+      removeEquivalentIdiomMutation({
+        variables: { idiomId: props.idiom.id, equivalentId: equivalentId }
+      });
       setConfirmRemove(false);
     } else {
       setConfirmRemove(true);
     }
   };
 
-  const actions = isAdmin && (
-    <Button onClick={() => removeEquivalentHandler(equivalent.id)} type="link" className="removeEquivalentButton">
+  const action = isAdmin && (
+    <Button
+      onClick={() => removeEquivalentHandler(equivalent.id)}
+      type="link"
+      className="removeEquivalentButton"
+    >
       <Icon type="delete" className="removeEquivalentIcon" theme="filled" />
       {confirmRemove ? "Are you sure?" : ""}
     </Button>
   );
-  return (
-    <li>
-      <IdiomRenderer idiom={equivalent} actions={actions} layoutMode="vertical" />
-    </li>
-  );
+
+  return renderIdiomListItem(equivalent, [action]);
 };

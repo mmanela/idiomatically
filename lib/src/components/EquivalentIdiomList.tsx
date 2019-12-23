@@ -57,6 +57,7 @@ export const EquivalentIdiomList: React.StatelessComponent<EquivalentListProps> 
 
   return (
     <IdiomListRenderer
+      showSplit={false}
       listSize="small"
       paginationSize="small"
       idioms={ordered}
@@ -122,5 +123,7 @@ const EquivalentIdiomItem: React.StatelessComponent<EquivalentItemProps> = props
     </Button>
   );
 
-  return renderIdiomListItem(equivalent, [action]);
+  return renderIdiomListItem(equivalent, [action], {
+    includeLiteralTranslation: false
+  });
 };

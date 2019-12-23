@@ -7,6 +7,7 @@ import { LanguageFlags } from "../components/LanguageFlags";
 import { ListSize } from "antd/lib/list";
 
 export interface IdiomListRendererProps {
+  showSplit?: boolean;
   listSize?: ListSize;
   paginationSize?: "small" | "default";
   idioms: (FullIdiomEntry | MinimalIdiomEntry)[];
@@ -26,6 +27,7 @@ export const IdiomListRenderer: React.StatelessComponent<IdiomListRendererProps>
       className={"idiomListRenderer " + props.className}
       itemLayout="horizontal"
       size={props.listSize || "large"}
+      split={props.showSplit !== undefined ? props.showSplit : true}
       pagination={{
         defaultCurrent: props.pageNumber,
         onChange: props.onPageChange,
@@ -50,9 +52,13 @@ function isFullIdiom(
   return (item as FullIdiomEntry).equivalents !== undefined;
 }
 
+interface IdiomListItemRenderingOptions {
+  includeLiteralTranslation?: boolean;
+}
 export const renderIdiomListItem = (
   item: FullIdiomEntry | MinimalIdiomEntry,
-  actions?: React.ReactNode[]
+  actions?: React.ReactNode[],
+  options?: IdiomListItemRenderingOptions
 ) => {
   const idiom = item;
   let equivalentsCount = 0;
@@ -80,6 +86,9 @@ export const renderIdiomListItem = (
     <div className="equivalentCount">{equivalentIdiomContent}</div>
   );
 
+  const includeLiteralTranslation =
+    !options || options?.includeLiteralTranslation !== false;
+
   return (
     <List.Item key={idiom.slug} className="idiomListItem" actions={actions}>
       <List.Item.Meta
@@ -96,7 +105,11 @@ export const renderIdiomListItem = (
             </Link>
           </div>
         }
-        description={<div>{idiom.literalTranslation}</div>}
+        description={
+          includeLiteralTranslation ? (
+            <div>{idiom.literalTranslation}</div>
+          ) : null
+        }
       />
     </List.Item>
   );

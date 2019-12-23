@@ -20,6 +20,12 @@
         font-size: 0.85rem;
       }
     }
+    &.ant-list-something-after-last-item
+      .ant-spin-container
+      > .ant-list-items
+      > .ant-list-item:last-child {
+      border-bottom: 0px;
+    }
     .removeEquivalentButton {
       color: red;
       padding-bottom: 10px;

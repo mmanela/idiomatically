@@ -1,9 +1,8 @@
-FROM node:lts-alpine
+FROM appsvc/node:12-lts
 
 LABEL NAME=idiom
 
 # Setup app
-WORKDIR /usr/src/app
 COPY lib/package*.json ./
 COPY lib/yarn.lock ./
 RUN yarn install --production=false
@@ -15,6 +14,6 @@ COPY lib/ .
 RUN yarn client:build:staging
 
 # Start Server
-WORKDIR /usr/src/app/server
+ENV PORT 8000
 EXPOSE 8000
 CMD ["yarn","server:start:staging"]

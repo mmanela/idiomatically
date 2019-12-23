@@ -1,11 +1,10 @@
-FROM node:lts-alpine
+FROM appsvc/node:12-lts
 
 LABEL NAME=idiom
 
 ENV REACT_APP_SERVER https://idiomatically.net
 
 # Setup app
-WORKDIR /usr/src/app
 COPY lib/package*.json ./
 COPY lib/yarn.lock ./
 RUN yarn install --production=false
@@ -17,6 +16,6 @@ COPY lib/ .
 RUN yarn client:build
 
 # Start Server
-WORKDIR /usr/src/app/server
+ENV PORT 80
 EXPOSE 80
 CMD ["yarn","server:prod"]

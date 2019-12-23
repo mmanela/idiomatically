@@ -6,7 +6,6 @@ import {
   RemoveEquivalentIdiomMutation,
   RemoveEquivalentIdiomMutationVariables,
   GetCurrentUser_me,
-  GetIdiomQuery_idiom_equivalents,
   FullIdiomEntry,
   MinimalIdiomEntry
 } from "../__generated__/types";
@@ -14,7 +13,6 @@ import { useMutation } from "@apollo/react-hooks";
 import { Button, Icon, Typography } from "antd";
 import gql from "graphql-tag";
 import "./EquivalentIdiomList.scss";
-import { IdiomRenderer } from "./IdiomRenderer";
 import { IdiomListRenderer, renderIdiomListItem } from "./IdiomListRenderer";
 const { Paragraph } = Typography;
 

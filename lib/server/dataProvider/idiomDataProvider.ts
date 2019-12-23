@@ -8,7 +8,7 @@ import { escapeRegex } from './utils';
 import { UserDataProvider } from './userDataProvider';
 
 // Max number of proposals one user can have before we prevent more
-const MaxPendingProposals = 50;
+const MaxPendingProposals = 25;
 
 export class IdiomDataProvider {
 

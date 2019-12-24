@@ -26,15 +26,3 @@
     }
   }
 }
-
-@media screen and (max-width: 700px) {
-  .idiomListRenderer {
-    .idiomListItem {
-      flex-direction: column;
-      align-items: initial;
-      .equivalentCount {
-        align-self: flex-end;
-      }
-    }
-  }
-}

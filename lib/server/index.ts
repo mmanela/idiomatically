@@ -1,3 +1,4 @@
+import * as appInsights from 'applicationinsights'
 import 'dotenv/config';
 import * as http from 'http';
 import * as url from 'url';
@@ -34,6 +35,8 @@ const start = async () => {
     dotenv.config({
       path: `.env.${process.env.NODE_ENV}.local`,
     });
+
+    appInsights.setup(process.env.APP_INSIGHTS_KEY).start()
 
     const isProd = process.env.NODE_ENV === 'production';
     const serverUrl = process.env.SERVER_URL;

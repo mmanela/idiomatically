@@ -32,6 +32,7 @@
     "apollo-server": "^2.4.8",
     "apollo-server-express": "^2.4.8",
     "apollo-server-plugin-response-cache": "^0.3.4",
+    "applicationinsights": "^1.6.0",
     "babel-plugin-dynamic-import-node": "^2.3.0",
     "babel-plugin-import": "^1.12.0",
     "babel-plugin-syntax-dynamic-import": "^6.18.0",

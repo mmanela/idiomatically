@@ -1,6 +1,6 @@
 import * as appInsights from 'applicationinsights'
 import 'dotenv/config';
-import * as http from 'http';
+import http = require("http"); // Use require syntax to allow app insights to monkey patch
 import * as url from 'url';
 import express from 'express';
 import { ApolloServer, makeExecutableSchema } from 'apollo-server-express';
@@ -14,11 +14,10 @@ import passport from 'passport';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import expressSession from 'express-session';
 import { ensureLoggedIn } from 'connect-ensure-login';
-import MemoryStoreFactory from 'memorystore'
 import MongoStoreFactory from 'connect-mongo';
 import { Profile } from 'passport';
 import cors from 'cors';
-import { User, UserRole } from './_graphql/types';
+import { User } from './_graphql/types';
 import { ExpressContext } from 'apollo-server-express/dist/ApolloServer';
 import { AuthDirective } from './schemaDirectives/auth';
 import { setupSSR } from './ssr';
@@ -84,6 +83,7 @@ const start = async () => {
     setupAuthAndSession(mongoConnection, app, serverUrl, clientUrl, dataProviders, isProd, googleClientId, googleClientSecret);
 
     server.applyMiddleware({ app, cors: false });
+    debugger;
     const httpServer = http.createServer(app);
 
     httpServer.listen({ port: port }, () =>

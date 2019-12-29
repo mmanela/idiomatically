@@ -159,7 +159,7 @@ export function commonFormItems(
           label={
             <span>
               Transliteration (How to pronounce it with English characters)&nbsp;
-              <Tooltip title="Write the idiom into English letters to aid in pronunciation (like Pinyin for Chinese)">
+              <Tooltip title="Write the idiom with Latin characters to aid in pronunciation (like Pinyin for Chinese)">
                 <Icon type="question-circle-o" />
               </Tooltip>
             </span>

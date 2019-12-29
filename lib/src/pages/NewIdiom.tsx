@@ -132,9 +132,9 @@ const NewIdiomComponent: React.StatelessComponent<FormProps> = props => {
     <div>
       <Title level={2}>Add an Idiom</Title>
       <Paragraph>
-        A goal of Idiomatically is to catalog and coerelate idioms across countries and cultures. For that reason, it is important
-        to write idioms from non-English alphabets in their native characters. Then provide english character transliteration and
-        translation of that idiom.
+        A goal of Idiomatically is to catalog and correlate idioms across countries and cultures. For that reason, it is important
+        to write idioms from non-Latin alphabets in their native characters. Then provide Latin character transliteration and
+        English translation of that idiom.
       </Paragraph>
       {data && data.createIdiom.idiom && data.createIdiom.idiom.slug && (
         <Redirect to={`/idioms/${data.createIdiom.idiom.slug}`} />

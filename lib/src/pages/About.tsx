@@ -5,7 +5,7 @@ const { Title, Paragraph, Text } = Typography;
 export const About: React.StatelessComponent = props => {
   return (
     <article>
-      <Title level={2}>About Idiomatically</Title>
+      <Title level={3}>About Idiomatically</Title>
       <Paragraph>
         Idiomatically is a site all about ...{" "}
         <a href="https://www.wordnik.com/words/idiom" target="_blank" rel="noopener noreferrer">
@@ -30,8 +30,26 @@ export const About: React.StatelessComponent = props => {
         help you find to say <Text strong>С един куршум - два заека</Text> (Kill two rabbits with one bullet). It is interesting
         to watch how different languages can express the same concept in seemingly similar but often very different ways.
       </Paragraph>
+      <Title level={3}>Sources</Title>
       <Paragraph>
-        <Text strong>Enjoy!</Text>
+        <Text>
+          Content on the site is either sourced directly from native speakers or it is copied from{" "}
+          <a href="https://www.wiktionary.org/" target="_blank" rel="noopener noreferrer">
+            Wiktionary{" "}
+          </a>
+          under the{" "}
+          <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">
+            Creative Commons Attribution-ShareAlike License
+          </a>
+          . When the content is copied from Wiktionary, the description of the Idiom will reference the page on Wiktionary.com
+        </Text>
+      </Paragraph>
+
+      <Title level={3}>Contributing</Title>
+      <Paragraph>
+        <Text>We welcome contributions of idioms missing from the site or missing relations between idioms. Just sign in 
+          and you can submit changes. Submissions go through a quick review process before they are made public.
+        </Text>
       </Paragraph>
     </article>
   );

@@ -50,6 +50,13 @@ export class Languages {
             // we are using  country-language :/
             const extraCountryInfo = countryLanguage.getCountry(countryCode);
             let countryLanguages = extraCountryInfo.languages ? extraCountryInfo.languages.map(lan => lan.iso639_1) : country.languages;
+
+            // Hardcoded insertion of Yiddish into US data set. 
+            // Need to submit PR to add to underlying NPM package
+            if (countryCode === "US") {
+                countryLanguages = countryLanguages.concat("yi");
+            }
+
             for (const langCode of countryLanguages) {
                 if (!langCode) {
                     continue;

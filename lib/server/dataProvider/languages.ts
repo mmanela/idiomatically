@@ -41,7 +41,6 @@ export class Languages {
                 countryKey: countryCode,
                 emojiFlag: country.emoji
             };
-
             this.countryMap.set(countryModel.countryKey.toLowerCase(), countryModel);
 
             // We are using a second library here to get extra country info. 

@@ -2,7 +2,7 @@ import { Db, Collection, ObjectID, FilterQuery } from 'mongodb'
 import { Idiom, IdiomCreateInput, IdiomUpdateInput, QueryIdiomsArgs, IdiomOperationResult, OperationStatus, QueryIdiomArgs } from '../_graphql/types';
 import { Languages, LanguageModel } from './languages'
 import { UserModel, IdiomExpandOptions } from '../model/types';
-import { DbIdiom, mapDbIdiom, DbIdiomChangeProposal, IdiomProposalType, Paged } from './mapping';
+import { DbIdiom, mapDbIdiom, DbIdiomChangeProposal, IdiomProposalType, Paged, DbEquivalent, EquivalentSource } from './mapping';
 import { transliterate, slugify } from 'transliteration';
 import { escapeRegex } from './utils';
 import { UserDataProvider } from './userDataProvider';
@@ -65,9 +65,9 @@ export class IdiomDataProvider {
         }
         else {
             const deleteResult = await this.idiomCollection.deleteOne({ _id: objectId });
-            const itemsToUpdate = await this.idiomCollection.find({ equivalents: objectId }).toArray();
+            const itemsToUpdate = await this.idiomCollection.find({ equivalents: { $elemMatch: { equivalentId: objectId } } }).toArray();
             const itemIdsToUpdate = itemsToUpdate.map(x => x._id);
-            await this.idiomCollection.updateMany({ _id: { $in: itemIdsToUpdate } }, { $pull: { equivalents: objectId } });
+            await this.idiomCollection.updateMany({ _id: { $in: itemIdsToUpdate } }, { $pull: { equivalents: { equivalentId: objectId } } });
 
             return deleteResult && deleteResult.deletedCount && deleteResult.deletedCount > 0
                 ? this.operationResult(OperationStatus.Success) : this.operationResult(OperationStatus.Failure);
@@ -330,7 +330,7 @@ export class IdiomDataProvider {
 
         if (dbIdiom) {
             if (idiomExpandOptions && idiomExpandOptions.expandEquivalents) {
-                const equivalentObjIds = (dbIdiom.equivalents || []).map(id => new ObjectID(id));
+                const equivalentObjIds = (dbIdiom.equivalents || []).map(eq => new ObjectID(eq.equivalentId));
 
                 const equivalentQuery = this.activeOnly({ _id: { $in: equivalentObjIds } });
                 dbEquivalents = await this.idiomCollection.find(equivalentQuery).toArray();
@@ -403,7 +403,7 @@ export class IdiomDataProvider {
         let dbEquivalents: DbIdiom[] = [];
         if (dbIdioms) {
             if (idiomExpandOptions.expandEquivalents) {
-                const equivalentsObjIds = dbIdioms.flatMap(dbIdiom => (dbIdiom.equivalents || []).map(id => new ObjectID(id)));
+                const equivalentsObjIds = dbIdioms.flatMap(dbIdiom => (dbIdiom.equivalents || []).map(eq => new ObjectID(eq.equivalentId)));
                 const equivalentQuery = this.activeOnly({ _id: { $in: equivalentsObjIds } });
                 dbEquivalents = await this.idiomCollection.find(equivalentQuery).toArray();
             }
@@ -449,8 +449,8 @@ export class IdiomDataProvider {
         }
         else {
             var bulk = this.idiomCollection.initializeOrderedBulkOp();
-            bulk.find({ _id: idiomObjId }).updateOne({ $pull: { equivalents: equivalentObjId } });
-            bulk.find({ _id: equivalentObjId }).updateOne({ $pull: { equivalents: idiomObjId } });
+            bulk.find({ _id: idiomObjId }).updateOne({ $pull: { equivalents: { equivalentId: equivalentObjId } } });
+            bulk.find({ _id: equivalentObjId }).updateOne({ $pull: { equivalents: { equivalentId: idiomObjId } } });
             const result = await bulk.execute();
             return !result.hasWriteErrors() ? this.operationResult(OperationStatus.Success) : this.operationResult(OperationStatus.Failure);
         }
@@ -483,8 +483,18 @@ export class IdiomDataProvider {
         }
         else {
             var bulk = this.idiomCollection.initializeOrderedBulkOp();
-            bulk.find({ _id: idiomObjId }).updateOne({ $addToSet: { equivalents: equivalentObjId } });
-            bulk.find({ _id: equivalentObjId }).updateOne({ $addToSet: { equivalents: idiomObjId } });
+            const equivalentToAddToSource: DbEquivalent = {
+                equivalentId: equivalentObjId,
+                source: EquivalentSource.Direct,
+                createdById: new ObjectID(currentUser.id)
+            }
+            const equivalentToAddToTarget: DbEquivalent = {
+                equivalentId: idiomObjId,
+                source: EquivalentSource.Direct,
+                createdById: new ObjectID(currentUser.id)
+            }
+            bulk.find({ _id: idiomObjId }).updateOne({ $addToSet: { equivalents: equivalentToAddToSource } });
+            bulk.find({ _id: equivalentObjId }).updateOne({ $addToSet: { equivalents: equivalentToAddToTarget } });
             const result = await bulk.execute();
 
             return !result.hasWriteErrors() ? this.operationResult(OperationStatus.Success) : this.operationResult(OperationStatus.Failure);

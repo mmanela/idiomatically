@@ -37,6 +37,16 @@ export enum IdiomProposalType {
     DeleteEquivalent = "DeleteEquivalent"
 }
 
+export enum EquivalentSource {
+    Direct,
+    Inferred
+}
+
+export interface DbEquivalent {
+    equivalentId: ObjectID,
+    source: EquivalentSource,
+    createdById?: ObjectID,
+}
 
 export interface DbIdiom {
     _id?: ObjectID,
@@ -44,7 +54,7 @@ export interface DbIdiom {
     title: string,
     description: string,
     tags?: string[],
-    equivalents?: ObjectID[],
+    equivalents?: DbEquivalent[],
 
     transliteration?: string;
     literalTranslation?: string;
@@ -120,7 +130,7 @@ export function mapDbIdiom(dbIdiom: DbIdiom, dbTranslations?: DbIdiom[], users?:
 
     // NOTE: This should be optimized since its potentially slow...
     if (dbTranslations) {
-        idiom.equivalents = dbTranslations.filter(dbt => (dbIdiom.equivalents || []).some(x => dbt._id.equals(x)))
+        idiom.equivalents = dbTranslations.filter(dbt => (dbIdiom.equivalents || []).some(x => dbt._id.equals(x.equivalentId)))
             .map(t => this.mapDbIdiom(t, null, users));
     }
 

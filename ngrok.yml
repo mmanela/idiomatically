@@ -1,0 +1,14 @@
+tunnels:
+  server:
+    proto: http
+    addr: 8000
+    subdomain: idiom
+  client:
+    proto: http
+    addr: 3000
+    subdomain: idiom2
+
+  prod:
+    proto: http
+    addr: 80
+    subdomain: idiom3

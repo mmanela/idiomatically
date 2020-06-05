@@ -1,0 +1,43 @@
+.idiomRendererItem {
+  font-size: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  .idiomRendererItemContent {
+    display: flex;
+    align-items: flex-start;
+
+    &.vertical {
+      flex-direction: column-reverse;
+      margin-bottom: 12px;
+    }
+
+    &.horizontal {
+      .idiomFlag {
+        word-break: break-word;
+      }
+
+      .idiomLink {
+        flex: 1 0;
+      }
+    }
+
+    .idiomFlag {
+      font-size: 0.8rem;
+      margin-right: 15px;
+      .flagAvatarContainer {
+        margin-bottom: 0;
+      }
+    }
+    .idiomLink {
+      a {
+        color: black;
+      }
+
+      a:hover {
+        color: #1890ff;
+      }
+    }
+  }
+}

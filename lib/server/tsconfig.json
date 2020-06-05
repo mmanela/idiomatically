@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "sourceMap": true,
+    "module": "commonjs",
+    "importHelpers": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "strict": false,
+    "outDir": "build/server",
+    "lib": ["es6", "esnext.asynciterable", "dom", "dom.iterable", "esnext"],
+    "moduleResolution": "node",
+    "jsx": "react",
+    "typeRoots": ["../node_modules/@types", "../../custom_typings"]
+  }
+}

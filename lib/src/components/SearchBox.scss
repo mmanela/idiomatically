@@ -1,0 +1,50 @@
+.idiomSearchBox {
+  max-width: 800px;
+
+  .ant-input-group-addon {
+    color: #fff;
+    background-color: #1890ff;
+    border-color: #1890ff;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.12);
+    -webkit-box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045);
+  }
+  .ant-select-focused .ant-select-selection {
+    color: white;
+  }
+  .ant-input-group-addon .ant-select {
+    margin: -5px 0px;
+  }
+  
+  .ant-select.languageSelect {
+    border-left: 1px solid #0069cc;
+    color: white;
+
+    .ant-select-arrow {
+      color: white;
+    }
+
+    .ant-select-selector {
+      color: white;
+    }
+
+    .ant-select-selection-selected-value {
+      margin-right: 4px;
+    }
+  }
+}
+
+.languageOptionContainer {
+  /* This is a sad day in CSS but unless I totally take over 
+       the rendering of the dropdown I don't have a way to set the width */
+  width: 150px !important;
+}
+
+@media screen and (max-width: 900px) {
+  .languageOptionContainer {
+    /* This is a sad day in CSS but unless I totally take over 
+         the rendering of the dropdown I don't have a way to set the width */
+    left: auto !important;
+    right: 10px;
+  }
+}

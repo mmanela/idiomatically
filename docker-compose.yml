@@ -1,0 +1,25 @@
+version: '2.1'
+
+services:
+  idiomatically:
+    image: idiomatically
+    build: 
+      context: .
+      dockerfile: Dockerfile.staging
+    environment:
+      NODE_ENV: development
+      DB_CONNECTION: mongodb://mongo:27017
+      SERVER_URL: http://127.0.0.1:8000
+      CLIENT_URL: http://127.0.0.1:8000
+    ports:
+      - 8000:8000  
+    depends_on:
+      - mongo
+  mongo:
+    image: mongo
+    ports:
+    - "27017:27017"
+    volumes:
+    - data-volume:/data/db
+volumes:
+  data-volume:

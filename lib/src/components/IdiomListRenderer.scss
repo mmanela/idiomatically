@@ -1,0 +1,34 @@
+@import "../components/App.scss";
+
+.idiomListRenderer {
+  .idiomListDetails {
+    align-items: center;
+
+    h4 {
+      font-weight: bold;
+      margin-bottom: 0;
+    }
+
+    .ant-list-item-meta-avatar {
+      flex-basis: 80px;
+    }
+
+    .itemHeader  {
+      font-weight: normal;
+      margin-bottom: 2px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .idiomListTitle {
+      color: rgba(0,0,0,.65);
+      -webkit-transition: all .3s;
+      transition: all .3s;
+      display: block;
+
+      &::first-letter {
+        text-transform: uppercase;
+      }
+    }
+  }
+}

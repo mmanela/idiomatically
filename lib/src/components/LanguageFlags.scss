@@ -1,0 +1,49 @@
+@import "App.scss";
+
+.flagAvatarContainer {
+  display: flex;
+  align-items: center;
+
+  &.vertical {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  &.horizontal {
+    flex-direction: row;
+    .flagImage {
+      margin-right: 5px;
+    }
+  }
+
+  .flagImage {
+    flex: none;
+  }
+
+  &.default {
+    font-size: 0.9rem;
+  }
+
+  &.large {
+    font-size: 1.1rem;
+  }
+
+  .flagAfterText {
+    color: rgba(0, 0, 0, 0.65);
+    align-items: flex-start;
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+
+  .flagOverflowText {
+    margin-left: 3px;
+  }
+}
+
+.flagOverflowTooltip {
+  .flagList {
+    .flagImage:not(:first-child) {
+      margin-left: 5px;
+    }
+  }
+}

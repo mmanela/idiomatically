@@ -1,0 +1,166 @@
+directive @cacheControl(maxAge: Int, scope: CacheControlScope) on OBJECT | FIELD_DEFINITION
+
+enum CacheControlScope {
+  PUBLIC
+  PRIVATE
+}
+
+enum UserRole {
+  ADMIN
+  CONTRIBUTOR
+  GENERAL
+}
+
+directive @auth(requires: UserRole = ADMIN) on OBJECT | FIELD_DEFINITION
+
+type Query {
+  me: User @cacheControl(maxAge: 0)
+  user(id: ID!): User @auth(requires: CONTRIBUTOR) @cacheControl(maxAge: 0)
+  users(filter: String, limit: Int): [User]! @auth(requires: ADMIN) @cacheControl(maxAge: 0)
+  idiom(id: ID, slug: String): Idiom @cacheControl(maxAge: 1800)
+  idioms(cursor: String, filter: String, locale: String, limit: Int): IdiomConnection! @cacheControl(maxAge: 1800)
+  languages: [Language!]! @cacheControl(maxAge: 3600)
+  languagesWithIdioms: [Language!]! @cacheControl(maxAge: 1800)
+  countries(languageKey: String): [Country!]! @cacheControl(maxAge: 3600)
+  idiomChangeProposal(id: ID): IdiomChangeProposal! @auth(requires: ADMIN) @cacheControl(maxAge: 0)
+  idiomChangeProposals(cursor: String, filter: String, limit: Int): IdiomChangeProposalConnection! @auth(requires: ADMIN) @cacheControl(maxAge: 0)
+}
+
+type User {
+  id: ID!
+  name: String!
+  avatar: String
+  role: UserRole
+  providers: [Login]!
+}
+
+enum ProviderType {
+  GOOGLE
+  FACEBOOK
+}
+
+type Login @auth(requires: ADMIN) {
+  externalId: ID!
+  name: String!
+  email: String
+  avatar: String
+  type: ProviderType!
+}
+
+type Mutation {
+  updateIdiom(idiom: IdiomUpdateInput!): IdiomOperationResult! @auth(requires: GENERAL)
+  createIdiom(idiom: IdiomCreateInput!): IdiomOperationResult! @auth(requires: GENERAL)
+  deleteIdiom(idiomId: ID!): IdiomOperationResult! @auth(requires: ADMIN)
+  addEquivalent(idiomId: ID!, equivalentId: ID!): IdiomOperationResult! @auth(requires: GENERAL)
+  removeEquivalent(idiomId: ID!, equivalentId: ID!): IdiomOperationResult! @auth(requires: ADMIN)
+  computeEquivalentClosure(forceRun: Boolean): IdiomOperationResult! @auth(requires: ADMIN)
+  acceptIdiomChangeProposal(proposalId: ID!, body: String): IdiomOperationResult! @auth(requires: ADMIN)
+  rejectIdiomChangeProposal(proposalId: ID!): IdiomOperationResult! @auth(requires: ADMIN)
+}
+
+enum OperationStatus {
+  SUCCESS
+  FAILURE
+  PENDING
+  PENDINGFAILURE
+}
+
+type IdiomOperationResult {
+  status: OperationStatus!
+  message: String
+  idiom: Idiom
+}
+
+type IdiomConnection {
+  edges: [IdiomEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type IdiomEdge {
+  cursor: String!
+  node: Idiom!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  endCursor: String!
+}
+
+input IdiomCreateInput {
+  title: String!
+  description: String
+  languageKey: String!
+  countryKeys: [String!]
+  tags: [String!]
+  transliteration: String
+  literalTranslation: String
+  relatedIdiomId: ID
+}
+
+input IdiomUpdateInput {
+  id: ID!
+  title: String
+  description: String
+  transliteration: String
+  literalTranslation: String
+  tags: [String!]
+  countryKeys: [String!]
+}
+
+type Idiom {
+  id: ID!
+  slug: String!
+  title: String!
+  description: String
+  tags: [String!]!
+  transliteration: String
+  literalTranslation: String
+  equivalents: [Idiom!]!
+  language: Language!
+  createdAt: String!
+  createdBy: User
+  updatedAt: String
+  updatedBy: User
+}
+
+type Language @cacheControl(maxAge: 3600) {
+  languageName: String!
+  languageNativeName: String!
+  languageKey: String!
+  countries: [Country!]!
+}
+
+type Country @cacheControl(maxAge: 3600) {
+  countryKey: String!
+  countryName: String!
+  countryNativeName: String!
+  emojiFlag: String!
+  latitude: Float!
+  longitude: Float!
+}
+
+type IdiomChangeProposalConnection {
+  edges: [IdiomChangeProposalEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type IdiomChangeProposalEdge {
+  cursor: String!
+  node: IdiomChangeProposal!
+}
+
+type IdiomChangeProposal {
+  id: ID!
+  readOnlyType: String!
+  readOnlyCreatedBy: String!
+  readOnlyTitle: String
+  readOnlySlug: String
+  body: String!
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+}

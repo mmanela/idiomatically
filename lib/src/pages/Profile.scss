@@ -1,0 +1,34 @@
+@import "../components/App.scss";
+
+.profileContent {
+  display: flex;
+  flex-direction: row;
+
+  .profilePicture {
+    flex: none;
+  }
+
+  .roleName {
+    font-weight: bold;
+  }
+
+  .roleDescription {
+    font-size: 0.8rem;
+  }
+
+  .profileActions {
+    margin-left: 40px;
+
+    > div {
+      margin-bottom: 20px;
+    }
+
+    ul {
+      padding-left: 0;
+      li {
+        list-style-type: none;
+        margin-bottom: 15px;
+      }
+    }
+  }
+}

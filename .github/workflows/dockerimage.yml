@@ -1,0 +1,41 @@
+name: Docker Image CI
+
+on: 
+  push:
+    branches:
+      - master
+
+jobs:
+
+  build:
+ 
+    runs-on: ubuntu-latest
+ 
+    steps:
+    - name: 'Checkout Github Action' 
+      uses: actions/checkout@v1
+      
+    - name: 'Login via Azure CLI'
+      uses: Azure/login@v1.1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - uses: azure/docker-login@v1
+      with:
+        login-server: idiomatically893a.azurecr.io
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+
+    - name: Build and publish the Docker image
+      run: | 
+        docker build . --file Dockerfile -t idiomatically:${{ github.sha }} -t idiomatically893a.azurecr.io/idiomatically:production
+        docker push idiomatically893a.azurecr.io/idiomatically:production
+      
+    - uses: azure/webapps-container-deploy@v1
+      with:
+        app-name: 'Idiomatically'
+        images: 'idiomatically893a.azurecr.io/idiomatically:production'
+    
+    - name: Azure logout
+      run: |
+        az logout

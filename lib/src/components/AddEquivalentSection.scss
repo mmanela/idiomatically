@@ -1,0 +1,37 @@
+.addEquivalent {
+  .findSelectControl {
+    width: 100%
+  }
+
+  .addEquivalentDescription {
+    font-size: 0.8rem;
+    display: block;
+    color: black;
+  }
+
+  &.addNew {
+    button {
+      padding-left: 0px;
+    }
+  }
+
+  &.addExisting {
+    margin-bottom: 30px;
+    margin-top: 10px;
+    button {
+      margin-left: 10px;
+    }
+
+    .addExistingFindBox {
+      margin-bottom: 10px;
+    }
+
+    .addEquivalentResult {
+      margin-top: 10px;
+    }
+
+    .addExistingFindBox {
+      margin-top: 2px;
+    }
+  }
+}

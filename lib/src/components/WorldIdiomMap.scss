@@ -1,0 +1,46 @@
+@import "./App.scss";
+
+.worldIdiomTooltip.__react_component_tooltip {
+  // Need to use string here since SASS cant handle combining px and vw units.
+  max-width: #{"min(350px,90vw)"};
+  h2 {
+    color: white !important;
+    margin-bottom: 5px !important;
+    line-height: 1.3rem !important;
+    font-size: 0.92rem;
+  }
+
+  .mapIdiomContainer {
+    .mapIdiomTitleContainer {
+      line-height: 0.9rem !important;
+
+      .idiomLanguage {
+        font-family: monospace;
+        font-size: 0.85rem;
+      }
+
+      .mapIdiomTitle {
+        font-size: 0.9rem;
+        
+        &:first-letter {
+          text-transform: capitalize;
+        }
+      }
+    }
+
+    .mapIdiomTranslation {
+      font-size: 0.8rem;
+      margin-top: 0px;
+      margin-bottom: 3px;
+      margin-left: 8px;
+      &:first-letter {
+        text-transform: capitalize;
+      }
+    }
+  }
+
+  .flagImage {
+    margin-right: 5px;
+    vertical-align: bottom;
+  }
+}

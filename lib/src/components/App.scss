@@ -1,0 +1,140 @@
+$primaryColor1: #513b56;
+$secondaryColor1: #525174;
+$buttonColor: #348aa7;
+
+body {
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande", "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+  min-width: 360px;
+  width: 100vw;
+}
+
+.ant-spin-spinning.middleSpinner {
+  display: block;
+}
+
+#root {
+  background-color: rgb(230, 236, 240);
+  display: flex;
+  justify-content: center;
+  padding-top: 25px;
+  padding-bottom: 25px;
+  min-height: 100vh;
+  height: auto;
+
+  .container {
+    -webkit-box-shadow: 0px 0px 11px 3px rgba(200, 200, 200, 1);
+    -moz-box-shadow: 0px 0px 11px 3px rgba(200, 200, 200, 1);
+    box-shadow: 0px 0px 11px 3px rgba(200, 200, 200, 1);
+    padding-top: 10px;
+    background: white;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+
+    max-width: 800px;
+    width: 100vw;
+
+    .empty404 {
+      .ant-empty-image {
+        height: auto;
+      }
+
+      img {
+        height: 278px;
+        width: 320px;
+        border-radius: 278px;
+      }
+    }
+
+    header.ant-layout-header {
+      align-items: center;
+      background: transparent;
+      height: auto;
+      width: 100%;
+      line-height: normal;
+      display: flex;
+      flex-direction: column;
+
+      h1 {
+        color: $primaryColor1;
+        font-size: 3em;
+        margin-bottom: 2px;
+
+        a,
+        a:active,
+        a:hover {
+          color: $primaryColor1;
+        }
+      }
+
+      h2 {
+        color: $secondaryColor1;
+        margin-bottom: 15px;
+      }
+    }
+
+    main {
+      max-width: 800px;
+      width: 100%;
+      padding: 30px;
+      font-size: 1rem;
+
+      .ant-page-header {
+        font-size: 1rem;
+      }
+    }
+
+    footer.ant-layout-footer {
+      color: #bbb;
+      background: transparent;
+      padding-bottom: 6px;
+      display: flex;
+      width: 100%;
+
+      .mainFooter {
+        flex: 1 1;
+        text-align: center;
+        &:hover {
+          .heart {
+            color: red;
+            transition: color 1s ease-in 0s;
+          }
+        }
+      }
+
+      .creativeCommons {
+        text-align: right;
+        width: 80px;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 700px) {
+  #root {
+    padding-top: 0px;
+    padding-bottom: 0px;
+
+    .container {
+      .ant-layout-header {
+        padding-left: 10px;
+        padding-right: 10px;
+        .ant-menu-item,
+        .ant-menu-submenu-title {
+          padding: 0 10px;
+        }
+      }
+      main {
+        padding: 20px;
+        .ant-page-header {
+          padding-left: 0;
+          padding-right: 0;
+        }
+      }
+      footer.ant-layout-footer {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+    }
+  }
+}

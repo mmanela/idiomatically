@@ -17,7 +17,7 @@ export const About: React.StatelessComponent = props => {
       <Paragraph>
         Idioms are those expressions that just don't make sense if you take them literally; but they are what make language
         interesting and colorful. They are much more than the sum of their parts - they are the linguistic equivalent of a{" "}
-        <Text underline>picture is worth a thousand words</Text>. They exist in every language and native speakers barely even notice them. 
+        <Text underline>picture is worth a thousand words</Text>. They exist in every language and native speakers barely even notice them.
         However, if you try talking to someone who grew up speaking a different language
         you will occasionally notice blank stares when you use one.
       </Paragraph>
@@ -54,6 +54,12 @@ export const About: React.StatelessComponent = props => {
       <Paragraph>
         <Text>We welcome contributions of new idioms or relations between idioms. Just sign in
         and you can submit changes. Submissions go through a quick review process before they are made public.
+        </Text>
+      </Paragraph>
+
+      <Title level={3}>Feedback</Title>
+      <Paragraph>
+        <Text>If you have questions or want to report a bug, please reach out by filing an issue on the <a href="https://github.com/mmanela/idiomatically" target="_blank" rel="noopener noreferrer">GitHub repo</a>.
         </Text>
       </Paragraph>
     </article>

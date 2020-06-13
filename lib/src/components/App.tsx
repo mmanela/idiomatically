@@ -13,6 +13,7 @@ import { UpdateIdiom } from "../pages/UpdateIdiom";
 import { ChangeProposals } from "../pages/ChangeProposals";
 import { SearchBox } from "./SearchBox";
 import { useCallback } from "react";
+import { GithubOutlined } from "@ant-design/icons";
 const { Header, Footer, Content } = Layout;
 
 export interface AppProps {
@@ -82,11 +83,12 @@ function AppInternal(props: RouteComponentProps<any> & AppProps) {
         </Switch>
       </Content>
 
-      <Footer>
-        <span className="mainFooter">
-          <span>Created by Matthew Manela </span>
+      <Footer className="mainFooter">
+        <span className="creatorFooter">
+          <span>Created by <a href="https://matthewmanela.com/" className="nameLink">Matthew Manela</a> </span>
           <span className="heart">♥</span>
         </span>
+        {githubLink()}
         {createCommonsDisplay()}
       </Footer>
     </Layout>
@@ -101,6 +103,11 @@ const NotFoundView = () => {
       description="Looks like you went barking up the wrong tree."
     />
   );
+}
+
+const githubLink = () => {
+  return <a className="github" rel="source" href="https://github.com/mmanela/idiomatically">
+    <span><GithubOutlined /> View on Github</span></a>;
 }
 
 const createCommonsDisplay = () => {

@@ -84,27 +84,44 @@ body {
       }
     }
 
-    footer.ant-layout-footer {
+    footer.mainFooter {
       color: #bbb;
       background: transparent;
       padding-bottom: 6px;
       display: flex;
       width: 100%;
 
-      .mainFooter {
+      .github {
         flex: 1 1;
         text-align: center;
+        color: inherit;
+        &:hover {
+          color: black;
+          transition: color 1s ease-in 0s;
+        }
+      }
+
+      .creatorFooter {
+        flex: 1 1;
+        text-align: center;
+        a {
+          color: inherit;
+        }
         &:hover {
           .heart {
             color: red;
+            transition: color 1s ease-in 0s;
+          }
+          .nameLink {
+            color: black;
             transition: color 1s ease-in 0s;
           }
         }
       }
 
       .creativeCommons {
-        text-align: right;
-        width: 80px;
+        text-align: center;
+        flex: 1 1;
       }
     }
   }
@@ -134,6 +151,10 @@ body {
       footer.ant-layout-footer {
         padding-left: 10px;
         padding-right: 10px;
+
+        .creatorFooter {
+          text-align: left;
+        }
       }
     }
   }

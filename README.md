@@ -2,6 +2,20 @@
 
 [![](https://github.com/mmanela/idiomatically/workflows/Node%20CI/badge.svg)](https://github.com/mmanela/idiomatically/actions?workflow=Node+CI) [![](https://github.com/mmanela/idiomatically/workflows/Docker%20Image%20CI/badge.svg)](https://github.com/mmanela/idiomatically/actions?workflow=Docker+Image+CI)
 
+## About 
+Idiomatically is a site for exploring idioms across languages and locales. 
+
+### Search for idioms and filter by language
+![Idiomatically Homepage](images/homePage.png)
+
+
+### Explore different ways to express an idiom in other languages and locales
+![Idiom Map](images/idiomMap.png)
+
+
+### Contribute or update idioms
+![Add idiom](images/addIdiom.png)
+
 
 ## Running Locally 
 

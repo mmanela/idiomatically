@@ -46,7 +46,7 @@ export function commonFormItems(
         ]}
         label={
           <span>
-            Idiom (In the langauges own alphabet) &nbsp;
+            Idiom (In the language's own alphabet) &nbsp;
             <Tooltip title="eg. Water under the bridge or 一石二鸟">
               <QuestionCircleOutlined />
             </Tooltip>

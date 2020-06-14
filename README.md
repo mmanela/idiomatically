@@ -31,7 +31,7 @@ Idiomatically started as a side project to explore different technologies. I hop
 - [Passport.js](http://www.passportjs.org/) for authentication
 - [Ant Design](https://ant.design/) (UX Framework)
 - [Docker](https://www.docker.com/)
-- 
+- [GitHub Actions](https://github.com/features/actions) (Used to build and publish docker image to Azure WebApps)
 
 ## Running Locally 
 

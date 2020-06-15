@@ -3,7 +3,7 @@
 [![](https://github.com/mmanela/idiomatically/workflows/Node%20CI/badge.svg)](https://github.com/mmanela/idiomatically/actions?workflow=Node+CI) [![](https://github.com/mmanela/idiomatically/workflows/Docker%20Image%20CI/badge.svg)](https://github.com/mmanela/idiomatically/actions?workflow=Docker+Image+CI)
 
 ## About 
-[Idiomatically](https://idiomatically.net/) is a site for exploring idioms across languages and locales. 
+[Idiomatically](https://idiomatically.net/) is a site for exploring idioms across languages and locales. Check out this [blog post](https://medium.com/@mmanela/idiomatically-net-bc428a8d498f) to learn more about the inspiration for Idiomatically.net.
 
 ### Search for idioms and filter by language
 ![Idiomatically Homepage](images/homePage.png)

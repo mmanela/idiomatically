@@ -9,9 +9,9 @@ ENABLE_DELETE=false
 
 # Modify for your environment
 # TIMESTAMP can be a date-time string such as 2019-03-15T17:55:00.
-REGISTRY=
-REPOSITORY=
-TIMESTAMP=2020-05-01 
+REGISTRY=idiomatically893a
+REPOSITORY=idiomatically
+TIMESTAMP=2020-07-28
 
 # Delete all images older than specified timestamp.
 

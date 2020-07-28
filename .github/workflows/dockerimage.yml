@@ -31,7 +31,7 @@ jobs:
         docker build . --file Dockerfile -t idiomatically:${{ github.sha }} -t idiomatically893a.azurecr.io/idiomatically:production
         docker push idiomatically893a.azurecr.io/idiomatically:production
       
-    - uses: azure/webapps-container-deploy@v1
+    - uses: Azure/webapps-deploy@v2
       with:
         app-name: 'Idiomatically'
         images: 'idiomatically893a.azurecr.io/idiomatically:production'

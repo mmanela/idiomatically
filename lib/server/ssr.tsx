@@ -13,6 +13,7 @@ import { ApolloProvider } from "@apollo/react-common";
 import { createHttpLink } from "apollo-link-http";
 import fetch from "cross-fetch";
 import { JSDOM } from "jsdom";
+import { DEFAULT_PAGE_TITLE } from '../src/constants';
 
 // When running in staging or prod we setup to run using SSR for improved performance
 export function setupSSR(app: express.Application, clientPath: string, localPort: number) {
@@ -73,6 +74,18 @@ function render(req: express.Request, res: express.Response, clientPath: string,
 }
 
 function getHtml(content: string, state: NormalizedCacheObject, clientPath: string, callback: (arg: string) => void) {
+
+  let titleOverride: string = DEFAULT_PAGE_TITLE;
+  const idiomKeys = Object.keys(state.ROOT_QUERY).filter(x => x.indexOf("idiom(") == 0);
+  if (idiomKeys && idiomKeys.length == 1) {
+    const idiomInstanceId = (state.ROOT_QUERY[idiomKeys[0]] as any).id;
+    const idiomInstance = state[idiomInstanceId];
+    if (idiomInstance) {
+      titleOverride = (idiomInstance.title as string) + " - " + titleOverride;
+    }
+  }
+
+
   // point to the html file created by CRA's build tool
   const filePath = path.resolve(clientPath, "index.html");
 
@@ -80,6 +93,7 @@ function getHtml(content: string, state: NormalizedCacheObject, clientPath: stri
     if (err) {
       throw err;
     }
+    htmlData = htmlData.replace(/<title>.*?<\/title>/i, `<title>${titleOverride}</title>`);
     const htmlToInject = (
       <>
         <script>window = </script>

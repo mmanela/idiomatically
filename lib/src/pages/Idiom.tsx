@@ -23,6 +23,7 @@ import { DeleteFilled } from '@ant-design/icons';
 import { Typography, Alert, Spin, Button, PageHeader, Tabs } from "antd";
 import screenfull from 'screenfull';
 import Fullscreen from "react-full-screen";
+import { DEFAULT_PAGE_TITLE } from "../constants";
 const WorldMap = React.lazy(() => import('../components/WorldIdiomMap'));
 const { TabPane } = Tabs;
 const { Title, Paragraph } = Typography;
@@ -66,10 +67,10 @@ export const Idiom: React.FunctionComponent<IdiomCombinedProps> = props => {
   useEffect(() => {
     if (window.document && window.document.title) {
       if (idiomTitle) {
-        window.document.title = `Idiomatically - ${idiomTitle}`;
+        window.document.title = `${idiomTitle} - ${DEFAULT_PAGE_TITLE}`;
       }
       else {
-        window.document.title = `Idiomatically`;
+        window.document.title = DEFAULT_PAGE_TITLE;
       }
     }
   }, [idiomTitle]);

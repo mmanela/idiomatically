@@ -14,6 +14,7 @@ import { ChangeProposals } from "../pages/ChangeProposals";
 import { SearchBox } from "./SearchBox";
 import { useCallback } from "react";
 import { GithubOutlined } from "@ant-design/icons";
+import { DEFAULT_PAGE_TITLE } from "../constants";
 const { Header, Footer, Content } = Layout;
 
 export interface AppProps {
@@ -55,8 +56,8 @@ function AppInternal(props: RouteComponentProps<any> & AppProps) {
   }, [queryFilter, updateSearchParams]);
 
 
-  if (window && window.document && window.document.title) {
-    window.document.title = "Idiomatically";
+  if (window && window.document && window.document.title && props.location.pathname.indexOf("/idioms/") === -1) {
+    window.document.title = DEFAULT_PAGE_TITLE;
   }
 
   return (

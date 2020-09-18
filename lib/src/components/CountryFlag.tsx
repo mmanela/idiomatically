@@ -19,7 +19,7 @@ export const CountryFlag: React.StatelessComponent<CountryFlagProps> = (props) =
 
   return (
     <Tooltip className="flagImage" placement="top" title={props.country.countryName} key={props.country.countryKey} arrowPointAtCenter>
-      <Avatar src={flagEmoji} size={props.size} />
+      <Avatar src={flagEmoji} size={props.size} alt={props.country.countryName} />
     </Tooltip>
   );
 };

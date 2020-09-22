@@ -66,7 +66,7 @@ function AppInternal(props: RouteComponentProps<any> & AppProps) {
         <h1>
           <Link to="/">Idiomatically</Link>
         </h1>
-        <h2>{props.subTitle}</h2>
+        <h2>Explore how idioms are translated across languages and countries</h2>
         <NavCommandBar {...props} />
         <SearchBox onSearch={onSearchChange} onLanguageChange={onLanguageChange} filter={queryFilter} language={queryLang} />
       </Header>

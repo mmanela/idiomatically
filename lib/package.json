@@ -52,7 +52,7 @@
     "cron": "^1.8.2",
     "cross-fetch": "^3.0.4",
     "customize-cra": "^0.9.1",
-    "dompurify": "^2.0.7",
+    "dompurify": "^2.0.17",
     "dotenv": "^7.0.0",
     "env-cmd": "^10.0.1",
     "express": "^4.16.4",

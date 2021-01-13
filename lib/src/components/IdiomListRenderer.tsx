@@ -21,7 +21,7 @@ export interface IdiomListRendererProps {
   ) => React.ReactNode;
 }
 
-export const IdiomListRenderer: React.StatelessComponent<IdiomListRendererProps> = props => {
+export const IdiomListRenderer: React.FunctionComponent<IdiomListRendererProps> = props => {
   return (
     <List
       className={"idiomListRenderer " + props.className}

@@ -13,7 +13,7 @@ export type CountryFlagProps = {
   size?: FlagSize;
 }
 
-export const CountryFlag: React.StatelessComponent<CountryFlagProps> = (props) => {
+export const CountryFlag: React.FunctionComponent<CountryFlagProps> = (props) => {
   const emojiResults = emoji(props.country.emojiFlag);
   const flagEmoji = emojiResults ? emojiResults[0].url : undefined;
 

@@ -63,7 +63,7 @@ export interface ChangeProposalsProps {
   filter: string | null;
 }
 
-export const ChangeProposals: React.StatelessComponent<ChangeProposalsProps> = props => {
+export const ChangeProposals: React.FunctionComponent<ChangeProposalsProps> = props => {
   const { filter } = props;
   const { currentUser, currentUserLoading } = useCurrentUser();
   const [pageNumber, setPageNumber] = React.useState(1);
@@ -130,7 +130,7 @@ interface ChangeProposalItemProps {
   item: GetChangeProposalsQuery_idiomChangeProposals_edges;
 }
 
-export const ChangeProposalItem: React.StatelessComponent<ChangeProposalItemProps> = props => {
+export const ChangeProposalItem: React.FunctionComponent<ChangeProposalItemProps> = props => {
   const proposal = props.item.node;
   const [proposalBody, setProposalBody] = React.useState(proposal.body);
   const [confirmAccept, setConfirmAccept] = React.useState(false);

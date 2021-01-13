@@ -31,7 +31,7 @@ interface EquivalentListProps {
   idiom: GetIdiomQuery_idiom;
 }
 
-export const EquivalentIdiomList: React.StatelessComponent<EquivalentListProps> = props => {
+export const EquivalentIdiomList: React.FunctionComponent<EquivalentListProps> = props => {
   if (props.idiom.equivalents.length <= 0) {
     return (
       <Paragraph className="content">
@@ -83,7 +83,7 @@ interface EquivalentItemProps {
   equivalentIdiom: MinimalIdiomEntry;
   idiom: GetIdiomQuery_idiom;
 }
-const EquivalentIdiomItem: React.StatelessComponent<EquivalentItemProps> = props => {
+const EquivalentIdiomItem: React.FunctionComponent<EquivalentItemProps> = props => {
   const equivalent = props.equivalentIdiom;
   const [confirmRemove, setConfirmRemove] = React.useState(false);
   const [

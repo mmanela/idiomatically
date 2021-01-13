@@ -54,7 +54,7 @@ function normalizePage(page: string | null) {
   return num;
 }
 
-export const IdiomListView: React.StatelessComponent<IdiomListViewProps> = props => {
+export const IdiomListView: React.FunctionComponent<IdiomListViewProps> = props => {
   const { filter, language } = props;
   const pageNumber = normalizePage(props.page);
   const [lastFilter, setLastFilter] = React.useState(props.filter);

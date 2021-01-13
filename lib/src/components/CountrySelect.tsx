@@ -27,7 +27,7 @@ export interface CountrySelectProps {
   ) => void;
 }
 
-export const CountrySelect: React.StatelessComponent<CountrySelectProps> = (props) => {
+export const CountrySelect: React.FunctionComponent<CountrySelectProps> = (props) => {
 
   const [lastLanguageKey, setLastLanguageKey] = useState<(string | undefined)>(props.languageKey);
   const [getCountries, getCountriesLoadResult] = useLazyQuery<

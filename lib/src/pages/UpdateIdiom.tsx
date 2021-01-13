@@ -65,7 +65,7 @@ const formItemLayout = {
   }
 };
 
-export const UpdateIdiom: React.StatelessComponent<UpdateIdiomProps> = props => {
+export const UpdateIdiom: React.FunctionComponent<UpdateIdiomProps> = props => {
   const { currentUser, currentUserLoading } = useCurrentUser();
   const [updateIdiom, { data, error, loading }] = useMutation<UpdateIdiomMutation, UpdateIdiomMutationVariables>(
     updateIdiomQuery

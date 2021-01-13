@@ -25,7 +25,7 @@ export interface LanguageSelectProps {
   readOnlyText?: string;
 }
 
-export const LanguageSelect: React.StatelessComponent<LanguageSelectProps> = (props) => {
+export const LanguageSelect: React.FunctionComponent<LanguageSelectProps> = (props) => {
   const [getLanguages, getLanguagesLoadResult] = useLazyQuery<GetLanguagesQuery>(
     getLanguagesQuery
   );

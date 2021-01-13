@@ -3,7 +3,7 @@ import { Typography } from "antd";
 import "./About.scss";
 const { Title, Paragraph, Text } = Typography;
 
-export const About: React.StatelessComponent = props => {
+export const About: React.FunctionComponent = props => {
   return (
     <article>
       <Title level={3}>About Idiomatically</Title>

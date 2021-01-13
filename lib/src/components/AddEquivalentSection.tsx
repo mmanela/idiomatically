@@ -57,7 +57,7 @@ type SelectedIdiomState = {
   submitting?: boolean;
   status?: OperationStatus;
 };
-export const AddEquivalentSection: React.StatelessComponent<AddEquivalentListProps> = props => {
+export const AddEquivalentSection: React.FunctionComponent<AddEquivalentListProps> = props => {
   const [selectedIdiomState, setSelectedIdiomState] = React.useState<SelectedIdiomState>({});
   const [findQueryData, findQueryLoadResult] = useLazyQuery<FindIdiomsQuery, FindIdiomsQueryVariables>(findIdiomsQuery);
   const [addEquivalentIdiomMutation, addEquivalentIdiomMutationResult] = useMutation<

@@ -43,7 +43,8 @@ const start = async () => {
     appInsights.start();
 
     const adminEmails = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(",").map(x => x.toLowerCase()) : [];
-    const isProd = process.env.NODE_ENV === 'production';
+    let isProd = process.env.NODE_ENV === 'production';
+    isProd = true; // temp override
     const serverUrl = process.env.SERVER_URL;
     const clientUrl = process.env.CLIENT_URL;
     const clientPath = path.join(__dirname, "../build");

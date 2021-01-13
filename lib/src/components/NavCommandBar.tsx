@@ -9,7 +9,7 @@ export interface NavCommandBarProps {}
 
 type NavBarCombinedProps = RouteComponentProps<any> & NavCommandBarProps;
 
-export const NavCommandBar: React.StatelessComponent<NavBarCombinedProps> = props => {
+export const NavCommandBar: React.FunctionComponent<NavBarCombinedProps> = props => {
   const { currentUser } = useCurrentUser();
   const isLoggedIn = !!currentUser;
 

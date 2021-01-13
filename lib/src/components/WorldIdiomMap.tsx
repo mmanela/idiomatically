@@ -28,7 +28,7 @@ type IdiomMapInfo = {
     country: GetIdiomQuery_idiom_equivalents_language_countries | GetIdiomQuery_idiom_language_countries
 }
 
-const MapChart: React.StatelessComponent<MapChartProps> = (props) => {
+const MapChart: React.FunctionComponent<MapChartProps> = (props) => {
 
     const handleSelection = (idioms: IdiomMapInfo[] | undefined, ISO_A2: any, NAME: any) => {
         if (idioms) {
@@ -93,7 +93,7 @@ type SelectedCountry = {
 }
 
 const idiomMap: Map<string, IdiomMapInfo[]> = new Map();
-const WorldMap: React.StatelessComponent<WorldIdiomMapProps> = (props) => {
+const WorldMap: React.FunctionComponent<WorldIdiomMapProps> = (props) => {
     const [selectedCountry, setSelectedCountry] = useState<SelectedCountry | null>(null);
     const newProps = { setSelectedCountry: setSelectedCountry, ...props };
 

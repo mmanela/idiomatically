@@ -50,7 +50,7 @@ export interface PendingOperationNotificationProps {
   operationStatus: OperationStatus;
 }
 
-export const PendingOperationNotification: React.StatelessComponent<PendingOperationNotificationProps> = props => {
+export const PendingOperationNotification: React.FunctionComponent<PendingOperationNotificationProps> = props => {
   const [done, setDone] = React.useState(false);
   if (!done) {
     launchModal(setDone, props.delay || 10, props.operationStatus);

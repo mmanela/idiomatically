@@ -18,7 +18,7 @@ export interface LanguageFlagsProps {
   hideFlags?: boolean;
 }
 
-export const LanguageFlags: React.StatelessComponent<LanguageFlagsProps> = props => {
+export const LanguageFlags: React.FunctionComponent<LanguageFlagsProps> = props => {
   const languageLabel = `${props.languageInfo.languageName}`;
   const layoutMode = props.layoutMode || "horizontal";
   const size = props.size || "default";

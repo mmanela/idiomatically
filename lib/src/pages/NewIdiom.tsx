@@ -70,7 +70,7 @@ const formItemLayout = {
   }
 };
 
-export const NewIdiom: React.StatelessComponent<NewIdiomProps> = props => {
+export const NewIdiom: React.FunctionComponent<NewIdiomProps> = props => {
   const { currentUser, currentUserLoading } = useCurrentUser();
 
   const [languageKey, setLanguageKey] = useState("");

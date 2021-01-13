@@ -38,7 +38,7 @@ function getRoleInfo(role: UserRole | null): RoleInfo {
   return { displayName: displayName, description: description };
 }
 
-export const Profile: React.StatelessComponent<ProfileProps> = props => {
+export const Profile: React.FunctionComponent<ProfileProps> = props => {
   const { currentUser, currentUserLoading, resetOnLogout } = useCurrentUser();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 

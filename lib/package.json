@@ -77,7 +77,7 @@
     "react-mde": "^10.0.3",
     "react-router": "^5.0.1",
     "react-router-dom": "^5.0.1",
-    "react-scripts": "^3.2.0",
+    "react-scripts": "^4.0.1",
     "react-simple-maps": "^2.0.0",
     "react-tooltip": "^4.2.5",
     "screenfull": "^5.0.2",
@@ -102,10 +102,10 @@
     "@types/react-test-renderer": "16.0.2",
     "apollo": "^2.9.0",
     "graphql-tools": "^4.0.4",
-    "nodemon": "^1.19.1",
+    "nodemon": "^2.0.7",
     "react-test-renderer": "16.5.1",
-    "ts-node": "^8.3.0",
-    "typescript": "^3.4.5"
+    "ts-node": "^9.1.1",
+    "typescript": "^4.1.2"
   },
   "scripts": {
     "client:start": "react-app-rewired start",
@@ -136,6 +136,12 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
+    ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
     ]
   }
 }

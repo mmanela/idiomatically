@@ -34,7 +34,7 @@ export async function sendAcceptedProposalEmail(slug: string, title: string, ema
     try {
       const url = `${serverUrl}/idioms/${slug}`;
       const subject = `Your contribution to Idiomatically.net was approved!`;
-      const message = `We accepted your contribution to <a href="${url}">${title}</a>.<br /> Thanks for your support!`;
+      const message = `We accepted your contribution for ${title}, please view it here: ${url}. Thanks for your support!`;
       sgMail.setApiKey(process.env.SENDGRID_API_KEY);
       const msg: MailDataRequired = {
         to: [email],

@@ -34,13 +34,23 @@ export async function sendAcceptedProposalEmail(slug: string, title: string, ema
     try {
       const url = `${serverUrl}/idioms/${slug}`;
       const subject = `Your contribution to Idiomatically.net was approved!`;
-      const message = `We accepted your contribution for ${title}, please view it here: ${url}. Thanks for your support!`;
+      const message = `We accepted your contribution for ${title}, please view it here: ${url} . Thanks for your support!`;
       sgMail.setApiKey(process.env.SENDGRID_API_KEY);
       const msg: MailDataRequired = {
         to: [email],
         from: 'admin@idiomatically.net',
         subject: subject,
-        text: message
+        text: message,
+        mailSettings: {
+          spamCheck: {
+            enable: false
+          }
+        },
+        trackingSettings: {
+          clickTracking: {
+            enable: false
+          }
+        }
       };
       await sgMail.send(msg);
     }

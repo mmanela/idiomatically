@@ -3,6 +3,7 @@ import { IdiomOperationResult, OperationStatus, IdiomChangeProposal, QueryIdiomC
 import { DbIdiom, DbIdiomChangeProposal, IdiomProposalType, Paged } from './mapping';
 import { UserDataProvider } from './userDataProvider';
 import { IdiomDataProvider } from './idiomDataProvider';
+import { sendAcceptedProposalEmail } from '../emailService';
 
 export class IdiomChangeProposalDataProvider {
     private changeProposalCollection: Collection<DbIdiomChangeProposal>;
@@ -73,10 +74,19 @@ export class IdiomChangeProposalDataProvider {
 
         if (idiomOperationResult.status == OperationStatus.Success) {
             const res = await this.changeProposalCollection.deleteOne({ _id: new ObjectID(args.proposalId) });
+
+            // If the user's proposal was acceted 
+            if (userModel && userModel.providers
+                && userModel.providers.length > 0 && userModel.providers[0].email) {
+                // Only send email if we have friendly things to show
+                if (changeProposal.readOnlySlug && changeProposal.readOnlyTitle) {
+                    await sendAcceptedProposalEmail(changeProposal.readOnlySlug, changeProposal.readOnlyTitle, userModel.providers[0].email);
+                }
+            }
+
         }
         return idiomOperationResult;
     }
-
 
     async getPendingChangeProposalCount(): Promise<number> {
         const totalCount = await this.changeProposalCollection.countDocuments({});

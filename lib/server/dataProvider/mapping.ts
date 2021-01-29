@@ -147,8 +147,8 @@ export function mapDbIdiom(dbIdiom: DbIdiom, dbTranslations?: DbIdiom[], users?:
     }
 
     if (users) {
-        const matchingCreatedBy = users.filter(u => u.id === dbIdiom.createdById.toHexString());
-        const matchingUpdatedBy = users.filter(u => u.id === dbIdiom.updateById.toHexString());
+        const matchingCreatedBy = users.filter(u => u.id === dbIdiom.createdById.toString());
+        const matchingUpdatedBy = users.filter(u => u.id === dbIdiom.updateById.toString());
         idiom.createdBy = matchingCreatedBy ? matchingCreatedBy[0] : null;
         idiom.updatedBy = matchingUpdatedBy ? matchingUpdatedBy[0] : null;
     }

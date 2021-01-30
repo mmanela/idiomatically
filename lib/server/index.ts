@@ -177,11 +177,15 @@ const start = async () => {
         const pipeline = smStream.pipe(createGzip())
 
         const idioms = await dataProviders.idiom.getAllIdioms();
+        const languages = await dataProviders.idiom.getLanguagesWithIdioms();
 
-        smStream.write({ url: '/', priority: 1.0 })
-        smStream.write({ url: '/about', priority: 0.8 })
+        smStream.write({ url: '/', priority: 1.0 });
+        smStream.write({ url: '/about', priority: 0.8 });
         for (const idiom of idioms) {
-          smStream.write({ url: `/idioms/${idiom.slug}`, priority: 0.8, lastmod: idiom.lastModifiedDate.toString() })
+          smStream.write({ url: `/idioms/${idiom.slug}`, priority: 0.8, lastmod: idiom.lastModifiedDate.toString() });
+        }
+        for (const lang of languages) {
+          smStream.write({ url: `/idioms?lang=${lang.languageKey}`, priority: 0.7 });
         }
         smStream.end()
 

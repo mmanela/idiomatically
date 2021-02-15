@@ -1,0 +1,5 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target" : { "namespace": "android_app", "package_name": "net.idiomatically.twa",
+                   "sha256_cert_fingerprints": ["D1:4D:2A:A7:62:AC:67:C8:4A:E3:82:DE:5F:5B:54:C0:C1:8F:6D:21:B3:ED:3D:6E:F2:42:D6:7A:57:05:93:4A"] }
+    }]

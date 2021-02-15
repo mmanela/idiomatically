@@ -11,6 +11,9 @@ import { useQuery } from "@apollo/react-hooks";
 import { App } from "./components/App";
 import { getSubTitle } from "./components/subTitles";
 import gql from "graphql-tag";
+import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+import reportWebVitals from './reportWebVitals';
+import { ReportHandler } from 'web-vitals';
 
 // Grab any server rendered state
 const apolloState = (window as any).__APOLLO_STATE__;
@@ -67,3 +70,30 @@ function Root() {
 }
 
 render(<Root />, document.getElementById("root"));
+
+
+
+// If you want your app to work offline and load faster, you can change
+// unregister() to register() below. Note this comes with some pitfalls.
+// Learn more about service workers: https://cra.link/PWA
+serviceWorkerRegistration.register();
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+const sendToAnalytics: ReportHandler = ({ id, name, value }) => {
+  if (window["appInsights"]) {
+    window["appInsights"].trackEvent({
+      name: name,
+      properties: { // accepts any type
+        eventCategory: 'Web Vitals',
+        eventAction: name,
+        eventValue: Math.round(name === 'CLS' ? value * 1000 : value), // values must be integers
+        eventLabel: id, // id unique to current page load
+        nonInteraction: true, // avoids affecting bounce rate
+      }
+    });
+  }
+};
+
+reportWebVitals(sendToAnalytics);

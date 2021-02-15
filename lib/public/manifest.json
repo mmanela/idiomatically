@@ -1,6 +1,37 @@
 {
+  "$schema": "https://json.schemastore.org/web-manifest.json",
   "short_name": "Idiomatically",
   "name": "Idiomatically - Idioms translated across languages and countries ",
+  "orientation": "any",
+  "categories": [
+    "education"
+  ],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Add an idiom",
+      "short_name": "Add an idiom",
+      "description": "Add a new idiom to Idiomatically",
+      "url": "/new"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "static/homePage.png",
+      "sizes": "1464x996",
+      "type": "image/png"
+    },
+    {
+      "src": "static/addIdiom.png",
+      "sizes": "1456x1165",
+      "type": "image/png"
+    },
+    {
+      "src": "static/equivalentMap.png",
+      "sizes": "740x426",
+      "type": "image/png"
+    }
+  ],
   "icons": [
     {
       "src": "windows10/Square71x71Logo.scale-400.png",

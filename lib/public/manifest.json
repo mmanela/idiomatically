@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/web-manifest.json",
   "short_name": "Idiomatically",
-  "name": "Idiomatically - Idioms translated across languages and countries ",
+  "name": "Idiomatically",
   "orientation": "any",
   "categories": [
     "education"

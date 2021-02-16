@@ -45,7 +45,7 @@ These Services do not address anyone under the age of 13\. I do not knowingly co
 
 **Changes to This Privacy Policy**
 
-This Privacy Policy is effective as of 2/15/2021. I may update our Privacy Policy from time to time. Thus, you are advised to review this page periodically for any changes. I will notify you of any changes by posting the new Privacy Policy on this page. These changes are effective immediately after they are posted on this page.
+I may update our Privacy Policy from time to time. Thus, you are advised to review this page periodically for any changes. I will notify you of any changes by posting the new Privacy Policy on this page. These changes are effective immediately after they are posted on this page.
 
 **Contact Us**
 

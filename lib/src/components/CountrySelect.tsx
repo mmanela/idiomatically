@@ -1,11 +1,10 @@
 import * as React from "react";
 import { Select } from "antd";
-import gql from "graphql-tag";
 import {
   GetCountriesQuery,
   GetCountriesQueryVariables
 } from "../__generated__/types";
-import { useLazyQuery } from "@apollo/react-hooks";
+import { useLazyQuery, gql } from "@apollo/client";
 import { useState, useEffect } from "react";
 const { Option } = Select;
 

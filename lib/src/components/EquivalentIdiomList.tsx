@@ -9,10 +9,9 @@ import {
   FullIdiomEntry,
   MinimalIdiomEntry
 } from "../__generated__/types";
-import { useMutation } from "@apollo/react-hooks";
+import { useMutation, gql } from "@apollo/client";
 import { DeleteFilled } from '@ant-design/icons';
 import { Button, Typography } from "antd";
-import gql from "graphql-tag";
 import "./EquivalentIdiomList.scss";
 import { IdiomListRenderer, renderIdiomListItem } from "./IdiomListRenderer";
 const { Paragraph } = Typography;
@@ -40,7 +39,8 @@ export const EquivalentIdiomList: React.FunctionComponent<EquivalentListProps> =
     );
   }
 
-  const ordered = props.idiom.equivalents.sort((a, b) => {
+
+  const ordered = [...props.idiom.equivalents].sort((a, b) => {
     if (a.language.languageName < b.language.languageName) {
       return -1;
     } else if (a.language.languageName > b.language.languageName) {

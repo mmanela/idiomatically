@@ -1,9 +1,7 @@
-import gql from "graphql-tag";
 import {
     GetCurrentUser, GetCurrentUser_me
 } from "../__generated__/types";
-import { useQuery, useApolloClient } from "@apollo/react-hooks";
-import { ApolloQueryResult } from "apollo-client";
+import { useQuery, useApolloClient, ApolloQueryResult, gql } from "@apollo/client";
 
 export const getCurrentUserQuery = gql`
   query GetCurrentUser {

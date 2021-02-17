@@ -1,4 +1,4 @@
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 
 export const FULL_IDIOM_ENTRY = gql`
 fragment FullIdiomEntry on Idiom {

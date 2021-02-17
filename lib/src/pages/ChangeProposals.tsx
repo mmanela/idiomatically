@@ -9,12 +9,11 @@ import {
   RejectChangeProposalMutationVariables,
   OperationStatus
 } from "../__generated__/types";
-import gql from "graphql-tag";
 import "./ChangeProposals.scss";
 import { CheckCircleFilled, ClockCircleFilled, CloseCircleFilled } from '@ant-design/icons';
 import { Alert, Spin, List, Empty, Button } from "antd";
 import { Link, Redirect } from "react-router-dom";
-import { useLazyQuery, useMutation } from "@apollo/react-hooks";
+import { useLazyQuery, useMutation, gql } from "@apollo/client";
 import { JsonEditor } from "../components/JsonEditor";
 import { useCurrentUser } from "../components/withCurrentUser";
 import { useEffect } from "react";

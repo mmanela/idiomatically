@@ -10,9 +10,8 @@ import {
   FindIdiomsQueryVariables,
   FindIdiomsQuery_idioms_edges_node
 } from "../__generated__/types";
-import { useMutation, useLazyQuery } from "@apollo/react-hooks";
+import { useMutation, useLazyQuery, gql } from "@apollo/client";
 import { MINIMAL_IDIOM_ENTRY } from "../fragments/fragments";
-import gql from "graphql-tag";
 import "./AddEquivalentSection.scss";
 import { PlusCircleOutlined } from '@ant-design/icons';
 import { Alert, Spin, Button, Select, Typography } from "antd";

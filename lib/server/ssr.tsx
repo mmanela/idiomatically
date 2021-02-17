@@ -1,16 +1,16 @@
 import * as React from "react";
 import * as express from "express";
-import { renderToStringWithData } from "@apollo/react-ssr";
-import { ApolloClient } from "apollo-client";
-import { InMemoryCache, NormalizedCacheObject } from "apollo-cache-inmemory";
+import { renderToStringWithData } from '@apollo/client/react/ssr';
+import {
+  ApolloClient, InMemoryCache,
+  NormalizedCacheObject, ApolloProvider, createHttpLink, gql
+} from "@apollo/client";
 import { StaticRouter } from "react-router";
 import { App } from "./../src/components/App";
 import { renderToStaticMarkup } from "react-dom/server";
 import * as fs from "fs";
 import * as path from "path";
 import { getSubTitle } from "../src/components/subTitles";
-import { ApolloProvider } from "@apollo/react-common";
-import { createHttpLink } from "apollo-link-http";
 import fetch from "cross-fetch";
 import { JSDOM } from "jsdom";
 import { DEFAULT_PAGE_TITLE } from '../src/constants';
@@ -47,7 +47,12 @@ function render(req: express.Request, res: express.Response, clientPath: string,
     cache: cache
   });
 
-  cache.writeData({
+  client.writeQuery({
+    query: gql`
+      query GetsubTitle {
+        subTitle
+      }
+    `,
     data: {
       subTitle: subTitle
     }

@@ -1,8 +1,7 @@
 import * as React from "react";
 import "./SearchBox.scss";
 import { Input, Select } from "antd";
-import gql from "graphql-tag";
-import { useQuery } from "@apollo/react-hooks";
+import { useQuery, gql } from "@apollo/client";
 import {
   GetLanguagesWithIdioms,
   GetLanguagesWithIdioms_languagesWithIdioms

@@ -1,16 +1,14 @@
 import * as React from "react";
 import { render } from "react-dom";
-import { ApolloClient } from "apollo-client";
-import { InMemoryCache } from "apollo-cache-inmemory";
-import { HttpLink } from "apollo-link-http";
-import { onError } from "apollo-link-error";
-import { ApolloLink } from "apollo-link";
-import { ApolloProvider } from "@apollo/react-hooks";
+import {
+  ApolloClient, InMemoryCache, ApolloProvider,
+  useQuery, ApolloLink, HttpLink
+} from "@apollo/client";
+import { onError } from "@apollo/client/link/error";
 import { BrowserRouter } from "react-router-dom";
-import { useQuery } from "@apollo/react-hooks";
 import { App } from "./components/App";
 import { getSubTitle } from "./components/subTitles";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 import { ReportHandler } from 'web-vitals';

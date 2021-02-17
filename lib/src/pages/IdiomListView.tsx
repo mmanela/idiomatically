@@ -3,11 +3,10 @@ import {
   GetIdiomListQuery,
   GetIdiomListQueryVariables
 } from "../__generated__/types";
-import gql from "graphql-tag";
 import "./IdiomListView.scss";
 import { Alert, Spin, Empty } from "antd";
 import { FULL_IDIOM_ENTRY } from "../fragments/fragments";
-import { useLazyQuery } from "@apollo/react-hooks";
+import { useLazyQuery, gql } from "@apollo/client";
 import { IdiomListRenderer } from "../components/IdiomListRenderer";
 import { useEffect } from "react";
 

@@ -1,4 +1,4 @@
-import { ApolloError } from "apollo-client";
+import { ApolloError } from "@apollo/client";
 
 export function isAuthenticationError(error?: ApolloError) {
   // Hack until apollo exposes error in mutation component

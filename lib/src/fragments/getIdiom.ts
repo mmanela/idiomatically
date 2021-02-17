@@ -1,5 +1,5 @@
 import { FULL_IDIOM_ENTRY } from "./fragments";
-import gql from "graphql-tag";
+import { gql } from "@apollo/client";
 
 export const getIdiomQuery = gql`
   query GetIdiomQuery($slug: String, $id: ID) {

@@ -12,8 +12,7 @@ import {
   OperationStatus
 } from "../__generated__/types";
 import { useCurrentUser } from "../components/withCurrentUser";
-import { useQuery, useMutation } from "@apollo/react-hooks";
-import gql from "graphql-tag";
+import { useQuery, useMutation, gql } from "@apollo/client";
 import { useState, Suspense, useEffect } from "react";
 import marked from "marked";
 import dompurifyFactory from "dompurify";

@@ -6,7 +6,6 @@ import {
   GetIdiomQueryVariables,
   OperationStatus
 } from "../__generated__/types";
-import gql from "graphql-tag";
 import "./NewIdiom.scss";
 import { Typography, Alert, Spin, Form } from "antd";
 import { Redirect } from "react-router";
@@ -14,9 +13,8 @@ import { FULL_IDIOM_ENTRY } from "../fragments/fragments";
 import { getIdiomQuery } from "../fragments/getIdiom";
 import { commonFormItems } from "../components/commonFormItems";
 import { getErrorMessage, isAuthenticationError } from "../utilities/errorUtils";
-import { MutationFunction } from "@apollo/react-common";
 import { useCurrentUser } from "../components/withCurrentUser";
-import { useMutation, useQuery } from "@apollo/react-hooks";
+import { useMutation, useQuery, MutationFunction, gql } from "@apollo/client";
 import { PendingOperationNotification } from "../components/PendingOperationNotification";
 import { Store } from "antd/lib/form/interface";
 const { Title } = Typography;

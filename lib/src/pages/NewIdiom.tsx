@@ -7,7 +7,6 @@ import {
   GetIdiomQueryVariables,
   OperationStatus
 } from "../__generated__/types";
-import gql from "graphql-tag";
 import "./NewIdiom.scss";
 import { Typography, Alert, Spin, Form } from "antd";
 import { useState } from "react";
@@ -16,9 +15,8 @@ import { FULL_IDIOM_ENTRY } from "../fragments/fragments";
 import { getIdiomQuery } from "../fragments/getIdiom";
 import { commonFormItems } from "../components/commonFormItems";
 import { getErrorMessage, isAuthenticationError } from "../utilities/errorUtils";
-import { MutationFunction } from "@apollo/react-common";
+import { MutationFunction, useMutation, useLazyQuery, gql } from "@apollo/client";
 import { useCurrentUser } from "../components/withCurrentUser";
-import { useMutation, useLazyQuery } from "@apollo/react-hooks";
 import { PendingOperationNotification } from "../components/PendingOperationNotification";
 import { IdiomRenderer } from "../components/IdiomRenderer";
 import { Store } from "antd/lib/form/interface";
@@ -126,7 +124,7 @@ export const NewIdiom: React.FunctionComponent<NewIdiomProps> = props => {
       fragment: FULL_IDIOM_ENTRY
     });
   }
-  const renderForm =  (
+  const renderForm = (
     <div>
       <Title level={2}>Add an Idiom</Title>
       <Paragraph>

@@ -1,7 +1,6 @@
 # Idiomatically
 
-[![](https://github.com/mmanela/idiomatically/workflows/Node%20CI/badge.svg)](https://github.com/mmanela/idiomatically/actions?workflow=Node+CI) [![](https://github.com/mmanela/idiomatically/workflows/Docker%20Image%20CI/badge.svg)](https://github.com/mmanela/idiomatically/actions?workflow=Docker+Image+CI)
-
+[![](https://github.com/mmanela/idiomatically/workflows/Node%20CI/badge.svg)](https://github.com/mmanela/idiomatically/actions?workflow=Node+CI) [![Docker Image CI](https://github.com/mmanela/idiomatically/actions/workflows/dockerimage.yml/badge.svg?branch=release)](https://github.com/mmanela/idiomatically/actions/workflows/dockerimage.yml)
 ## About 
 [Idiomatically](https://idiomatically.net/) is a site for exploring idioms across languages and locales. 
 

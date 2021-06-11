@@ -14,9 +14,9 @@
       "restart": true,
       "cwd": "${workspaceRoot}/lib/server",
       "env": {
-        "NODE_ENV": "development"
+        "NODE_ENV": "staging"
       },
-      "runtimeArgs": ["run", "server:ide"]
+      "runtimeArgs": ["run", "server:debug:staging"]
     },
     {
       "name": "Chrome",

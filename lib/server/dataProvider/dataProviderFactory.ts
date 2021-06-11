@@ -6,9 +6,11 @@ import { IdiomChangeProposalDataProvider } from './IdiomChangeProposalDataProvid
 
 export function createDataProviders(mongodb: Db, isProd: boolean): DataProviders {
     let collectionPrefix = "";
-    if (!isProd) {
-        collectionPrefix = "dev_";
-    }
+    
+    // Was using this but now just all prod
+    // if (!isProd) {
+    //     collectionPrefix = "dev_";
+    // }
     const userDataProvider = new UserDataProvider(mongodb, collectionPrefix);
     const idiomDataProvider = new IdiomDataProvider(mongodb, userDataProvider, collectionPrefix);
     const changeProposal = new IdiomChangeProposalDataProvider(mongodb, userDataProvider, idiomDataProvider, collectionPrefix);

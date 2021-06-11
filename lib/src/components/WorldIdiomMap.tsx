@@ -14,6 +14,7 @@ const geoUrl = `${process.env.REACT_APP_SERVER}/static/world-110m.json`;
 
 interface MapChartProps extends WorldIdiomMapProps {
     setSelectedCountry: (tooltip: (SelectedCountry | null)) => void;
+    idiomMap: Map<string, IdiomMapInfo[]>;
 }
 
 export interface WorldIdiomMapProps {
@@ -47,7 +48,7 @@ const MapChart: React.FunctionComponent<MapChartProps> = (props) => {
                         {({ geographies }) =>
                             geographies.map(geo => {
                                 const { NAME, ISO_A2 } = geo.properties;
-                                const idioms = idiomMap.get(ISO_A2);
+                                const idioms = props.idiomMap.get(ISO_A2);
                                 const hasIdioms = !!idioms;
                                 return <Geography
                                     stroke="white"
@@ -92,19 +93,21 @@ type SelectedCountry = {
     countryName: string
 }
 
-const idiomMap: Map<string, IdiomMapInfo[]> = new Map();
 const WorldMap: React.FunctionComponent<WorldIdiomMapProps> = (props) => {
     const [selectedCountry, setSelectedCountry] = useState<SelectedCountry | null>(null);
+    const [idiomMap, setIdiomMap] = useState<Map<string, IdiomMapInfo[]>>(new Map());
     const newProps = { setSelectedCountry: setSelectedCountry, ...props };
 
     const idiom = props.idiom;
 
     // Convert idioms into a map for plotting on a ... map ;)
     if (idiomMap.size === 0) {
-        ProcessIdiom(idiomMap, idiom);
+        const localIdiomMap: Map<string, IdiomMapInfo[]> = new Map();
+        ProcessIdiom(localIdiomMap, idiom);
         for (const equivIdiom of idiom.equivalents) {
-            ProcessIdiom(idiomMap, equivIdiom);
+            ProcessIdiom(localIdiomMap, equivIdiom);
         }
+        setIdiomMap(localIdiomMap);
     }
 
     let toolTipContent: JSX.Element | null = null;
@@ -127,7 +130,7 @@ const WorldMap: React.FunctionComponent<WorldIdiomMapProps> = (props) => {
 
     return (
         <div>
-            <MapChart {...newProps} />
+            <MapChart idiomMap={idiomMap} {...newProps} />
             <ReactTooltip className="worldIdiomTooltip">{toolTipContent}</ReactTooltip>
         </div>
     );

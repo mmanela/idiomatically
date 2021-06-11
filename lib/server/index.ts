@@ -44,7 +44,6 @@ const start = async () => {
 
     const adminEmails = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(",").map(x => x.toLowerCase()) : [];
     let isProd = process.env.NODE_ENV === 'production';
-    isProd = true; // temp override
     const serverUrl = process.env.SERVER_URL;
     const clientUrl = process.env.CLIENT_URL;
     const clientPath = path.join(__dirname, "../build");
@@ -269,7 +268,7 @@ function setupAuthAndSession(
     },
     store: new SessionMongoStore({
       client: mongoConnection,
-      collection: isProd ? 'sessions' : "dev_sessions",
+      collection: 'sessions',
       touchAfter: 6 * 3600 // time period in seconds
     }),
   };

@@ -1,11 +1,11 @@
 tunnels:
   server:
     proto: http
-    addr: 8000
+    addr: 8008
     subdomain: idiom
   client:
     proto: http
-    addr: 3000
+    addr: 8000
     subdomain: idiom2
 
   prod:

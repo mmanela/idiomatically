@@ -52,7 +52,7 @@
     "ignore-styles": "^5.0.1",
     "jsdom": "^15.2.1",
     "jsoneditor": "^7.2.1",
-    "marked": "^1.0.0",
+    "marked": "^4.0.10",
     "merge-graphql-schemas": "^1.5.8",
     "mongodb": "^3.2.5",
     "node-sass": "^4.12.0",

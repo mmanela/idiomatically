@@ -55,7 +55,7 @@
     "marked": "^1.0.0",
     "merge-graphql-schemas": "^1.5.8",
     "mongodb": "^3.2.5",
-    "node-sass": "^4.12.0",
+    "node-sass": "^7.0.0",
     "passport": "^0.4.0",
     "passport-google-oauth": "^2.0.0",
     "react": "^16.8.6",

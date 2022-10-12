@@ -24,7 +24,7 @@
     "@types/react-router-dom": "^4.3.3",
     "@types/react-simple-maps": "^1.0.2",
     "antd": "^4.1.4",
-    "apollo-server": "^2.14.2",
+    "apollo-server": "^2.25.4",
     "apollo-server-express": "^2.14.2",
     "apollo-server-plugin-response-cache": "^0.5.2",
     "applicationinsights": "^1.6.0",

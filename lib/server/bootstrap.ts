@@ -7,8 +7,7 @@ require('@babel/register')({
     plugins: [
         'syntax-dynamic-import',
         'dynamic-import-node',
-        'react-loadable/babel',
-        'babel-plugin-transform-scss',
+        'react-loadable/babel', 
     ]
 });
 

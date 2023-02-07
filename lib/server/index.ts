@@ -26,7 +26,7 @@ import { DataProviders } from './dataProvider/dataProviders';
 import responseCachePlugin from 'apollo-server-plugin-response-cache';
 import { initializeJobs, stopJobs } from './jobScheduler';
 import { SitemapStream, streamToPromise } from "sitemap";
-import { createGzip } from 'zlib';
+import { createGzip } from 'zlib'; 
 import http = require("http"); // Use require syntax to allow app insights to monkey patch
 
 const start = async () => {
@@ -118,7 +118,7 @@ const start = async () => {
     app.get("/admin", ensureLoggedIn('/auth/google'), (req, res) => {
       res.send('Admin eyes only!');
     });
-
+    
     app.get("/login", (req, res) => {
       const authUrl = "/auth/google";
       const returnTo = req.query["returnTo"] as string;
@@ -127,7 +127,7 @@ const start = async () => {
       const returnPath = clientUrl + path;
       if (!req.isAuthenticated || !req.isAuthenticated()) {
         if (req.session) {
-          req.session.returnTo = returnPath;
+          (req.session as any).returnTo = returnPath;
         }
         return res.redirect(authUrl);
       }
@@ -151,14 +151,16 @@ const start = async () => {
     app.get('/auth/google/callback',
       passport.authenticate('google', { failureRedirect: '/login' }),
       (req, res) => { 
-        res.redirect(req.session.returnTo || clientUrl);
+        res.redirect((req.session as any).returnTo || clientUrl);
       });
 
-    app.post('/logout', function (req, res) {
-      req.logout();
-      req.session.destroy((err) => {
+    app.post('/logout', function (req, res, next) {
+      req.logout(function(err) {
+        if (err) { return next(err); }
+        req.session.destroy(() =>{});
         res.redirect('/');
-      })
+      });
+ 
     });
 
     // Generate the sitemap and cache it
@@ -235,16 +237,16 @@ function setupAuthAndSession(
   // from the database when deserializing.  However, due to the fact that this
   // example does not have a database, the complete Facebook profile is serialized
   // and deserialized.
-  passport.serializeUser<Profile, string>(async (profile, cb) => {
+  passport.serializeUser(async (profile, cb) => {
     try {
-      const user = await dataProviders.user.ensureUserFromLogin(profile, adminEmails)
+      const user = await dataProviders.user.ensureUserFromLogin(profile as Profile, adminEmails)
       cb(null, user.id);
     } catch {
       console.error("Unable to serialize user");
       cb(null, null);
     }
   });
-  passport.deserializeUser<User, string>(async (userId, cb) => {
+  passport.deserializeUser(async (userId, cb) => {
     try {
       const user = await dataProviders.user.getUser(userId);
       cb(null, user);

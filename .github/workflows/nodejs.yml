@@ -17,12 +17,12 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-    - name: npm install, build, and test
+    - name: yarn install, build, and test
       run: |
         cd ./lib
-        npm install
-        npm run server:pre
-        npm run client:pre
-        npm run client:build
+        yarn
+        yarn server:pre
+        yarn client:pre
+        yarn client:build
       env:
         CI: true

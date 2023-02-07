@@ -143,7 +143,7 @@ export function mapDbIdiom(dbIdiom: DbIdiom, dbTranslations?: DbIdiom[], users?:
     // NOTE: This should be optimized since its potentially slow...
     if (dbTranslations) {
         idiom.equivalents = dbTranslations.filter(dbt => (dbIdiom.equivalents || []).some(x => dbt._id.equals(x.equivalentId)))
-            .map(t => this.mapDbIdiom(t, null, users));
+            .map(t => mapDbIdiom(t, null, users));
     }
 
     if (users) {

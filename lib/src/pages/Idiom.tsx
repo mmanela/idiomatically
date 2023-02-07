@@ -14,7 +14,7 @@ import {
 import { useCurrentUser } from "../components/withCurrentUser";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import { useState, Suspense, useEffect } from "react";
-import marked from "marked";
+import { marked } from "marked";
 import dompurifyFactory from "dompurify";
 import { AddEquivalentSection } from "../components/AddEquivalentSection";
 import { EquivalentIdiomList } from "../components/EquivalentIdiomList";

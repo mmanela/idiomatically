@@ -1,6 +1,5 @@
 import * as appInsights from 'applicationinsights'
 import 'dotenv/config';
-import http = require("http"); // Use require syntax to allow app insights to monkey patch
 import * as url from 'url';
 import compression from 'compression';
 import express from 'express';
@@ -28,6 +27,7 @@ import responseCachePlugin from 'apollo-server-plugin-response-cache';
 import { initializeJobs, stopJobs } from './jobScheduler';
 import { SitemapStream, streamToPromise } from "sitemap";
 import { createGzip } from 'zlib';
+import http = require("http"); // Use require syntax to allow app insights to monkey patch
 
 const start = async () => {
   try {
@@ -77,17 +77,17 @@ const start = async () => {
       plugins: [responseCachePlugin({
         sessionId: (req) => (req.context.currentUser ? req.context.currentUser.id : null),
         shouldReadFromCache: (req) => {
-          const context = <GlobalContext>req.context;
+          const context = req.context as GlobalContext;
           // Cache if no logged in or just a general user (not admin or contributor)
           return !context.currentUser || !context.currentUser.hasEditPermission()
         }
       })],
       context: async (expressContext: ExpressContext) => {
         const req: express.Request = expressContext.req;
-        return <GlobalContext>{
+        return  {
           dataProviders: dataProviders,
           currentUser: req.user
-        };
+        } as GlobalContext;
       }
     });
 
@@ -150,7 +150,7 @@ const start = async () => {
     //   which, in this example, will redirect the user to the home page.
     app.get('/auth/google/callback',
       passport.authenticate('google', { failureRedirect: '/login' }),
-      (req, res) => {
+      (req, res) => { 
         res.redirect(req.session.returnTo || clientUrl);
       });
 

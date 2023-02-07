@@ -1,6 +1,6 @@
 import * as React from "react";
 import ReactMde, { SvgIcon } from "react-mde";
-import marked from "marked";
+import { marked } from "marked";
 import dompurifyFactory from "dompurify";
 import "react-mde/lib/styles/scss/react-mde-all.scss";
 import { ToolbarCommands, Command, Selection } from "react-mde/lib/definitions/types";
@@ -35,7 +35,7 @@ export function getLineBounds(text: string, position: number): Selection {
     }
 
     for (let i = position; i <= text.length; i++) {
-        if (i >= text.length || isNewLine(text[i]) ) {
+        if (i >= text.length || isNewLine(text[i])) {
             end = i;
             break;
         }

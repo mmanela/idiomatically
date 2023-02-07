@@ -32,10 +32,11 @@ export const LanguageFlags: React.FunctionComponent<LanguageFlagsProps> = props 
 };
 
 const renderFlag = (countries: FullIdiomEntry_language_countries[], size?: FlagSize, compactMode?: boolean) => {
+  let countriesToRender = [...countries];
   if (compactMode) {
     // Just pick first country for now, in the future we may want some idea
     // of default country that best represents the idiom
-    countries = countries.sort((a, b) => {
+    countriesToRender = countriesToRender.sort((a, b) => {
       if (a.countryKey === 'US') {
         return -1;
       }
@@ -46,7 +47,7 @@ const renderFlag = (countries: FullIdiomEntry_language_countries[], size?: FlagS
       return a.countryName.localeCompare(b.countryName);
     }
     );
-    const country = countries[0];
+    const country = countriesToRender[0];
     return (
       <div className="flagsGroup">
         <CountryFlag country={country} size={size} />
@@ -54,16 +55,16 @@ const renderFlag = (countries: FullIdiomEntry_language_countries[], size?: FlagS
           <Tooltip
             className="flagOverflow"
             placement="top"
-            title={<div className="flagOverflowTooltip">{renderFlagList(countries.slice(1), size)}</div>}
+            title={<div className="flagOverflowTooltip">{renderFlagList(countriesToRender.slice(1), size)}</div>}
             arrowPointAtCenter
           >
-            <span className="flagOverflowText">+{countries.length - 1}</span>
+            <span className="flagOverflowText">+{countriesToRender.length - 1}</span>
           </Tooltip>
         )}
       </div>
     );
   } else {
-    return <div className="flagsGroup">{renderFlagList(countries, size)}</div>;
+    return <div className="flagsGroup">{renderFlagList(countriesToRender, size)}</div>;
   }
 };
 

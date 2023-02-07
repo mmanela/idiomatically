@@ -1,4 +1,4 @@
-FROM appsvc/node:12-lts
+FROM node:16
 
 LABEL NAME=idiom
 

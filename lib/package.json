@@ -52,7 +52,7 @@
     "file-loader": "^4.2.0",
     "graphql": "15.8.0",
     "ignore-styles": "^5.0.1",
-    "jsdom": "^15.2.1",
+    "jsdom": "^16.5.0",
     "jsoneditor": "^9.5.6",
     "marked": "^4.2.12",
     "merge-graphql-schemas": "1.7.8",

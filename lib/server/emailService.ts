@@ -10,7 +10,7 @@ export async function sendMailIfPendingProposals(dataProviders: DataProviders, a
         sgMail.setApiKey(process.env.SENDGRID_API_KEY);
         const msg: MailDataRequired = {
           to: adminEmails,
-          from: 'admin@idiomatically.net',
+          from: 'notifications@idiomatically.net',
           subject: message,
           text: message
         };

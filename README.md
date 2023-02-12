@@ -36,7 +36,7 @@ Idiomatically started as a side project to explore different technologies. I hop
 
 ## Running Locally 
 
-There are a couple options to run locally. Do do iterative development you should run with node locally. But you can also quickly get an instance up with docker.
+There are a couple options to run locally. To do iterative development you should run with node locally. But you can also quickly get an instance up with docker.
 
 
 ### Node 
@@ -47,7 +47,7 @@ Once configured you can run the server and client server to enable iterative dev
 
 __Server__
 
-`yarn server:start:staging`
+`yarn server:start`
 
 __Client__
 

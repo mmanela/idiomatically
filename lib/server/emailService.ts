@@ -38,7 +38,7 @@ export async function sendAcceptedProposalEmail(slug: string, title: string, ema
       sgMail.setApiKey(process.env.SENDGRID_API_KEY);
       const msg: MailDataRequired = {
         to: [email],
-        from: 'admin@idiomatically.net',
+        from: 'notifications@idiomatically.net',
         subject: subject,
         text: message,
         mailSettings: {

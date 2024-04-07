@@ -1,5 +1,5 @@
 import * as React from "react";
-import { parse as emoji } from "twemoji-parser";
+import { parse as emoji } from "@twemoji/parser";
 import { Tooltip, Avatar } from "antd";
 import "./LanguageFlags.scss";
 import { FullIdiomEntry_language_countries, GetIdiomQuery_idiom_equivalents_language_countries, GetIdiomQuery_idiom_language_countries } from "../__generated__/types";

@@ -48,7 +48,7 @@
     "dompurify": "^2.0.17",
     "dotenv": "^7.0.0",
     "env-cmd": "^10.0.1",
-    "express": "^4.19.2",
+    "express": "^4.20.0",
     "express-session": "^1.17.3",
     "file-loader": "^4.2.0",
     "graphql": "15.8.0",

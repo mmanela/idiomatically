@@ -3,7 +3,7 @@ import { gql } from 'apollo-server-express';
 export default gql`
   type Query {
     idiom(id: ID, slug: String): Idiom @cacheControl(maxAge: 1800)
-    idioms(cursor: String, filter: String, locale: String, limit: Int): IdiomConnection! @cacheControl(maxAge: 1800)
+    idioms(cursor: String, filter: String, locale: String, limit: Int, germanFilter: GermanIdiomFilter): IdiomConnection! @cacheControl(maxAge: 1800)
   }
 
   type Mutation {
@@ -53,6 +53,32 @@ export default gql`
   type PageInfo {
     hasNextPage: Boolean!
     endCursor: String!
+  }
+
+  input GermanIdiomFilter {
+    # Filter by specific German regions (e.g., "northern", "southern", "bavarian", "austrian", "swiss")
+    regions: [String!]
+    
+    # Filter by difficulty level for German learners
+    difficulty: DifficultyLevel
+    
+    # Filter by specific German-related tags
+    tags: [String!]
+    
+    # Filter idioms that have literal translations
+    hasLiteralTranslation: Boolean
+    
+    # Filter idioms that have phonetic transliterations
+    hasTransliteration: Boolean
+    
+    # Filter by whether the idiom is commonly used in modern German
+    isModernUsage: Boolean
+  }
+
+  enum DifficultyLevel {
+    BEGINNER
+    INTERMEDIATE
+    ADVANCED
   }
 
   input IdiomCreateInput {

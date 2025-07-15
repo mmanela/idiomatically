@@ -4,6 +4,7 @@ import {
     MutationAddEquivalentArgs, MutationRemoveEquivalentArgs,
     QueryIdiomArgs, QueryIdiomsArgs, IdiomConnection, PageInfo, IdiomEdge, IdiomOperationResult, OperationStatus, MutationComputeEquivalentClosureArgs
 } from "../_graphql/types";
+import { QueryIdiomsArgsWithGermanFilter } from '../model/germanIdiomTypes';
 import { GlobalContext, IdiomExpandOptions } from '../model/types';
 import { GraphQLResolveInfo } from 'graphql';
 import { traverse } from './traverser';
@@ -13,7 +14,14 @@ export default {
     Query: {
         idioms: async (parent, args: QueryIdiomsArgs, context: GlobalContext, info) => {
             const expandOptions: IdiomExpandOptions = getIdiomExpandOptions(info);
-            const response = await context.dataProviders.idiom.queryIdioms(args, expandOptions);
+            
+            // Convert args to include potential germanFilter
+            const argsWithGermanFilter: QueryIdiomsArgsWithGermanFilter = {
+                ...args,
+                germanFilter: (args as any).germanFilter || null
+            };
+            
+            const response = await context.dataProviders.idiom.queryIdioms(argsWithGermanFilter, expandOptions);
 
             // This is really not right. Using skip/take is weak in two ways
             // 1. Performance isn't great since its paging whole query still

@@ -1,5 +1,6 @@
 import { Db, Collection, ObjectID, FilterQuery } from 'mongodb'
 import { Idiom, IdiomCreateInput, IdiomUpdateInput, QueryIdiomsArgs, IdiomOperationResult, OperationStatus, QueryIdiomArgs } from '../_graphql/types';
+import { QueryIdiomsArgsWithGermanFilter, GermanIdiomFilter, DifficultyLevel } from '../model/germanIdiomTypes';
 import { Languages, LanguageModel } from './languages'
 import { UserModel, IdiomExpandOptions, MinimalIdiom } from '../model/types';
 import { DbIdiom, mapDbIdiom, DbIdiomChangeProposal, IdiomProposalType, Paged, DbEquivalent, EquivalentSource, DbEquivalentClosureStatus } from './mapping';
@@ -477,10 +478,11 @@ export class IdiomDataProvider {
         });
     }
 
-    async queryIdioms(args: QueryIdiomsArgs, idiomExpandOptions: IdiomExpandOptions): Promise<Paged<Idiom>> {
+    async queryIdioms(args: QueryIdiomsArgsWithGermanFilter, idiomExpandOptions: IdiomExpandOptions): Promise<Paged<Idiom>> {
         const filter = args && args.filter ? args.filter : undefined;
         const limit = args && args.limit ? args.limit : 50;
         const locale = args && args.locale ? args.locale : "en";
+        const germanFilter = args && args.germanFilter ? args.germanFilter : undefined;
         let skip = args && args.cursor && Number.parseInt(args.cursor);
         if (isNaN(skip)) {
             skip = 0;
@@ -494,6 +496,89 @@ export class IdiomDataProvider {
 
         if (locale && locale.toLocaleLowerCase() !== "all") {
             findFilter = { languageKey: { $eq: locale } };
+        }
+
+        // Apply German-specific filtering
+        if (germanFilter && locale === "de") {
+            const germanFilters: FilterQuery<DbIdiom>[] = [];
+            
+            // Filter by German regions (stored in countryKeys)
+            if (germanFilter.regions && germanFilter.regions.length > 0) {
+                const regionFilter = this.buildGermanRegionFilter(germanFilter.regions);
+                if (regionFilter) {
+                    germanFilters.push(regionFilter);
+                }
+            }
+            
+            // Filter by difficulty level (inferred from tags)
+            if (germanFilter.difficulty) {
+                const difficultyFilter = this.buildDifficultyFilter(germanFilter.difficulty);
+                if (difficultyFilter) {
+                    germanFilters.push(difficultyFilter);
+                }
+            }
+            
+            // Filter by specific tags
+            if (germanFilter.tags && germanFilter.tags.length > 0) {
+                germanFilters.push({
+                    tags: { $in: germanFilter.tags }
+                });
+            }
+            
+            // Filter by presence of literal translation
+            if (germanFilter.hasLiteralTranslation !== undefined) {
+                if (germanFilter.hasLiteralTranslation) {
+                    germanFilters.push({
+                        literalTranslation: { $exists: true, $ne: null, $ne: "" }
+                    });
+                } else {
+                    germanFilters.push({
+                        $or: [
+                            { literalTranslation: { $exists: false } },
+                            { literalTranslation: null },
+                            { literalTranslation: "" }
+                        ]
+                    });
+                }
+            }
+            
+            // Filter by presence of transliteration
+            if (germanFilter.hasTransliteration !== undefined) {
+                if (germanFilter.hasTransliteration) {
+                    germanFilters.push({
+                        transliteration: { $exists: true, $ne: null, $ne: "" }
+                    });
+                } else {
+                    germanFilters.push({
+                        $or: [
+                            { transliteration: { $exists: false } },
+                            { transliteration: null },
+                            { transliteration: "" }
+                        ]
+                    });
+                }
+            }
+            
+            // Filter by modern usage (inferred from tags)
+            if (germanFilter.isModernUsage !== undefined) {
+                const modernUsageFilter = this.buildModernUsageFilter(germanFilter.isModernUsage);
+                if (modernUsageFilter) {
+                    germanFilters.push(modernUsageFilter);
+                }
+            }
+            
+            // Combine German filters
+            if (germanFilters.length > 0) {
+                const combinedGermanFilter = germanFilters.length === 1 
+                    ? germanFilters[0] 
+                    : { $and: germanFilters };
+                    
+                if (findFilter) {
+                    findFilter = { $and: [findFilter, combinedGermanFilter] };
+                } else {
+                    findFilter = combinedGermanFilter;
+                }
+            }
         }
 
         if (filter) {
@@ -711,5 +796,73 @@ export class IdiomDataProvider {
 
     private isUserProvisional(currentUser: UserModel) {
         return !currentUser.hasEditPermission();
+    }
+
+    /**
+     * Build MongoDB filter for German regions based on country codes
+     */
+    private buildGermanRegionFilter(regions: string[]): FilterQuery<DbIdiom> | null {
+        const regionCountryMap: { [key: string]: string[] } = {
+            "northern": ["DE"], // Northern Germany
+            "southern": ["DE"], // Southern Germany  
+            "bavarian": ["DE"], // Bavaria region
+            "austrian": ["AT"], // Austria
+            "swiss": ["CH"]     // Switzerland
+        };
+        
+        const countryCodes: string[] = [];
+        for (const region of regions) {
+            const codes = regionCountryMap[region.toLowerCase()];
+            if (codes) {
+                countryCodes.push(...codes);
+            }
+        }
+        
+        if (countryCodes.length === 0) {
+            return null;
+        }
+        
+        return {
+            countryKeys: { $in: countryCodes }
+        };
+    }
+
+    /**
+     * Build MongoDB filter for difficulty level based on tags
+     */
+    private buildDifficultyFilter(difficulty: DifficultyLevel): FilterQuery<DbIdiom> | null {
+        const difficultyTagMap: { [key: string]: string[] } = {
+            [DifficultyLevel.BEGINNER]: ["beginner", "easy", "simple", "basic"],
+            [DifficultyLevel.INTERMEDIATE]: ["intermediate", "medium", "common"],
+            [DifficultyLevel.ADVANCED]: ["advanced", "difficult", "complex", "archaic", "literary"]
+        };
+        
+        const tags = difficultyTagMap[difficulty];
+        if (!tags || tags.length === 0) {
+            return null;
+        }
+        
+        return {
+            tags: { $in: tags }
+        };
+    }
+
+    /**
+     * Build MongoDB filter for modern usage based on tags
+     */
+    private buildModernUsageFilter(isModernUsage: boolean): FilterQuery<DbIdiom> | null {
+        if (isModernUsage) {
+            // Include idioms that are modern or don't have archaic tags
+            return {
+                $and: [
+                    { tags: { $nin: ["archaic", "obsolete", "historical", "old-fashioned"] } }
+                ]
+            };
+        } else {
+            // Include idioms that are specifically marked as archaic/historical
+            return {
+                tags: { $in: ["archaic", "obsolete", "historical", "old-fashioned"] }
+            };
+        }
     }
 }

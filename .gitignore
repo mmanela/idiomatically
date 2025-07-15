@@ -28,3 +28,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lib/.eslintcache
+
+# Test files
+test-german-filter.js
+test-german-filter.ts

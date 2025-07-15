@@ -559,13 +559,7 @@ export class IdiomDataProvider {
                 }
             }
             
-            // Filter by modern usage (inferred from tags)
-            if (germanFilter.isModernUsage !== undefined) {
-                const modernUsageFilter = this.buildModernUsageFilter(germanFilter.isModernUsage);
-                if (modernUsageFilter) {
-                    germanFilters.push(modernUsageFilter);
-                }
-            }
+
             
             // Combine German filters
             if (germanFilters.length > 0) {
@@ -847,22 +841,5 @@ export class IdiomDataProvider {
         };
     }
 
-    /**
-     * Build MongoDB filter for modern usage based on tags
-     */
-    private buildModernUsageFilter(isModernUsage: boolean): FilterQuery<DbIdiom> | null {
-        if (isModernUsage) {
-            // Include idioms that are modern or don't have archaic tags
-            return {
-                $and: [
-                    { tags: { $nin: ["archaic", "obsolete", "historical", "old-fashioned"] } }
-                ]
-            };
-        } else {
-            // Include idioms that are specifically marked as archaic/historical
-            return {
-                tags: { $in: ["archaic", "obsolete", "historical", "old-fashioned"] }
-            };
-        }
-    }
+
 }

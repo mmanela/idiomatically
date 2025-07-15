@@ -70,9 +70,6 @@ export default gql`
     
     # Filter idioms that have phonetic transliterations
     hasTransliteration: Boolean
-    
-    # Filter by whether the idiom is commonly used in modern German
-    isModernUsage: Boolean
   }
 
   enum DifficultyLevel {

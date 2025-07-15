@@ -35,9 +35,6 @@ input GermanIdiomFilter {
   
   # Filter idioms that have phonetic transliterations
   hasTransliteration: Boolean
-  
-  # Filter by whether the idiom is commonly used in modern German
-  isModernUsage: Boolean
 }
 
 enum DifficultyLevel {
@@ -110,28 +107,6 @@ query {
 }
 ```
 
-### Filter for Modern Usage with Translations
-```graphql
-query {
-  idioms(
-    locale: "de", 
-    germanFilter: { 
-      isModernUsage: true,
-      hasLiteralTranslation: true
-    }
-  ) {
-    edges {
-      node {
-        id
-        title
-        description
-        literalTranslation
-        tags
-      }
-    }
-  }
-}
-```
 
 ### Advanced Filtering
 ```graphql
@@ -142,8 +117,7 @@ query {
       regions: ["swiss"],
       difficulty: INTERMEDIATE,
       tags: ["common", "business"],
-      hasLiteralTranslation: true,
-      isModernUsage: true
+      hasLiteralTranslation: true
     }
   ) {
     edges {
@@ -176,7 +150,3 @@ query {
 - `BEGINNER`: Idioms tagged with "beginner", "easy", "simple", "basic"
 - `INTERMEDIATE`: Idioms tagged with "intermediate", "medium", "common"
 - `ADVANCED`: Idioms tagged with "advanced", "difficult", "complex", "archaic", "literary"
-
-## Modern Usage Classification
-- `isModernUsage: true`: Excludes idioms tagged as "archaic", "obsolete", "historical", "old-fashioned"
-- `isModernUsage: false`: Includes only idioms specifically marked with archaic/historical tags

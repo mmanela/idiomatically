@@ -7,7 +7,6 @@ export interface GermanIdiomFilter {
     tags?: string[];
     hasLiteralTranslation?: boolean;
     hasTransliteration?: boolean;
-    isModernUsage?: boolean;
 }
 
 export enum DifficultyLevel {

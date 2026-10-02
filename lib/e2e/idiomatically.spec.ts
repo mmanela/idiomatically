@@ -22,24 +22,48 @@ async function loginAs(page: Page, role: 'General user' | 'Contributor' | 'Admin
   await expect(page).toHaveURL('http://localhost:3100/');
 }
 
-async function addEnglishIdiom(page: Page, title: string, description: string) {
+type IdiomInput = {
+  title: string;
+  description: string;
+  languageSearch: string;
+  languageDisplay: string;
+  countrySearch: string;
+  countryDisplay: string;
+  literalTranslation?: string;
+};
+
+async function addIdiom(page: Page, idiom: IdiomInput) {
   await page.getByRole('button', { name: 'Add an idiom' }).click();
   await expect(page.getByRole('heading', { name: 'Add an Idiom' })).toBeVisible();
 
   const form = page.locator('form');
-  await page.getByRole('textbox', { name: /Idiom \(In the language's own alphabet\)/ }).fill(title);
+  await page.getByRole('textbox', { name: /Idiom \(In the language's own alphabet\)/ }).fill(idiom.title);
   const languageInput = form.locator('.ant-form-item').filter({ hasText: /^Language/ }).getByRole('combobox');
   await languageInput.evaluate((element: HTMLInputElement) => element.focus());
-  await page.keyboard.type('English');
-  await page.getByText('English (English)', { exact: true }).click();
+  await page.keyboard.type(idiom.languageSearch);
+  await page.getByText(idiom.languageDisplay, { exact: true }).click();
   const countryInput = form.locator('.ant-form-item').filter({ hasText: /^Country/ }).getByRole('combobox');
   await countryInput.evaluate((element: HTMLInputElement) => element.focus());
-  await page.keyboard.type('Antigua');
-  await expect(page.getByText('Antigua and Barbuda (Antigua and Barbuda)', { exact: true })).toBeVisible();
+  await page.keyboard.type(idiom.countrySearch);
+  await expect(page.getByText(idiom.countryDisplay, { exact: true })).toBeVisible();
   await page.keyboard.press('Enter');
-  await expect(form.getByText('Antigua and Barbuda', { exact: false })).toBeVisible();
-  await page.locator('.mde-text').fill(description);
+  await expect(form.getByText(idiom.countrySearch, { exact: false })).toBeVisible();
+  if (idiom.literalTranslation) {
+    await page.getByRole('textbox', { name: /Literal Translation/ }).fill(idiom.literalTranslation);
+  }
+  await page.locator('.mde-text').fill(idiom.description);
   await page.getByRole('button', { name: 'Submit' }).click();
+}
+
+async function addEnglishIdiom(page: Page, title: string, description: string) {
+  await addIdiom(page, {
+    title,
+    description,
+    languageSearch: 'English',
+    languageDisplay: 'English (English)',
+    countrySearch: 'Antigua',
+    countryDisplay: 'Antigua and Barbuda (Antigua and Barbuda)'
+  });
 }
 
 test('public navigation is readable and consistently spaced', async ({ page }) => {
@@ -143,4 +167,28 @@ test('administrator can review and accept a public idiom proposal', async ({ pag
   await page.goto('/idioms/on-the-same-page');
   await expect(page.getByRole('heading', { name: 'On the same page' })).toBeVisible();
   await expect(page.getByText('To share the same understanding.')).toBeVisible();
+});
+
+test('all-language filter lists non-English idioms without a render loop', async ({ page }) => {
+  await loginAs(page, 'Administrator');
+  await addIdiom(page, {
+    title: 'Más vale tarde que nunca',
+    description: 'It is better to do something late than not at all.',
+    languageSearch: 'Spanish',
+    languageDisplay: 'Spanish (Español)',
+    countrySearch: 'Argentina',
+    countryDisplay: 'Argentina (Argentina)',
+    literalTranslation: 'Better late than never'
+  });
+  await expect(page).toHaveURL(/\/idioms\/mas-vale-tarde-que-nunca$/);
+
+  await page.goto('/idioms?lang=es');
+  await expect(page.getByText('Más vale tarde que nunca')).toBeVisible();
+
+  await page.locator('.languageSelect .ant-select-selector').click();
+  await page.locator('.languageOption').filter({ hasText: /^All$/ }).click();
+
+  await expect(page).toHaveURL('/idioms?lang=all');
+  await expect(page.getByText('Más vale tarde que nunca')).toBeVisible();
+  await expect(page.locator('#webpack-dev-server-client-overlay')).toHaveCount(0);
 });

@@ -6,9 +6,8 @@ import {
 import "./IdiomListView.scss";
 import { Alert, Spin, Empty } from "antd";
 import { FULL_IDIOM_ENTRY } from "../fragments/fragments";
-import { useLazyQuery, gql } from "@apollo/client";
+import { useQuery, gql } from "@apollo/client";
 import { IdiomListRenderer } from "../components/IdiomListRenderer";
-import { useEffect } from "react";
 
 export const getIdiomListQuery = gql`
   query GetIdiomListQuery(
@@ -56,53 +55,19 @@ function normalizePage(page: string | null) {
 export const IdiomListView: React.FunctionComponent<IdiomListViewProps> = props => {
   const { filter, language } = props;
   const pageNumber = normalizePage(props.page);
-  const [lastFilter, setLastFilter] = React.useState(props.filter);
-  const [lastLang, setLastLang] = React.useState(props.language);
-  const [queryPage, loadResult] = useLazyQuery<
+  const pageSize = 10;
+  const currCursorNum = (pageNumber - 1) * pageSize;
+  const loadResult = useQuery<
     GetIdiomListQuery,
     GetIdiomListQueryVariables
-  >(getIdiomListQuery);
-  const pageSize = 10;
-
-  useEffect(() => {
-    setLastFilter(props.filter);
-    setLastLang(props.language);
-  }, [props.filter, props.language]);
-
-  // Based on the page number we get from state we calculate the bounds of the cursors
-  // we then check if the data we current have has a endCursor that falls in that range. If so,
-  // we have the data for this page, no need to query. Otherwise, run the query.
-  const currCursorNum = (pageNumber - 1) * pageSize;
-  const nextCursorNum = pageNumber * pageSize;
-  const incomingEndCursorNum =
-    loadResult.data && loadResult.data.idioms.totalCount > 0 && loadResult.data.idioms.edges.length > 0
-      ? Number.parseInt(loadResult.data.idioms.pageInfo.endCursor)
-      : null;
-  const changePage =
-    incomingEndCursorNum != null &&
-
-    // And incomingEndCursorNum not in (currCursorNum, nextCursorNum]
-    !(
-      currCursorNum < incomingEndCursorNum &&
-      nextCursorNum >= incomingEndCursorNum
-    )
-    ;
-  const filterChanged =
-    props.filter !== lastFilter || props.language !== lastLang;
-  if (
-    !loadResult.called ||
-    (!loadResult.loading && loadResult.data && changePage) ||
-    filterChanged
-  ) {
-    queryPage({
-      variables: {
-        filter,
-        locale: language,
-        limit: pageSize,
-        cursor: currCursorNum.toString()
-      }
-    });
-  }
+  >(getIdiomListQuery, {
+    variables: {
+      filter,
+      locale: language,
+      limit: pageSize,
+      cursor: currCursorNum.toString()
+    }
+  });
 
   if (loadResult.loading)
     return <Spin delay={500} className="middleSpinner" tip="Loading..." />;

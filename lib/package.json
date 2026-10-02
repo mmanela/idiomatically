@@ -37,6 +37,7 @@
     "rxjs": "^7.8.2",
     "sass": "^1.105.1",
     "screenfull": "^5.2.0",
+    "sharp": "^0.35.5",
     "sitemap": "^9.0.1",
     "transliteration": "^2.6.1",
     "world-countries": "^5.1.0"

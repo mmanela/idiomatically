@@ -336,7 +336,30 @@ test('administrator can add an English idiom and view it', async ({ page }) => {
 
 test('public idiom content is server rendered and client navigation stays hydrated', async ({ page }) => {
   await loginAs(page, 'Administrator');
-  await createEnglishIdiomViaApi(page, 'Read between the lines', 'Find the hidden meaning.');
+  const sourceIdiom = await createEnglishIdiomViaApi(
+    page,
+    'Read between the lines',
+    'Find the hidden meaning.'
+  );
+  const equivalent = await graphql<{
+    createIdiom: { status: string; idiom?: { slug: string } };
+  }>(page, `
+    mutation CreateRelatedIdiom($relatedIdiomId: ID!) {
+      createIdiom(idiom: {
+        title: "Leer entre líneas",
+        description: "Descubrir el significado oculto.",
+        literalTranslation: "Read between the lines",
+        languageKey: "es",
+        countryKeys: ["AR"],
+        relatedIdiomId: $relatedIdiomId
+      }) {
+        status
+        idiom { slug }
+      }
+    }
+  `, { relatedIdiomId: sourceIdiom.id });
+  expect(equivalent.errors).toBeUndefined();
+  expect(equivalent.data?.createIdiom.status).toBe('SUCCESS');
   await logout(page);
 
   const listResponse = await page.request.get('/idioms?lang=en');
@@ -348,6 +371,30 @@ test('public idiom content is server rendered and client navigation stays hydrat
   const detailHtml = await detailResponse.text();
   expect(detailHtml).toContain('Read between the lines');
   expect(detailHtml).toContain('Find the hidden meaning.');
+  expect(detailHtml).toContain(
+    '<meta property="og:title" content="Read between the lines — English idiom"/>'
+  );
+  expect(detailHtml).toContain(
+    '<meta property="og:description" content="Find the hidden meaning. Explore 1 related idiom in another language."/>'
+  );
+  expect(detailHtml).toContain(
+    '<meta property="og:image" content="http://localhost:3100/social/idioms/read-between-the-lines.png"/>'
+  );
+  expect(detailHtml).toContain(
+    '<meta name="twitter:card" content="summary_large_image"/>'
+  );
+  expect(detailHtml).toContain(
+    '<link rel="canonical" href="http://localhost:3100/idioms/read-between-the-lines"/>'
+  );
+  const socialImageResponse = await page.request.get(
+    '/social/idioms/read-between-the-lines.png'
+  );
+  expect(socialImageResponse.ok()).toBeTruthy();
+  expect(socialImageResponse.headers()['content-type']).toBe('image/png');
+  const socialImage = await socialImageResponse.body();
+  expect(socialImage.subarray(0, 8).toString('hex')).toBe(
+    '89504e470d0a1a0a'
+  );
 
   await gotoHydrated(page, '/idioms/read-between-the-lines');
   await page.getByRole('link', { name: 'Home' }).click();

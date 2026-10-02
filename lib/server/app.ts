@@ -9,6 +9,7 @@ import { createGzip } from "node:zlib";
 import { createAuth, getLocalIdentity } from "./auth";
 import { createGraphqlRuntime, getCurrentUser } from "./graphql";
 import { initializeJobs, stopJobs } from "./jobScheduler";
+import { renderIdiomSocialImage } from "./socialImage";
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 dotenv.config({ path: `.env.${process.env.NODE_ENV}.local`, override: true });
@@ -184,6 +185,27 @@ app.use(
     }),
   }),
 );
+
+app.get("/social/idioms/:slug.png", async (req, res, next) => {
+  try {
+    const idiom = await dataProviders.idiom.getIdiom(
+      { slug: req.params.slug },
+      { expandEquivalents: true, expandUsers: false },
+    );
+    if (!idiom) {
+      return res.sendStatus(404);
+    }
+
+    const image = await renderIdiomSocialImage(idiom);
+    res.set({
+      "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+      "Content-Type": "image/png",
+    });
+    return res.send(image);
+  } catch (error) {
+    next(error);
+  }
+});
 
 let sitemap: Buffer | null = null;
 app.get("/sitemap.xml", async (req, res) => {

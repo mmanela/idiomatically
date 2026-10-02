@@ -68,7 +68,9 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.dataset.hydrated = "true";
-  }, []);
+    document.documentElement.dataset.route =
+      `${location.pathname}${location.search}`;
+  }, [location.pathname, location.search]);
 
   return (
     <ConfigProvider theme={theme}>

@@ -27,9 +27,17 @@ async function waitForHydration(page: Page) {
   });
 }
 
+async function waitForRoute(page: Page, route: string) {
+  await expect(page.locator('html')).toHaveAttribute('data-route', route, {
+    timeout: 15_000
+  });
+}
+
 async function gotoHydrated(page: Page, url: string) {
   await page.goto(url);
   await waitForHydration(page);
+  const parsedUrl = new URL(url, appUrl);
+  await waitForRoute(page, `${parsedUrl.pathname}${parsedUrl.search}`);
 }
 
 async function logout(page: Page) {
@@ -440,7 +448,13 @@ test('public idiom content is server rendered and client navigation stays hydrat
   await gotoHydrated(page, '/idioms/read-between-the-lines');
   await page.getByRole('link', { name: 'Home' }).click();
   await expect(page).toHaveURL('/');
-  await expect(page.getByText('Read between the lines', { exact: true })).toBeVisible();
+  await waitForRoute(page, '/');
+  await expect(
+    page.locator('.idiomListView').getByRole('link', {
+      name: 'Read between the lines',
+      exact: true
+    })
+  ).toBeVisible();
 });
 
 test('administrator can update an existing idiom', async ({ page }) => {
@@ -558,11 +572,15 @@ test('all-language filter lists non-English idioms without a render loop', async
     literalTranslation: 'The bullet is through the church'
   });
   await expect(page).toHaveURL(/\/idioms\/die-koeel-is-deur-die-kerk$/);
+  await waitForRoute(page, '/idioms/die-koeel-is-deur-die-kerk');
 
-  await page.getByRole('tab', { name: 'Map' }).click();
+  const mapTab = page.getByRole('tab', { name: 'Map' });
+  await mapTab.click();
+  await expect(mapTab).toHaveAttribute('aria-selected', 'true');
   const map = page.locator('.worldIdiomMap');
   const southAfrica = map.locator('[aria-label="South Africa"]');
-  await expect(southAfrica).toBeVisible();
+  await expect(map).toBeVisible({ timeout: 15_000 });
+  await expect(southAfrica).toBeVisible({ timeout: 15_000 });
   await southAfrica.hover();
   const mapTooltip = page.getByRole('tooltip');
   await expect(mapTooltip).toContainText('South Africa');

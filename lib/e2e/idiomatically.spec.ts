@@ -114,3 +114,33 @@ test('administrator can update an existing idiom', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Hit the open road' })).toBeVisible();
   await expect(page.getByText('To leave and begin a journey.')).toBeVisible();
 });
+
+test('administrator can review and accept a public idiom proposal', async ({ page }) => {
+  await loginAs(page, 'General user');
+  await addEnglishIdiom(page, 'On the same page', 'To share the same understanding.');
+
+  const proposalDialog = page.getByRole('dialog');
+  await expect(proposalDialog.getByText('Idiom change proposal received!')).toBeVisible();
+  await expect(proposalDialog.getByText('Thanks for suggesting the change, we will review it shortly.')).toBeVisible();
+  await proposalDialog.getByRole('button', { name: 'OK' }).click();
+  await expect(page).toHaveURL('http://localhost:3100/idioms');
+
+  await page.goto('/me');
+  await page.getByRole('button', { name: 'Log out' }).click();
+  await expect(page.getByRole('link', { name: 'Login' })).toBeVisible();
+
+  await loginAs(page, 'Administrator');
+  await page.goto('/admin/proposals');
+  const proposal = page.locator('.changeProposalItem');
+  await expect(proposal.getByRole('link', { name: /On the same page/ })).toBeVisible();
+  await expect(proposal.locator('.proposalType')).toHaveText('CreateIdiom');
+  await expect(proposal.getByText('By Local general', { exact: true })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Accept Proposal' }).click();
+  await page.getByRole('button', { name: 'Are you sure?' }).click();
+  await expect(proposal).not.toBeVisible();
+
+  await page.goto('/idioms/on-the-same-page');
+  await expect(page.getByRole('heading', { name: 'On the same page' })).toBeVisible();
+  await expect(page.getByText('To share the same understanding.')).toBeVisible();
+});

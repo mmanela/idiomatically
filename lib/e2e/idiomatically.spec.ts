@@ -105,6 +105,33 @@ async function addEnglishIdiom(page: Page, title: string, description: string) {
 test('public navigation is readable and consistently spaced', async ({ page }) => {
   await page.goto('/');
 
+  await expect(page.locator('#root > .container')).toBeVisible();
+  const layout = await page.evaluate(() => {
+    const container = document.querySelector('#root > .container')!.getBoundingClientRect();
+    const header = document.querySelector('header.ant-layout-header')!.getBoundingClientRect();
+    const main = document.querySelector('main')!.getBoundingClientRect();
+    const footer = document.querySelector('footer.mainFooter')!.getBoundingClientRect();
+    const title = document.querySelector('header h1')!;
+    return {
+      background: window.getComputedStyle(document.body).backgroundColor,
+      container: { x: container.x, width: container.width },
+      headerBottom: header.bottom,
+      mainTop: main.top,
+      mainBottom: main.bottom,
+      footerTop: footer.top,
+      titleFontSize: Number.parseFloat(window.getComputedStyle(title).fontSize)
+    };
+  });
+  expect(layout.background).toBe('rgb(230, 236, 240)');
+  expect(layout.container.width).toBe(800);
+  expect(layout.container.x).toBeGreaterThan(0);
+  expect(layout.mainTop).toBeGreaterThanOrEqual(layout.headerBottom - 1);
+  expect(layout.footerTop).toBeGreaterThanOrEqual(layout.mainBottom - 1);
+  expect(layout.titleFontSize).toBeGreaterThanOrEqual(40);
+
+  await expect(page.getByRole('searchbox', { name: 'Find an idiom' })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: 'Language' })).toBeVisible();
+
   for (const name of ['Home', 'About', 'Login']) {
     const link = page.getByRole('link', { name });
     await expect(link).toBeVisible();

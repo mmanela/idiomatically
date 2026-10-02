@@ -6,6 +6,7 @@
     "importHelpers": true,
     "esModuleInterop": true,
     "allowJs": true,
+    "skipLibCheck": true,
     "strict": false,
     "outDir": "build/server",
     "lib": ["es6", "esnext.asynciterable", "dom", "dom.iterable", "esnext"],

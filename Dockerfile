@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:22-bookworm-slim
 
 LABEL NAME=idiom
 
@@ -6,16 +6,15 @@ ENV REACT_APP_SERVER https://idiomatically.net
 
 # Setup app
 COPY lib/package*.json ./
-COPY lib/yarn.lock ./
-RUN yarn install --production=false
+RUN npm ci
 
 # Copy contents
 COPY lib/ .
 
 # Build Client
-RUN yarn client:build
+RUN npm run client:build
 
 # Start Server
 ENV PORT 80
 EXPOSE 80
-CMD ["yarn","server:prod"]
+CMD ["npm", "run", "server:prod"]

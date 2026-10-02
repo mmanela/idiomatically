@@ -21,7 +21,7 @@ import { EquivalentIdiomList } from "../components/EquivalentIdiomList";
 import { DeleteFilled } from '@ant-design/icons';
 import { Typography, Alert, Spin, Button, PageHeader, Tabs } from "antd";
 import screenfull from 'screenfull';
-import Fullscreen from "react-full-screen";
+import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { DEFAULT_PAGE_TITLE } from "../constants";
 const WorldMap = React.lazy(() => import('../components/WorldIdiomMap'));
 const { TabPane } = Tabs;
@@ -50,7 +50,7 @@ type IdiomCombinedProps = RouteChildrenProps<any> & IdiomProps;
 export const Idiom: React.FunctionComponent<IdiomCombinedProps> = props => {
   const { slug } = props;
   const [equivalentTab, setEquivalentTab] = useState<string>("List");
-  const [isMapFullscreen, setMapFullscreen] = useState(false);
+  const mapFullScreen = useFullScreenHandle();
   const { currentUser, currentUserLoading } = useCurrentUser();
   const [deleteConfirmation, setDeleteConfirmation] = useState(DeleteActionState.None);
   const showEdit = currentUser && !currentUserLoading;
@@ -116,7 +116,7 @@ export const Idiom: React.FunctionComponent<IdiomCombinedProps> = props => {
   };
   const onFullScreenClick: React.MouseEventHandler<HTMLElement> = (e) => {
     if (screenfull.isEnabled && equivalentTab === "Map") {
-      setMapFullscreen(true);
+      mapFullScreen.enter();
     }
   }
 
@@ -167,12 +167,9 @@ export const Idiom: React.FunctionComponent<IdiomCombinedProps> = props => {
           </TabPane>
           <TabPane key="Map" tab="Map" className="worldMapPanel">
             <Suspense fallback={<Spin delay={150} className="middleSpinner" tip="Loading..." />}>
-              <Fullscreen
-                enabled={isMapFullscreen}
-                onChange={isFull => setMapFullscreen(isFull)}
-              >
+              <FullScreen handle={mapFullScreen}>
                 <WorldMap idiom={idiom} />
-              </Fullscreen>
+              </FullScreen>
             </Suspense>
           </TabPane>
         </Tabs>

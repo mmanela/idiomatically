@@ -39,8 +39,10 @@ const start = async () => {
       path: `.env.${process.env.NODE_ENV}.local`,
     });
 
-    appInsights.setup(process.env.APP_INSIGHTS_KEY);
-    appInsights.start();
+    if (process.env.APP_INSIGHTS_KEY) {
+      appInsights.setup(process.env.APP_INSIGHTS_KEY);
+      appInsights.start();
+    }
 
     const adminEmails = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(",").map(x => x.toLowerCase()) : [];
     let isProd = process.env.NODE_ENV === 'production';
@@ -259,15 +261,16 @@ function setupAuthAndSession(
 
   const sessionLength = 7 * 24 * 60 * 60 * 1000; // 7 days
   const SessionMongoStore = MongoStoreFactory(expressSession);
+  const sessionCookie: expressSession.CookieOptions = {
+    secure: false,
+    maxAge: sessionLength
+  };
   const sessionOptions: expressSession.SessionOptions = {
     // Random guid formatted with "N"
     secret: 'f60262180a5f481b8564318be9cb3ce6',
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      secure: false,
-      maxAge: sessionLength
-    },
+    cookie: sessionCookie,
     store: new SessionMongoStore({
       client: mongoConnection,
       collection: 'sessions',
@@ -277,7 +280,7 @@ function setupAuthAndSession(
 
   if (isProd) {
     app.set('trust proxy', 1); // trust first proxyD
-    sessionOptions.cookie.secure = true; // serve secure cookies
+    sessionCookie.secure = true; // serve secure cookies
   }
 
   const corsOptions = {

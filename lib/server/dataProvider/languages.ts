@@ -1,4 +1,3 @@
-import * as countryLanguage from 'country-language'
 import { languagesAll, languages as langaugesList, countries, Country, Language } from 'countries-list';
 import worldCountries from 'world-countries'
 type WorldCountry = import("world-countries").Country;
@@ -61,12 +60,7 @@ export class Languages {
             };
             this.countryMap.set(countryModel.countryKey.toLowerCase(), countryModel);
 
-            // We are using a second library here to get extra country info. 
-            // We are combining two libraries since countries-list has the emoji data we want
-            // but is missing the full mapping of languages to countries. To get that
-            // we are using  country-language :/
-            const extraCountryInfo = countryLanguage.getCountry(countryCode);
-            let countryLanguages = extraCountryInfo.languages ? extraCountryInfo.languages.map(lan => lan.iso639_1) : country.languages;
+            let countryLanguages = country.languages;
 
             // Hardcoded insertion of Yiddish into IL data set. 
             // Need to submit PR to add to underlying NPM package

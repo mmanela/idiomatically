@@ -247,7 +247,7 @@ export class IdiomDataProvider {
 
                 // Get all unique idiom ids and make sure the idiom to close is missing them
                 const idiomId = idiom._id.toHexString();
-                const equivalentsToAdd = Array.from(new Set(dbEquivalents.flatMap(dbIdiom => (dbIdiom.equivalents || [])
+                const equivalentsToAdd = Array.from(new Set<ObjectID>(dbEquivalents.flatMap(dbIdiom => (dbIdiom.equivalents || [])
                     .filter(eq => !!eq.equivalentId)
                     .map(eq => new ObjectID(eq.equivalentId))
                     .filter(eq => eq.toHexString() !== idiomId))))

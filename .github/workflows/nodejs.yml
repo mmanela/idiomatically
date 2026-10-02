@@ -1,6 +1,6 @@
 name: Node CI
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -9,20 +9,20 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [22.x]
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-    - name: yarn install, build, and test
+        cache: npm
+        cache-dependency-path: lib/package-lock.json
+    - name: Install, generate, and build
       run: |
         cd ./lib
-        yarn
-        yarn server:pre
-        yarn client:pre
-        yarn client:build
+        npm ci
+        npm run check
       env:
         CI: true

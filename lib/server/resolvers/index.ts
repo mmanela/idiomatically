@@ -1,4 +1,4 @@
-import { mergeResolvers } from 'merge-graphql-schemas';
+import { mergeResolvers } from '@graphql-tools/merge';
 import userResolvers from './userResolver';
 import idiomResolvers from './idiomResolver';
 import languageResolvers from './languageResolver';

@@ -34,35 +34,40 @@ Idiomatically started as a side project to explore different technologies. I hop
 - [Docker](https://www.docker.com/)
 - [GitHub Actions](https://github.com/features/actions) (Used to build and publish docker image to Azure WebApps)
 
-## Running Locally 
+## Running locally
 
-There are a couple options to run locally. To do iterative development you should run with node locally. But you can also quickly get an instance up with docker.
+Local development uses Node.js 22, npm, and Docker for MongoDB. Start Docker Desktop before running the app.
 
+### Quick start
 
-### Node 
-
-For development you must first set configuration up a configuration file by creating a file `lib/.env.staging.local` that contains filled in settings from [this example file](https://github.com/mmanela/idiomatically/blob/master/lib/.env.example.local). 
-
-Once configured you can run the server and client server to enable iterative development. 
-
-__Server__
-
-`yarn server:start`
-
-__Client__
-
-`yarn client:start`
-
-
-### Docker
-
-To get it running self-contained you can just use docker-compose which will bootstrap it with a local mongodb instance.
-
-```
-docker-compose up --build
+```sh
+cd lib
+npm install
+npm run dev
 ```
 
-To stop the service run:
+Open http://localhost:3000. The `dev` command starts MongoDB with Docker Compose, then runs the API on port 8000 and the React client on port 3000 with live reload.
+
+The committed development configuration is enough to browse and edit local data. Google sign-in is disabled by default. To test authentication or optional integrations, copy `lib/.env.example.local` to `lib/.env.development.local` and add the relevant credentials.
+
+Useful commands:
+
+```sh
+npm run dev       # MongoDB + API + client
+npm run db:stop   # stop the local MongoDB container
+npm run check     # regenerate GraphQL types and create a production build
 ```
-docker-compose stop
+
+If you use nvm, run `nvm use` from `lib/`. The repository also includes an asdf Node version in `lib/.tool-versions`.
+
+### Containerized app
+
+```sh
+docker compose --profile app up --build
+```
+
+The containerized app is available at http://localhost:8000. Stop it with:
+
+```sh
+docker compose --profile app down
 ```

@@ -1,5 +1,7 @@
 directive @cacheControl(maxAge: Int, scope: CacheControlScope) on OBJECT | FIELD_DEFINITION
 
+directive @auth(requires: UserRole = ADMIN) on OBJECT | FIELD_DEFINITION
+
 enum CacheControlScope {
   PUBLIC
   PRIVATE
@@ -10,8 +12,6 @@ enum UserRole {
   CONTRIBUTOR
   GENERAL
 }
-
-directive @auth(requires: UserRole = ADMIN) on OBJECT | FIELD_DEFINITION
 
 type Query {
   me: User @cacheControl(maxAge: 0)

@@ -1,5 +1,4 @@
-import * as countryLanguage from 'country-language'
-import { languagesAll, languages as langaugesList, countries, Country, Language } from 'countries-list';
+import { countries, getEmojiFlag, languages, type ICountry, type ILanguage, type TCountryCode, type TLanguageCode } from 'countries-list';
 import worldCountries from 'world-countries'
 type WorldCountry = import("world-countries").Country;
 
@@ -46,7 +45,7 @@ export class Languages {
         }
 
         for (const countryCode of Object.keys(countries)) {
-            const country: Country = countries[countryCode];
+            const country = countries[countryCode as TCountryCode] as ICountry;
 
             // Grab from world country map to get lang/lat
             const worldCountry: WorldCountry = this.worldCountriesMap.get(countryCode);
@@ -55,18 +54,13 @@ export class Languages {
                 countryName: country.name,
                 countryNativeName: country.native,
                 countryKey: countryCode,
-                emojiFlag: country.emoji,
+                emojiFlag: getEmojiFlag(countryCode as TCountryCode),
                 latitude: worldCountry && worldCountry.latlng[0],
                 longitude: worldCountry && worldCountry.latlng[1]
             };
             this.countryMap.set(countryModel.countryKey.toLowerCase(), countryModel);
 
-            // We are using a second library here to get extra country info. 
-            // We are combining two libraries since countries-list has the emoji data we want
-            // but is missing the full mapping of languages to countries. To get that
-            // we are using  country-language :/
-            const extraCountryInfo = countryLanguage.getCountry(countryCode);
-            let countryLanguages = extraCountryInfo.languages ? extraCountryInfo.languages.map(lan => lan.iso639_1) : country.languages;
+            let countryLanguages = country.languages;
 
             // Hardcoded insertion of Yiddish into IL data set. 
             // Need to submit PR to add to underlying NPM package
@@ -79,8 +73,8 @@ export class Languages {
                     continue;
                 }
 
-                const language: Language = languagesAll[langCode] || langaugesList[langCode];
-                if (language.name == null) {
+                const language = languages[langCode as TLanguageCode] as ILanguage | undefined;
+                if (!language?.name) {
                     continue;
                 }
 

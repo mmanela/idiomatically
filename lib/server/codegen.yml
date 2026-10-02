@@ -1,14 +1,14 @@
-schema:
-  - "./server/_graphql/joined.graphql"
-documents: []
+schema: "./server/_graphql/joined.graphql"
+documents:
+  - "./src/**/*.{ts,tsx}"
+  - "!./src/__generated__/**"
 generates:
   server/_graphql/types.ts:
     config:
-      printTime: false
-      schemaNamespace: null
-      noNamespaces: true
+      contextType: "../model/types#GlobalContext"
+      useTypeImports: true
     plugins:
       - typescript
-      - typescript-operations
       - typescript-resolvers
-require: []
+  src/__generated__/graphql/:
+    preset: client

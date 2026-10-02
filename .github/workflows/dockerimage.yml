@@ -1,41 +1,90 @@
-name: Docker Image CI
+name: Deploy production
 
-on: 
+on:
   push:
     branches:
       - release
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Existing 40-character commit SHA image tag to redeploy
+        required: true
+        type: string
+
+env:
+  REGISTRY: idiomatically893a.azurecr.io
+  IMAGE_NAME: idiomatically
+  IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.image_tag || github.sha }}
 
 jobs:
-
-  build:
- 
+  deploy:
     runs-on: ubuntu-latest
- 
+
     steps:
-    - name: 'Checkout Github Action' 
-      uses: actions/checkout@v1
-      
-    - name: 'Login via Azure CLI'
-      uses: Azure/login@v1.1
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Validate rollback image tag
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        if [[ "$GITHUB_REF" != "refs/heads/release" ]]; then
+          echo "Manual rollbacks must run from the release branch" >&2
+          exit 1
+        fi
+        if [[ ! "$IMAGE_TAG" =~ ^[0-9a-f]{40}$ ]]; then
+          echo "image_tag must be a complete 40-character commit SHA" >&2
+          exit 1
+        fi
+
+    - name: Login to Azure
+      uses: Azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - uses: azure/docker-login@v1
+    - name: Login to container registry
+      uses: docker/login-action@v3
       with:
-        login-server: idiomatically893a.azurecr.io
+        registry: ${{ env.REGISTRY }}
         username: ${{ secrets.REGISTRY_USERNAME }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
 
-    - name: Build and publish the Docker image
-      run: | 
-        docker build . --file Dockerfile -t idiomatically:${{ github.sha }} -t idiomatically893a.azurecr.io/idiomatically:production
-        docker push idiomatically893a.azurecr.io/idiomatically:production
-      
-    - uses: Azure/webapps-deploy@v2
+    - name: Publish immutable image and production alias
+      if: github.event_name == 'push'
+      run: |
+        image="$REGISTRY/$IMAGE_NAME:$IMAGE_TAG"
+        production_image="$REGISTRY/$IMAGE_NAME:production"
+
+        if docker manifest inspect "$image" > /dev/null 2>&1; then
+          echo "Immutable image $image already exists; reusing it."
+        else
+          docker build . --file Dockerfile -t "$image"
+          docker push "$image"
+        fi
+
+        docker pull "$image"
+        docker tag "$image" "$production_image"
+        docker push "$production_image"
+
+    - name: Verify immutable image exists
+      run: docker manifest inspect "$REGISTRY/$IMAGE_NAME:$IMAGE_TAG" > /dev/null
+
+    - name: Deploy production image
+      uses: Azure/webapps-deploy@v3
       with:
         app-name: 'Idiomatically'
-        images: 'idiomatically893a.azurecr.io/idiomatically:production'
-    
-    - name: Azure logout
+        images: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}'
+
+    - name: Verify production Google authentication
+      run: node lib/server/scripts/authSmoke.mjs https://idiomatically.net
+      env:
+        AUTH_SMOKE_ATTEMPTS: 18
+        AUTH_SMOKE_RETRY_DELAY_MS: 10000
+
+    - name: Record deployed image
       run: |
-        az logout
+        echo "### Production image" >> "$GITHUB_STEP_SUMMARY"
+        echo "\`$REGISTRY/$IMAGE_NAME:$IMAGE_TAG\`" >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Azure logout
+      if: always()
+      run: az logout

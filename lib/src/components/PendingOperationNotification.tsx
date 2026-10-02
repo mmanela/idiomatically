@@ -1,47 +1,24 @@
-import * as React from "react";
 import { Modal } from "antd";
-import { Redirect } from "react-router";
+import { useEffect, useState } from "react";
+import { Navigate } from "react-router";
 import { OperationStatus } from "../__generated__/types";
 
-const pendingStatusConent: string = `Thanks for suggesting the change, we will review it shortly.`;
-const failureToPendStatusConent: string = `You have too many changes pending approval. Please try again later.`;
+const pendingContent =
+  "Thanks for suggesting the change, we will review it shortly.";
+const failureContent =
+  "You have too many changes pending approval. Please try again later.";
+
 function getContent(secondsToGo: number, operationStatus: OperationStatus) {
   return (
     <>
-      <div>{operationStatus === OperationStatus.PENDING ? pendingStatusConent : failureToPendStatusConent}</div>
+      <div>
+        {operationStatus === OperationStatus.PENDING
+          ? pendingContent
+          : failureContent}
+      </div>
       <div>{`You will be redirected after ${secondsToGo} second.`}</div>
     </>
   );
-}
-
-function launchModal(
-  setDone: React.Dispatch<React.SetStateAction<boolean>>,
-  secondsToGo: number,
-  operationStatus: OperationStatus
-) {
-  const close = () => {
-    clearInterval(timer);
-    modal.destroy();
-    setDone(true);
-  };
-
-  const modal = Modal.success({
-    title: operationStatus === OperationStatus.PENDING ? "Idiom change proposal received!" : "Sorry, too many pending proposals.",
-    content: getContent(secondsToGo, operationStatus),
-    onOk: () => {
-      close();
-    }
-  });
-
-  const timer = setInterval(() => {
-    secondsToGo -= 1;
-    modal.update({
-      content: getContent(secondsToGo, operationStatus)
-    });
-  }, 1000);
-  setTimeout(() => {
-    close();
-  }, secondsToGo * 1000);
 }
 
 export interface PendingOperationNotificationProps {
@@ -50,12 +27,47 @@ export interface PendingOperationNotificationProps {
   operationStatus: OperationStatus;
 }
 
-export const PendingOperationNotification: React.FunctionComponent<PendingOperationNotificationProps> = props => {
-  const [done, setDone] = React.useState(false);
-  if (!done) {
-    launchModal(setDone, props.delay || 10, props.operationStatus);
-  } else {
-    return <Redirect to={props.redirect} />;
-  }
-  return <></>;
-};
+export function PendingOperationNotification(
+  props: PendingOperationNotificationProps,
+) {
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    let secondsToGo = props.delay || 10;
+    let closed = false;
+    const close = () => {
+      if (closed) {
+        return;
+      }
+      closed = true;
+      clearInterval(timer);
+      clearTimeout(timeout);
+      modal.destroy();
+      setDone(true);
+    };
+    const modal = Modal.success({
+      title:
+        props.operationStatus === OperationStatus.PENDING
+          ? "Idiom change proposal received!"
+          : "Sorry, too many pending proposals.",
+      content: getContent(secondsToGo, props.operationStatus),
+      onOk: close,
+    });
+    const timer = setInterval(() => {
+      secondsToGo -= 1;
+      modal.update({
+        content: getContent(secondsToGo, props.operationStatus),
+      });
+    }, 1_000);
+    const timeout = setTimeout(close, secondsToGo * 1_000);
+
+    return () => {
+      closed = true;
+      clearInterval(timer);
+      clearTimeout(timeout);
+      modal.destroy();
+    };
+  }, [props.delay, props.operationStatus]);
+
+  return done ? <Navigate to={props.redirect} replace /> : null;
+}

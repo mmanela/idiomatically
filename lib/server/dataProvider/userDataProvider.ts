@@ -1,9 +1,17 @@
-import { Db, Collection, ObjectID, FilterQuery } from 'mongodb'
+import { Db, Collection, ObjectId, Filter, Sort } from 'mongodb'
 import { UserRole, ProviderType, QueryUsersArgs } from '../_graphql/types';
-import { Profile } from 'passport';
 import { UserModel } from '../model/types';
 import { DbUser, mapDbUser } from './mapping';
 import { escapeRegex } from './utils';
+
+export type AuthIdentity = {
+    id: string;
+    name: string;
+    email: string;
+    avatar?: string | null;
+    role?: string | null;
+    provider: "GOOGLE" | "LOCAL";
+};
 
 export class UserDataProvider {
 
@@ -13,9 +21,9 @@ export class UserDataProvider {
         this.userCollection = mongodb.collection(collectionPrefix + 'user');
     }
 
-    async getUser(id: string | ObjectID): Promise<UserModel> {
+    async getUser(id: string | ObjectId): Promise<UserModel> {
         try {
-            const dbUser = await this.userCollection.findOne(new ObjectID(id));
+            const dbUser = await this.userCollection.findOne(new ObjectId(id));
             if (!dbUser) {
                 throw new Error("Could not find user");
             }
@@ -27,11 +35,11 @@ export class UserDataProvider {
         }
     }
 
-    async getUsers(ids: ObjectID[]): Promise<UserModel[]> {
+    async getUsers(ids: ObjectId[]): Promise<UserModel[]> {
         ids = ids || [];
         let dbUsers: DbUser[];
         try {
-            const objectIds = [...new Set(ids.filter(id => !!id))].map(id => new ObjectID(id));
+            const objectIds = [...new Set(ids.filter(id => !!id))].map(id => new ObjectId(id));
             dbUsers = await this.userCollection.find({ _id: { $in: objectIds } }).toArray() || [];
             return dbUsers.map(user => mapDbUser(user));
         }
@@ -44,8 +52,8 @@ export class UserDataProvider {
         const filter = args && args.filter ? args.filter : null;
         const limit = args && args.limit ? args.limit : 50;
 
-        let findFilter: FilterQuery<DbUser>;
-        let sortObj: object = { name: -1 };
+        let findFilter: Filter<DbUser> = {};
+        const sortObj: Sort = { name: -1 };
 
         if (filter) {
             const filterRegex = escapeRegex(filter);
@@ -65,60 +73,69 @@ export class UserDataProvider {
         return dbUsers.map(user => mapDbUser(user));;
     }
 
-    async ensureUserFromLogin(profile: Profile, adminEmails: string[]): Promise<UserModel> {
-        if (!profile || !profile.id || !profile.displayName || !profile.provider) {
-            throw new Error("Invalid user profile");
+    async ensureUserFromAuth(identity: AuthIdentity, adminEmails: string[]): Promise<UserModel> {
+        if (!identity.id || !identity.name || !identity.email) {
+            throw new Error("Invalid authenticated identity");
         }
 
-        const email = profile.emails && profile.emails[0].value ? profile.emails[0].value : null;
-        const avatar = profile.photos && profile.photos[0].value ? profile.photos[0].value : null;
-        const providerType = <ProviderType>profile.provider.toUpperCase();
+        const email = identity.email.toLowerCase();
+        const avatar = identity.avatar || null;
+        const providerType = identity.provider === "LOCAL" ? ProviderType.Local : ProviderType.Google;
+        const role = identity.role
+            ? identity.role.toUpperCase() as UserRole
+            : this.isHarcodedSuperUser(email, adminEmails)
+                ? UserRole.Admin
+                : UserRole.General;
 
-        // Find this user given provider id
-        let dbUser = await this.userCollection.findOne({ 'providers.externalId': { $eq: profile.id } });
+        let dbUser: DbUser | null = await this.userCollection.findOne({
+            $or: [
+                { 'providers.externalId': identity.id },
+                { 'providers.email': email }
+            ]
+        });
         if (dbUser) {
-            const matchedProviders = dbUser.providers.filter(p => p.externalId === profile.id);
+            const matchedProviders = dbUser.providers.filter(
+                provider => provider.externalId === identity.id || provider.email?.toLowerCase() === email
+            );
             const providerToUpdate = matchedProviders && matchedProviders[0] ? matchedProviders[0] : null;
-            const objId = new ObjectID(dbUser._id);
+            const objId = new ObjectId(dbUser._id);
 
-            dbUser.name = profile.displayName;
+            dbUser.name = identity.name;
             dbUser.avatar = avatar;
+            dbUser.role = role;
             if (providerToUpdate) {
+                providerToUpdate.externalId = identity.id;
                 providerToUpdate.email = email;
-                providerToUpdate.name = profile.displayName;
+                providerToUpdate.name = identity.name;
                 providerToUpdate.avatar = avatar;
+                providerToUpdate.type = providerType;
+            } else {
+                dbUser.providers.push({
+                    email,
+                    externalId: identity.id,
+                    name: identity.name,
+                    avatar,
+                    type: providerType,
+                });
             }
 
-            // TODO: Once cosmodb supports proper array operators ($) then switch to update
-            //       with those
-            const result = await this.userCollection.replaceOne(
-                { _id: objId, "providers.externalId": profile.id },
-                dbUser);
-
-            if (result.modifiedCount <= 0) {
-                console.trace("Nothing changed in this user after login")
-            }
+            await this.userCollection.replaceOne({ _id: objId }, dbUser);
         }
         else {
-            // Add this user
             dbUser = {
-                name: profile.displayName,
+                name: identity.name,
                 avatar: avatar,
-                role: email && this.isHarcodedSuperUser(email, adminEmails) ? UserRole.Admin : UserRole.General,
+                role,
                 providers: [{
                     email: email,
-                    externalId: profile.id,
-                    name: profile.displayName,
+                    externalId: identity.id,
+                    name: identity.name,
                     avatar: avatar,
                     type: providerType,
                 }]
 
             }
             const result = await this.userCollection.insertOne(dbUser);
-            if (result.insertedCount <= 0) {
-                throw new Error("Failed to insert user");
-            }
-
             dbUser._id = result.insertedId;
         }
 

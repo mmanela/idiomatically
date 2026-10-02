@@ -1,50 +1,48 @@
-.idiomSearchBox {
-  max-width: 800px;
+.idiomSearchControls {
+  display: flex;
+  width: min(100%, 800px);
 
-  .ant-input-group-addon {
-    color: #fff;
-    background-color: #1890ff;
-    border-color: #1890ff;
-    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.12);
-    -webkit-box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045);
-    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045);
-  }
-  .ant-select-focused .ant-select-selection {
-    color: white;
-  }
-  .ant-input-group-addon .ant-select {
-    margin: -5px 0px;
-  }
-  
-  .ant-select.languageSelect {
-    border-left: 1px solid #0069cc;
-    color: white;
+  .idiomSearchBox {
+    flex: 1;
 
-    .ant-select-arrow {
-      color: white;
+    .ant-input-search-btn {
+      border-bottom-right-radius: 0 !important;
+      border-top-right-radius: 0 !important;
+    }
+  }
+
+  .languageSelect {
+    background-color: #1890ff !important;
+    border: 1px solid #1890ff !important;
+    border-bottom-left-radius: 0 !important;
+    border-left-color: #0069cc !important;
+    border-top-left-radius: 0 !important;
+
+    .ant-select-content,
+    .ant-select-input {
+      background-color: transparent !important;
+      color: white !important;
     }
 
-    .ant-select-selector {
-      color: white;
-    }
-
-    .ant-select-selection-selected-value {
-      margin-right: 4px;
+    .ant-select-suffix {
+      color: white !important;
     }
   }
 }
 
 .languageOptionContainer {
-  /* This is a sad day in CSS but unless I totally take over 
-       the rendering of the dropdown I don't have a way to set the width */
-  width: 150px !important;
+  max-width: calc(100vw - 20px);
+  min-width: 180px !important;
+  width: max-content !important;
 }
 
-@media screen and (max-width: 900px) {
-  .languageOptionContainer {
-    /* This is a sad day in CSS but unless I totally take over 
-         the rendering of the dropdown I don't have a way to set the width */
-    left: auto !important;
-    right: 10px;
+@media screen and (max-width: 600px) {
+  .idiomSearchControls {
+    flex-direction: column;
+    gap: 8px;
+
+    .languageSelect {
+      width: 100% !important;
+    }
   }
 }

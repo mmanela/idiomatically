@@ -1,100 +1,70 @@
-import * as React from "react";
-import ReactMde, { SvgIcon } from "react-mde";
-import { marked } from "marked";
+import { EditOutlined, EyeOutlined } from "@ant-design/icons";
+import { Button, Input, Space } from "antd";
 import dompurifyFactory from "dompurify";
-import "react-mde/lib/styles/scss/react-mde-all.scss";
-import { ToolbarCommands, Command, Selection } from "react-mde/lib/definitions/types";
+import { marked } from "marked";
+import { useMemo, useState } from "react";
 import "./MarkdownEditor.scss";
 
 export interface MarkdownEditorProps {
-    value?: string;
-    onChange?: (value: string) => void;
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
-export function getToolbarCommands(): ToolbarCommands {
-    return [
-        ["h1", "bold", "italic"],
-        ["link", "quote"],
-        ["unordered-list", "ordered-list"]
-    ];
+export function getLineBounds(text: string, position: number) {
+  const start = text.lastIndexOf("\n", Math.max(0, position - 1)) + 1;
+  const nextNewline = text.indexOf("\n", position);
+  return {
+    start,
+    end: nextNewline === -1 ? text.length : nextNewline,
+  };
 }
 
-export function getLineBounds(text: string, position: number): Selection {
-    if (!text) {
-        return { start: 0, end: 0 };
+export function MarkdownEditor(props: MarkdownEditorProps) {
+  const [value, setValue] = useState(props.value || "");
+  const [previewing, setPreviewing] = useState(false);
+  const preview = useMemo(() => {
+    if (!previewing || typeof window === "undefined") {
+      return "";
     }
+    return dompurifyFactory(window).sanitize(marked.parse(value) as string);
+  }, [previewing, value]);
 
-    const isNewLine = (c: string) => c.charCodeAt(0) === 10;
+  const handleChange = (nextValue: string) => {
+    setValue(nextValue);
+    props.onChange?.(nextValue);
+  };
 
-    let start = 0, end = 0;
-    for (let i = position; i - 1 > -1; i--) {
-        if (isNewLine(text[i - 1]) || i === 0) {
-            start = i;
-            break;
-        }
-    }
-
-    for (let i = position; i <= text.length; i++) {
-        if (i >= text.length || isNewLine(text[i])) {
-            end = i;
-            break;
-        }
-    }
-
-    return { start, end };
-}
-
-export const h1Command: Command = {
-    buttonProps: { "aria-label": "Add header" }, icon: () => (
-        <SvgIcon icon="header" />
-    ),
-    execute: ({ initialState, textApi }) => {
-        textApi.setSelectionRange(getLineBounds(initialState.text, initialState.selection.start));
-        textApi.replaceSelection("# " + textApi.getState().selectedText);
-    }
-}
-
-export const MarkdownEditor: React.FunctionComponent<MarkdownEditorProps> = props => {
-    const [value, setValue] = React.useState(props.value || "");
-    const [selectedTab, setSelectedTab] = React.useState<"write" | "preview">(
-        "write"
-    );
-    const dompurify = dompurifyFactory(window);
-
-    const handleChange = (value: string) => {
-        setValue(value);
-        if (props.onChange) {
-            props.onChange(value);
-        }
-    }
-
-    return (
-        <div className="markdownEditor">
-            <ReactMde
-                value={value}
-                commands={{
-                    "h1": h1Command
-                }}
-                toolbarCommands={getToolbarCommands()}
-                onChange={handleChange}
-                minEditorHeight={300}
-                minPreviewHeight={300}
-                selectedTab={selectedTab}
-                onTabChange={setSelectedTab}
-                generateMarkdownPreview={markdown => {
-                    if (!markdown) {
-                        return Promise.resolve("");
-                    }
-                    return Promise.resolve(dompurify.sanitize(marked(markdown)));
-
-                }
-                }
-                childProps={{
-                    writeButton: {
-                        tabIndex: -1
-                    }
-                }}
-            />
-        </div>
-    );
+  return (
+    <div className="markdownEditor">
+      <Space className="markdownEditorToolbar">
+        <Button
+          type={!previewing ? "primary" : "default"}
+          icon={<EditOutlined />}
+          onClick={() => setPreviewing(false)}
+        >
+          Write
+        </Button>
+        <Button
+          type={previewing ? "primary" : "default"}
+          icon={<EyeOutlined />}
+          onClick={() => setPreviewing(true)}
+        >
+          Preview
+        </Button>
+      </Space>
+      {previewing ? (
+        <div
+          className="markdown markdownPreview"
+          dangerouslySetInnerHTML={{ __html: preview }}
+        />
+      ) : (
+        <Input.TextArea
+          className="mde-text"
+          value={value}
+          autoSize={{ minRows: 12 }}
+          onChange={(event) => handleChange(event.target.value)}
+        />
+      )}
+    </div>
+  );
 }

@@ -1,4 +1,4 @@
-@import "../components/App.scss";
+@use "../components/variables" as *;
 
 article.idiom {
   .page-header {

@@ -1,68 +1,112 @@
 # Idiomatically
 
 [![](https://github.com/mmanela/idiomatically/workflows/Node%20CI/badge.svg)](https://github.com/mmanela/idiomatically/actions?workflow=Node+CI) [![Docker Image CI](https://github.com/mmanela/idiomatically/actions/workflows/dockerimage.yml/badge.svg?branch=release)](https://github.com/mmanela/idiomatically/actions/workflows/dockerimage.yml)
-## About 
-[Idiomatically](https://idiomatically.net/) is a site for exploring idioms across languages and locales. 
 
-Check out this [blog post](https://medium.com/@mmanela/idiomatically-net-bc428a8d498f) to learn more about the inspiration for Idiomatically.net.
+Idiomatically is a site for exploring and correlating idioms across languages and locales.
 
-### Search for idioms and filter by language
-![Idiomatically Homepage](images/homePage.png)
+## Architecture
 
+- React 19 and React Router 8 Framework Mode
+- Server-side rendering with hydrated client-side navigation
+- Express 5 serving the React application, GraphQL API, and authentication on one origin
+- Apollo Server 5 and Apollo Client 4
+- Better Auth with Google OAuth and MongoDB-backed sessions
+- MongoDB 7
+- Ant Design 6
+- Vite 8 and TypeScript 7
+- Playwright end-to-end characterization tests
 
-### Explore different ways to express an idiom in other languages and locales
-![Idiom Map](images/idiomMap.png)
+Public idiom list and detail routes load through the GraphQL API during server rendering, so their content is present in the initial HTML. Client-side navigation continues to use React Router without full-page reloads.
 
+## Running locally
 
-### Contribute or update idioms
-![Add idiom](images/addIdiom.png)
+Local development requires Node.js 22, npm, and MongoDB.
 
+Start MongoDB with either Homebrew:
 
-## Technologies
-Idiomatically started as a side project to explore different technologies. I hope it serves as an example of how to combine these together into a functioning application. Some of the technologies used are
-
-- [TypeScript](https://www.typescriptlang.org/)
-- [React](https://reactjs.org/)
-- [React Router](https://reacttraining.com/react-router/)
-- [Apollo](https://www.apollographql.com/) (server and client) with Server Side Rendering
-- [GraphQL](https://graphql.org/)
-- [MongoDB](https://www.mongodb.com/) (using the [Azure CosmosDB API for MongoDB](https://docs.microsoft.com/en-us/azure/cosmos-db/mongodb-introduction))
-- [Node.js](https://nodejs.org/)
-- [Express](http://expressjs.com/)
-- [Passport.js](http://www.passportjs.org/) for authentication
-- [Ant Design](https://ant.design/) (UX Framework)
-- [Docker](https://www.docker.com/)
-- [GitHub Actions](https://github.com/features/actions) (Used to build and publish docker image to Azure WebApps)
-
-## Running Locally 
-
-There are a couple options to run locally. To do iterative development you should run with node locally. But you can also quickly get an instance up with docker.
-
-
-### Node 
-
-For development you must first set configuration up a configuration file by creating a file `lib/.env.staging.local` that contains filled in settings from [this example file](https://github.com/mmanela/idiomatically/blob/master/lib/.env.example.local). 
-
-Once configured you can run the server and client server to enable iterative development. 
-
-__Server__
-
-`yarn server:start`
-
-__Client__
-
-`yarn client:start`
-
-
-### Docker
-
-To get it running self-contained you can just use docker-compose which will bootstrap it with a local mongodb instance.
-
-```
-docker-compose up --build
+```sh
+brew services start mongodb-community@7.0
 ```
 
-To stop the service run:
+or Docker:
+
+```sh
+cd lib
+npm run db:start
 ```
-docker-compose stop
+
+Then start the unified application server:
+
+```sh
+cd lib
+npm install
+npm run dev
 ```
+
+Open http://localhost:3000. Vite development middleware, React Router SSR, GraphQL, and authentication all run on that single origin.
+
+The committed development configuration enables a local role picker for General, Contributor, and Administrator users. It exercises Better Auth sessions plus the application's real role and GraphQL authorization paths without contacting Google.
+
+To test Google OAuth, copy `lib/.env.example.local` to `lib/.env.development.local`, set `LOCAL_AUTH_ENABLED=false`, and add Google credentials. Register these authorized redirect URIs:
+
+```text
+http://localhost:3000/api/auth/callback/google
+https://idiomatically.net/api/auth/callback/google
+```
+
+Google supports localhost callbacks, so ngrok is not required.
+
+This manual Google login is the only way to verify the complete provider
+round-trip before production. The automated suite also verifies that Better
+Auth creates a Google authorization request with OAuth state, PKCE, a state
+cookie, and the expected callback URL.
+
+After deploying, run the non-interactive OAuth configuration smoke check:
+
+```sh
+cd lib
+npm run auth:smoke -- https://idiomatically.net
+```
+
+This checks the deployed Better Auth route and callback URL without logging in
+or exposing Google credentials. Then complete one real Google login on the
+deployed environment before directing users to it.
+
+Useful commands:
+
+```sh
+npm run dev       # unified development server
+npm run codegen   # regenerate GraphQL schema and typed artifacts
+npm run check     # React Router type generation, TypeScript, and production build
+npm run test:e2e  # isolated Chromium end-to-end suite
+npm run db:stop   # stop the Docker MongoDB service
+```
+
+The end-to-end suite starts the application on port 3100, resets the `idiomatically-e2e` database before every test, and stores failure traces under `lib/test-results`.
+
+## Containerized application
+
+```sh
+docker compose --profile app up --build
+```
+
+The containerized application is available at http://localhost:8000. Stop it with:
+
+```sh
+docker compose --profile app down
+```
+
+Production requires `SERVER_URL`, `DB_CONNECTION`, `MONGO_DB`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET`. Startup fails if the public URL is not HTTPS, the Better Auth secret is too short, or Google credentials are missing/placeholders.
+
+## Production deployment and rollback
+
+Pushing to the `release` branch builds and publishes an immutable container
+tagged with the full commit SHA. The workflow also updates the `production`
+alias, but Azure deploys the immutable SHA tag so the running version is
+unambiguous.
+
+To roll back, run the **Deploy production** workflow manually against the
+`release` branch and enter the full 40-character commit SHA from a previous
+successful deployment as `image_tag`. The workflow verifies that image exists,
+deploys it directly, and reruns the production Google authentication smoke
+check.

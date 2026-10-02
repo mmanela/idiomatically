@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server-express';
+import gql from 'graphql-tag';
 
 export default gql`
 
@@ -46,6 +46,7 @@ export default gql`
   enum ProviderType {
     GOOGLE
     FACEBOOK
+    LOCAL
   } 
 
   type Login @auth(requires: ADMIN) {

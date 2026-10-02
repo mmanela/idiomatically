@@ -1,4 +1,4 @@
-import { Db, Collection, ObjectID, FilterQuery } from 'mongodb';
+import { Db, Collection, ObjectId, Filter, Sort } from 'mongodb';
 import { IdiomOperationResult, OperationStatus, IdiomChangeProposal, QueryIdiomChangeProposalsArgs, MutationAcceptIdiomChangeProposalArgs, MutationRejectIdiomChangeProposalArgs } from '../_graphql/types';
 import { DbIdiom, DbIdiomChangeProposal, IdiomProposalType, Paged } from './mapping';
 import { UserDataProvider } from './userDataProvider';
@@ -14,7 +14,7 @@ export class IdiomChangeProposalDataProvider {
         if (!args.proposalId) {
             throw new Error("Id is missing");
         }
-        const res = await this.changeProposalCollection.deleteOne({ _id: new ObjectID(args.proposalId) });
+        const res = await this.changeProposalCollection.deleteOne({ _id: new ObjectId(args.proposalId) });
         return {
             status: res.deletedCount > 0 ? OperationStatus.Success : OperationStatus.Failure
         };
@@ -73,7 +73,7 @@ export class IdiomChangeProposalDataProvider {
         }
 
         if (idiomOperationResult.status == OperationStatus.Success) {
-            const res = await this.changeProposalCollection.deleteOne({ _id: new ObjectID(args.proposalId) });
+            const res = await this.changeProposalCollection.deleteOne({ _id: new ObjectId(args.proposalId) });
 
             // If the user's proposal was acceted 
             if (userModel && userModel.providers
@@ -103,10 +103,12 @@ export class IdiomChangeProposalDataProvider {
 
         let totalCount = null;
         let dbProposals: DbIdiomChangeProposal[];
-        let findFilter: FilterQuery<DbIdiom>;
-        let sortObj: object = { createdAt: -1 };
+        let findFilter: Filter<DbIdiomChangeProposal> = {};
+        const sortObj: Sort = { createdAt: -1 };
         if (filter) {
-            const filterQuery = { type: { $eq: filter } };
+            const filterQuery: Filter<DbIdiomChangeProposal> = {
+                type: filter as IdiomProposalType
+            };
             findFilter = filterQuery;
         }
 

@@ -1,61 +1,89 @@
+import {
+  HomeOutlined,
+  InfoCircleOutlined,
+  LoginOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
+import { Avatar, Button, Menu } from "antd";
+import { Link, useLocation, useNavigate } from "react-router";
+import type { GetCurrentUser_me } from "../__generated__/types";
 import "./NavCommandBar.scss";
-import * as React from "react";
-import { HomeOutlined, InfoCircleOutlined, LoginOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import { Menu, Avatar, Button } from "antd";
-import { Link, RouteComponentProps } from "react-router-dom";
 import { useCurrentUser } from "./withCurrentUser";
 
-export interface NavCommandBarProps {}
-
-type NavBarCombinedProps = RouteComponentProps<any> & NavCommandBarProps;
-
-export const NavCommandBar: React.FunctionComponent<NavBarCombinedProps> = props => {
-  const { currentUser } = useCurrentUser();
-  const isLoggedIn = !!currentUser;
+export function NavCommandBar({
+  initialCurrentUser,
+}: {
+  initialCurrentUser?: GetCurrentUser_me | null;
+}) {
+  const { currentUser } = useCurrentUser(initialCurrentUser);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isLoggedIn = Boolean(currentUser);
 
   return (
-    <Menu mode="horizontal" selectable={false} className="navCommandBar">
-      <Menu.Item key="home">
-        <Link to="/">
-          <HomeOutlined />
-          Home
-        </Link>
-      </Menu.Item>
-      <Menu.Item key="about">
-        <Link to="/about">
-          <InfoCircleOutlined />
-          About
-        </Link>
-      </Menu.Item>
-
-      {isLoggedIn && (
-        <Menu.Item>
-          <Button
-            type="link"
-            icon={<PlusCircleOutlined />}
-            size="middle"
-            onClick={() => {
-              props.history.push("/new");
-            }}
-          >
-            Add an idiom
-          </Button>
-        </Menu.Item>
-      )}
-      <Menu.Item key="user" className="userMenuItem">
-        {!isLoggedIn && (
-          <a href={`${process.env.REACT_APP_SERVER}/login?returnTo=${props.history.location.pathname}`}>
-            <LoginOutlined />
-            Login
-          </a>
-        )}
-        {isLoggedIn && (
-          <Link to="/me">
-            <Avatar src={currentUser!.avatar || ""} size="small" className="profileImage" />
-            {currentUser!.name}
-          </Link>
-        )}
-      </Menu.Item>
-    </Menu>
+    <Menu
+      mode="horizontal"
+      selectable={false}
+      className="navCommandBar"
+      items={[
+        {
+          key: "home",
+          label: (
+            <Link to="/" style={{ display: "inline-flex", gap: 6 }}>
+              <HomeOutlined /> Home
+            </Link>
+          ),
+        },
+        {
+          key: "about",
+          label: (
+            <Link to="/about" style={{ display: "inline-flex", gap: 6 }}>
+              <InfoCircleOutlined /> About
+            </Link>
+          ),
+        },
+        ...(isLoggedIn
+          ? [
+              {
+                key: "add",
+                label: (
+                  <Button
+                    type="link"
+                    icon={<PlusCircleOutlined />}
+                    size="middle"
+                    style={{ display: "inline-flex", gap: 6 }}
+                    onClick={() => navigate("/new")}
+                  >
+                    Add an idiom
+                  </Button>
+                ),
+              },
+            ]
+          : []),
+        {
+          key: "user",
+          className: "userMenuItem",
+          label: !isLoggedIn ? (
+            <a
+              style={{ display: "inline-flex", gap: 6 }}
+              href={`/login?returnTo=${encodeURIComponent(
+                `${location.pathname}${location.search}`,
+              )}`}
+            >
+              <LoginOutlined /> Login
+            </a>
+          ) : (
+            <Link to="/me" style={{ display: "inline-flex", gap: 6 }}>
+              <Avatar
+                src={currentUser?.avatar || undefined}
+                size="small"
+                className="profileImage"
+              />{" "}
+              {currentUser?.name}
+            </Link>
+          ),
+        },
+      ]}
+    />
   );
-};
+}

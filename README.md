@@ -97,3 +97,16 @@ docker compose --profile app down
 ```
 
 Production requires `SERVER_URL`, `DB_CONNECTION`, `MONGO_DB`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET`. Startup fails if the public URL is not HTTPS, the Better Auth secret is too short, or Google credentials are missing/placeholders.
+
+## Production deployment and rollback
+
+Pushing to the `release` branch builds and publishes an immutable container
+tagged with the full commit SHA. The workflow also updates the `production`
+alias, but Azure deploys the immutable SHA tag so the running version is
+unambiguous.
+
+To roll back, run the **Deploy production** workflow manually against the
+`release` branch and enter the full 40-character commit SHA from a previous
+successful deployment as `image_tag`. The workflow verifies that image exists,
+deploys it directly, and reruns the production Google authentication smoke
+check.

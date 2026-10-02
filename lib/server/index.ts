@@ -17,7 +17,7 @@ import { ensureLoggedIn } from 'connect-ensure-login';
 import MongoStoreFactory from 'connect-mongo';
 import { Profile } from 'passport';
 import cors from 'cors';
-import { User } from './_graphql/types';
+import { User, UserRole } from './_graphql/types';
 import { ExpressContext } from 'apollo-server-express/dist/ApolloServer';
 import { AuthDirective } from './schemaDirectives/auth';
 import { setupSSR } from './ssr';
@@ -52,6 +52,7 @@ const start = async () => {
     const dbConnection = process.env.DB_CONNECTION;
     const googleClientId = process.env.GOOGLE_CLIENT_ID;
     const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const localAuthEnabled = !isProd && process.env.LOCAL_AUTH_ENABLED === 'true';
     const port = process.env.PORT ? parseInt(process.env.PORT) : 8000;
     const mongoConnection = await MongoClient.connect(dbConnection, { useNewUrlParser: true, useUnifiedTopology: true });
     const mongodb = mongoConnection.db(process.env.MONGO_DB);
@@ -117,7 +118,7 @@ const start = async () => {
     });
 
     // Example admin server side route
-    app.get("/admin", ensureLoggedIn('/auth/google'), (req, res) => {
+    app.get("/admin", ensureLoggedIn('/login'), (req, res) => {
       res.send('Admin eyes only!');
     });
     
@@ -127,15 +128,75 @@ const start = async () => {
       const url_parts = returnTo ? url.parse(returnTo) : null;
       const path = url_parts ? url_parts.pathname : "";
       const returnPath = clientUrl + path;
-      if (!req.isAuthenticated || !req.isAuthenticated()) {
-        if (req.session) {
-          (req.session as any).returnTo = returnPath;
-        }
-        return res.redirect(authUrl);
-      }
-      else {
+      if (req.isAuthenticated && req.isAuthenticated()) {
         return res.redirect(returnPath);
       }
+
+      if (localAuthEnabled) {
+        const encodedReturnPath = encodeURIComponent(path || "/");
+        return res.send(`
+          <!doctype html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <title>Local sign in</title>
+              <style>
+                body { font-family: system-ui, sans-serif; max-width: 480px; margin: 64px auto; padding: 0 24px; }
+                a { display: block; margin: 12px 0; padding: 12px 16px; color: white; background: #1890ff; border-radius: 4px; text-align: center; text-decoration: none; }
+              </style>
+            </head>
+            <body>
+              <h1>Local sign in</h1>
+              <p>Choose a role to test the authenticated experience.</p>
+              <a href="/auth/local?role=GENERAL&returnTo=${encodedReturnPath}">General user</a>
+              <a href="/auth/local?role=CONTRIBUTOR&returnTo=${encodedReturnPath}">Contributor</a>
+              <a href="/auth/local?role=ADMIN&returnTo=${encodedReturnPath}">Administrator</a>
+            </body>
+          </html>
+        `);
+      }
+
+      if (req.session) {
+        (req.session as any).returnTo = returnPath;
+      }
+      return res.redirect(authUrl);
+    });
+
+    app.get('/auth/local', (req, res, next) => {
+      if (!localAuthEnabled) {
+        return res.sendStatus(404);
+      }
+
+      const roleNames: Record<string, UserRole> = {
+        GENERAL: UserRole.General,
+        CONTRIBUTOR: UserRole.Contributor,
+        ADMIN: UserRole.Admin
+      };
+      const roleName = String(req.query.role || '').toUpperCase();
+      const role = roleNames[roleName];
+      if (!role) {
+        return res.status(400).send('Invalid local role');
+      }
+
+      const profile = {
+        id: `local-${roleName.toLowerCase()}`,
+        provider: 'local',
+        displayName: `Local ${roleName.toLowerCase()}`,
+        emails: [{ value: `local-${roleName.toLowerCase()}@idiomatically.test` }],
+        photos: [],
+        role
+      } as Profile & { role: UserRole };
+
+      req.login(profile, (error) => {
+        if (error) {
+          return next(error);
+        }
+
+        const returnTo = String(req.query.returnTo || '/');
+        const returnUrl = url.parse(returnTo);
+        return res.redirect(clientUrl + (returnUrl.pathname || '/'));
+      });
     });
 
     // GET /auth/google
@@ -243,9 +304,9 @@ function setupAuthAndSession(
     try {
       const user = await dataProviders.user.ensureUserFromLogin(profile as Profile, adminEmails)
       cb(null, user.id);
-    } catch {
-      console.error("Unable to serialize user");
-      cb(null, null);
+    } catch (error) {
+      console.error("Unable to serialize user", error);
+      cb(error);
     }
   });
   passport.deserializeUser(async (userId, cb) => {

@@ -5,6 +5,8 @@ import { UserModel } from '../model/types';
 import { DbUser, mapDbUser } from './mapping';
 import { escapeRegex } from './utils';
 
+type LocalProfile = Profile & { role?: UserRole };
+
 export class UserDataProvider {
 
     private userCollection: Collection<DbUser>;
@@ -70,9 +72,10 @@ export class UserDataProvider {
             throw new Error("Invalid user profile");
         }
 
-        const email = profile.emails && profile.emails[0].value ? profile.emails[0].value : null;
-        const avatar = profile.photos && profile.photos[0].value ? profile.photos[0].value : null;
+        const email = profile.emails?.[0]?.value || null;
+        const avatar = profile.photos?.[0]?.value || null;
         const providerType = <ProviderType>profile.provider.toUpperCase();
+        const localRole = profile.provider === 'local' ? (profile as LocalProfile).role : null;
 
         // Find this user given provider id
         let dbUser = await this.userCollection.findOne({ 'providers.externalId': { $eq: profile.id } });
@@ -83,6 +86,9 @@ export class UserDataProvider {
 
             dbUser.name = profile.displayName;
             dbUser.avatar = avatar;
+            if (localRole) {
+                dbUser.role = localRole;
+            }
             if (providerToUpdate) {
                 providerToUpdate.email = email;
                 providerToUpdate.name = profile.displayName;
@@ -104,7 +110,7 @@ export class UserDataProvider {
             dbUser = {
                 name: profile.displayName,
                 avatar: avatar,
-                role: email && this.isHarcodedSuperUser(email, adminEmails) ? UserRole.Admin : UserRole.General,
+                role: localRole || (email && this.isHarcodedSuperUser(email, adminEmails) ? UserRole.Admin : UserRole.General),
                 providers: [{
                     email: email,
                     externalId: profile.id,

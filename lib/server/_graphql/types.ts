@@ -198,7 +198,8 @@ export type PageInfo = {
 
 export enum ProviderType {
   Google = 'GOOGLE',
-  Facebook = 'FACEBOOK'
+  Facebook = 'FACEBOOK',
+  Local = 'LOCAL'
 }
 
 export type Query = {

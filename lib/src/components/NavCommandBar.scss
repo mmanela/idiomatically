@@ -15,6 +15,10 @@
   }
 
   .ant-menu-item {
+    & > a > .anticon {
+      margin-right: 6px;
+    }
+
     .ant-btn {
       padding-left: 0;
       padding-right: 0;

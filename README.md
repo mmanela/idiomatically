@@ -48,7 +48,9 @@ npm run dev
 
 Open http://localhost:3000. The `dev` command starts MongoDB with Docker Compose, then runs the API on port 8000 and the React client on port 3000 with live reload.
 
-The committed development configuration is enough to browse and edit local data. Google sign-in is disabled by default. To test authentication or optional integrations, copy `lib/.env.example.local` to `lib/.env.development.local` and add the relevant credentials.
+The committed development configuration includes a local sign-in page with General, Contributor, and Administrator roles. It uses the same Passport session and authorization paths as production without contacting an external identity provider. Production continues to use Google OAuth.
+
+To test the real Google OAuth flow or optional integrations, copy `lib/.env.example.local` to `lib/.env.development.local`, set `LOCAL_AUTH_ENABLED=false`, and add the relevant credentials. Add `http://localhost:8000/auth/google/callback` to the Google OAuth client's authorized redirect URIs. Google permits localhost callback URLs for development, so ngrok is not required.
 
 Useful commands:
 

@@ -46,6 +46,7 @@ export default gql`
   enum ProviderType {
     GOOGLE
     FACEBOOK
+    LOCAL
   } 
 
   type Login @auth(requires: ADMIN) {

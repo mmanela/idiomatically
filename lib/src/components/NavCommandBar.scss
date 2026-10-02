@@ -16,8 +16,13 @@
   .ant-menu-item {
     a {
       align-items: center;
+      color: rgba(0, 0, 0, 0.65);
       display: inline-flex;
       gap: 6px;
+
+      &:hover {
+        color: #1890ff;
+      }
     }
 
     .ant-btn {

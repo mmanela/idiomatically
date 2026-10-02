@@ -6,6 +6,7 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import "antd/dist/reset.css";
 import type { Route } from "./+types/root";
 import { DEFAULT_PAGE_TITLE } from "./constants";
 

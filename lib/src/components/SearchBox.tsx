@@ -66,6 +66,7 @@ export function SearchBox(props: SearchBoxProps) {
         aria-label="Language"
         value={selectedLanguage}
         className="languageSelect"
+        size="large"
         classNames={{ popup: { root: "languageOptionContainer" } }}
         onChange={props.onLanguageChange}
         options={languages.map((language) => ({

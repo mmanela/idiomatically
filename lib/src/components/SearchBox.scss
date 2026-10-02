@@ -4,14 +4,29 @@
 
   .idiomSearchBox {
     flex: 1;
+
+    .ant-input-search-btn {
+      border-bottom-right-radius: 0 !important;
+      border-top-right-radius: 0 !important;
+    }
   }
 
   .languageSelect {
-    width: 150px;
+    background-color: #1890ff !important;
+    border: 1px solid #1890ff !important;
+    border-bottom-left-radius: 0 !important;
+    border-left-color: #0069cc !important;
+    border-top-left-radius: 0 !important;
+    width: 100px;
 
-    .ant-select-selector {
-      border-bottom-left-radius: 0;
-      border-top-left-radius: 0;
+    .ant-select-content,
+    .ant-select-input {
+      background-color: transparent !important;
+      color: white !important;
+    }
+
+    .ant-select-suffix {
+      color: white !important;
     }
   }
 }

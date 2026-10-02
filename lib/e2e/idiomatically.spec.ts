@@ -112,22 +112,71 @@ test('public navigation is readable and consistently spaced', async ({ page }) =
     const main = document.querySelector('main')!.getBoundingClientRect();
     const footer = document.querySelector('footer.mainFooter')!.getBoundingClientRect();
     const title = document.querySelector('header h1')!;
+    const subtitle = document.querySelector('header h2')!;
+    const navigation = document.querySelector('.navCommandBar')!.getBoundingClientRect();
+    const searchControls = document.querySelector('.idiomSearchControls')!.getBoundingClientRect();
+    const languageSelect = document.querySelector('.languageSelect')!.getBoundingClientRect();
+    const languageSelector = document.querySelector('.languageSelect')!;
+    const homeLink = document.querySelector('.navCommandBar a')!;
+    const searchButton = document.querySelector('.ant-input-search-btn')!;
+    const titleStyles = window.getComputedStyle(title);
+    const subtitleStyles = window.getComputedStyle(subtitle);
+    const searchButtonStyles = window.getComputedStyle(searchButton);
     return {
       background: window.getComputedStyle(document.body).backgroundColor,
+      bodyMargin: window.getComputedStyle(document.body).margin,
       container: { x: container.x, width: container.width },
       headerBottom: header.bottom,
       mainTop: main.top,
       mainBottom: main.bottom,
       footerTop: footer.top,
-      titleFontSize: Number.parseFloat(window.getComputedStyle(title).fontSize)
+      title: {
+        bottom: title.getBoundingClientRect().bottom,
+        fontFamily: titleStyles.fontFamily,
+        fontSize: Number.parseFloat(titleStyles.fontSize),
+        fontWeight: titleStyles.fontWeight,
+        marginTop: titleStyles.marginTop
+      },
+      subtitle: {
+        bottom: subtitle.getBoundingClientRect().bottom,
+        fontWeight: subtitleStyles.fontWeight,
+        marginTop: subtitleStyles.marginTop,
+        top: subtitle.getBoundingClientRect().top
+      },
+      navigation: { bottom: navigation.bottom, top: navigation.top },
+      searchControls: {
+        top: searchControls.top,
+        width: searchControls.width
+      },
+      languageSelectWidth: languageSelect.width,
+      languageSelectorBackground: window.getComputedStyle(languageSelector).backgroundColor,
+      homeLinkColor: window.getComputedStyle(homeLink).color,
+      searchButtonRightRadius: {
+        bottom: searchButtonStyles.borderBottomRightRadius,
+        top: searchButtonStyles.borderTopRightRadius
+      }
     };
   });
   expect(layout.background).toBe('rgb(230, 236, 240)');
+  expect(layout.bodyMargin).toBe('0px');
   expect(layout.container.width).toBe(800);
   expect(layout.container.x).toBeGreaterThan(0);
   expect(layout.mainTop).toBeGreaterThanOrEqual(layout.headerBottom - 1);
   expect(layout.footerTop).toBeGreaterThanOrEqual(layout.mainBottom - 1);
-  expect(layout.titleFontSize).toBeGreaterThanOrEqual(40);
+  expect(layout.title.fontFamily).toContain('Lucida Sans');
+  expect(layout.title.fontSize).toBe(42);
+  expect(layout.title.fontWeight).toBe('500');
+  expect(layout.title.marginTop).toBe('0px');
+  expect(layout.subtitle.fontWeight).toBe('500');
+  expect(layout.subtitle.marginTop).toBe('0px');
+  expect(layout.subtitle.top).toBeCloseTo(layout.title.bottom + 2, 0);
+  expect(layout.navigation.top).toBeCloseTo(layout.subtitle.bottom + 15, 0);
+  expect(layout.searchControls.top).toBeCloseTo(layout.navigation.bottom, 0);
+  expect(layout.searchControls.width).toBe(700);
+  expect(layout.languageSelectWidth).toBe(100);
+  expect(layout.languageSelectorBackground).toBe('rgb(24, 144, 255)');
+  expect(layout.homeLinkColor).toBe('rgba(0, 0, 0, 0.65)');
+  expect(layout.searchButtonRightRadius).toEqual({ bottom: '0px', top: '0px' });
 
   await expect(page.getByRole('searchbox', { name: 'Find an idiom' })).toBeVisible();
   await expect(page.getByRole('combobox', { name: 'Language' })).toBeVisible();

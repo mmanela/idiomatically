@@ -70,7 +70,7 @@ export function NavCommandBar() {
           ) : (
             <Link to="/me" style={{ display: "inline-flex", gap: 6 }}>
               <Avatar
-                src={currentUser?.avatar || ""}
+                src={currentUser?.avatar || undefined}
                 size="small"
                 className="profileImage"
               />{" "}

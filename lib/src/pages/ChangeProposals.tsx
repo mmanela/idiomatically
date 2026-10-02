@@ -103,7 +103,14 @@ type ProposalBody = {
 type EditableIdiomKey = "idiomToCreate" | "idiomToUpdate";
 type EditableIdiomField = keyof EditableIdiom;
 
-function getProposalTypeLabel(proposalType: string) {
+function getProposalTypeLabel(
+  proposalType: string,
+  isRelatedIdiomCreation = false,
+) {
+  if (proposalType === "CreateIdiom" && isRelatedIdiomCreation) {
+    return "Create related idiom";
+  }
+
   const labels: Record<string, string> = {
     AddEquivalent: "Add equivalent",
     CreateIdiom: "Create idiom",
@@ -266,6 +273,13 @@ export const ChangeProposalItem: React.FunctionComponent<
     ? `/idioms/${proposal.readOnlySlug}`
     : "";
   const title = proposal.readOnlyTitle || `Proposal ${proposal.id.slice(-6)}`;
+  const isRelatedIdiomCreation =
+    proposal.readOnlyType === "CreateIdiom" &&
+    Boolean(
+      proposalBody?.equivalentId ||
+        proposalBody?.readOnlyEquivalentTitle ||
+        proposalBody?.readOnlyEquivalentSlug,
+    );
 
   const updateIdiomField = (
     field: EditableIdiomField,
@@ -332,7 +346,10 @@ export const ChangeProposalItem: React.FunctionComponent<
       }
       extra={
         <Tag className="proposalType" color="orange">
-          {getProposalTypeLabel(proposal.readOnlyType)}
+          {getProposalTypeLabel(
+            proposal.readOnlyType,
+            isRelatedIdiomCreation,
+          )}
         </Tag>
       }
     >
@@ -362,6 +379,10 @@ export const ChangeProposalItem: React.FunctionComponent<
           description={error}
           showIcon
         />
+      )}
+
+      {isRelatedIdiomCreation && proposalBody && (
+        <RelatedIdiomCreationSummary proposalBody={proposalBody} />
       )}
 
       {editableIdiomKey && editableIdiom ? (
@@ -481,6 +502,36 @@ export const ChangeProposalItem: React.FunctionComponent<
     </Card>
   );
 };
+
+function RelatedIdiomCreationSummary({
+  proposalBody,
+}: {
+  proposalBody: ProposalBody;
+}) {
+  const relatedTitle =
+    proposalBody.readOnlyEquivalentTitle || "the existing idiom";
+  const relatedIdiom = proposalBody.readOnlyEquivalentSlug ? (
+    <Link to={`/idioms/${proposalBody.readOnlyEquivalentSlug}`}>
+      {relatedTitle}
+    </Link>
+  ) : (
+    relatedTitle
+  );
+
+  return (
+    <Alert
+      className="proposalRelationship"
+      type="info"
+      title="Related idiom"
+      description={
+        <Paragraph>
+          This new idiom will be added as an equivalent of {relatedIdiom}.
+        </Paragraph>
+      }
+      showIcon
+    />
+  );
+}
 
 function ProposalDecisionSummary({
   proposalBody,

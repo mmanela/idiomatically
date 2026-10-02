@@ -20,8 +20,13 @@
     }
 
     .proposalError,
+    .proposalRelationship,
     .proposalDecisionSummary {
       margin-bottom: 20px;
+    }
+
+    .proposalRelationship .ant-typography {
+      margin-bottom: 0;
     }
 
     .proposalFieldGrid {

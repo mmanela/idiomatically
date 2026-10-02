@@ -378,6 +378,55 @@ test('administrator can review and accept a public idiom proposal', async ({ pag
   await expect(page.getByText('Reviewed: To share the same understanding.')).toBeVisible();
 });
 
+test('related idiom proposal links to the existing idiom', async ({ page }) => {
+  await loginAs(page, 'Administrator');
+  const sourceIdiom = await createEnglishIdiomViaApi(
+    page,
+    'Piece of cake',
+    'Something that is easy.'
+  );
+  await logout(page);
+
+  await loginAs(page, 'General user');
+  await page.goto(`/idioms/${sourceIdiom.slug}`);
+  await page.locator('.addNew').getByRole('button', { name: 'Add idiom' }).click();
+  await expect(page).toHaveURL(`/new?equivalentIdiomId=${sourceIdiom.id}`);
+  await addEnglishIdiom(
+    page,
+    'Easy as pie',
+    'Something that is straightforward to accomplish.'
+  );
+  await page.getByRole('dialog').getByRole('button', { name: 'OK' }).click();
+  await logout(page);
+
+  await loginAs(page, 'Administrator');
+  await page.goto('/admin/proposals');
+  const proposal = page.locator('.changeProposalItem');
+  await expect(proposal.locator('.proposalType')).toHaveText(
+    'Create related idiom'
+  );
+  const relationship = proposal.locator('.proposalRelationship');
+  await expect(relationship).toContainText(
+    'This new idiom will be added as an equivalent of Piece of cake.'
+  );
+  const relatedIdiomLink = relationship.getByRole('link', {
+    name: 'Piece of cake'
+  });
+  await expect(relatedIdiomLink).toHaveAttribute(
+    'href',
+    `/idioms/${sourceIdiom.slug}`
+  );
+
+  await proposal.getByRole('button', { name: 'Accept Proposal' }).click();
+  await proposal.getByRole('button', { name: 'Are you sure?' }).click();
+  await expect(proposal).not.toBeVisible();
+
+  await page.goto(`/idioms/${sourceIdiom.slug}`);
+  await expect(
+    page.locator('.equivalentList').getByText('Easy as pie', { exact: true })
+  ).toBeVisible();
+});
+
 test('all-language filter lists non-English idioms without a render loop', async ({ page }) => {
   await loginAs(page, 'Administrator');
   await addIdiom(page, {

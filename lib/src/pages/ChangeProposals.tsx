@@ -1,22 +1,43 @@
-import * as React from "react";
 import {
+  CheckCircleFilled,
+  ClockCircleFilled,
+  CloseCircleFilled,
+} from "@ant-design/icons";
+import { gql } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client/react";
+import {
+  Alert,
+  Button,
+  Card,
+  Descriptions,
+  Empty,
+  Form,
+  Input,
+  Pagination,
+  Space,
+  Spin,
+  Tag,
+  Typography,
+} from "antd";
+import * as React from "react";
+import { Link, Navigate } from "react-router";
+import {
+  AcceptChangeProposalMutation,
+  AcceptChangeProposalMutationVariables,
   GetChangeProposalsQuery,
   GetChangeProposalsQueryVariables,
   GetChangeProposalsQuery_idiomChangeProposals_edges,
-  AcceptChangeProposalMutation,
-  AcceptChangeProposalMutationVariables,
+  OperationStatus,
   RejectChangeProposalMutation,
   RejectChangeProposalMutationVariables,
-  OperationStatus
 } from "../__generated__/types";
-import "./ChangeProposals.scss";
-import { CheckCircleFilled, ClockCircleFilled, CloseCircleFilled } from '@ant-design/icons';
-import { Alert, Spin, List, Empty, Button } from "antd";
-import { Link, Navigate } from "react-router";
-import { gql } from "@apollo/client";
-import { useMutation, useQuery } from "@apollo/client/react";
-import { JsonEditor } from "../components/JsonEditor";
+import { CountrySelect } from "../components/CountrySelect";
+import { LanguageSelect } from "../components/LanguageSelect";
 import { useCurrentUser } from "../components/withCurrentUser";
+import "./ChangeProposals.scss";
+
+const { Text, Paragraph } = Typography;
+const { TextArea } = Input;
 
 export const getChangeProposalsQuery = gql`
   query GetChangeProposalsQuery($filter: String, $limit: Int, $cursor: String) {
@@ -58,16 +79,67 @@ export const rejectChangeProposalQuery = gql`
   }
 `;
 
+type EditableIdiom = {
+  title?: string;
+  description?: string;
+  languageKey?: string;
+  countryKeys?: string[];
+  transliteration?: string;
+  literalTranslation?: string;
+  tags?: string[];
+};
+
+type ProposalBody = {
+  type?: string;
+  idiomId?: string;
+  equivalentId?: string;
+  idiomToCreate?: EditableIdiom;
+  idiomToUpdate?: EditableIdiom;
+  readOnlyEquivalentTitle?: string;
+  readOnlyEquivalentSlug?: string;
+  [key: string]: unknown;
+};
+
+type EditableIdiomKey = "idiomToCreate" | "idiomToUpdate";
+type EditableIdiomField = keyof EditableIdiom;
+
+function getProposalTypeLabel(proposalType: string) {
+  const labels: Record<string, string> = {
+    AddEquivalent: "Add equivalent",
+    CreateIdiom: "Create idiom",
+    DeleteEquivalent: "Remove equivalent",
+    DeleteIdiom: "Delete idiom",
+    UpdateIdiom: "Update idiom",
+  };
+  return labels[proposalType] || proposalType;
+}
+
+function parseProposalBody(body: string) {
+  try {
+    const value = JSON.parse(body) as unknown;
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      throw new Error("Proposal body must be an object");
+    }
+
+    return { body: value as ProposalBody, error: null };
+  } catch (error) {
+    return {
+      body: null,
+      error: error instanceof Error ? error.message : "Invalid proposal body",
+    };
+  }
+}
+
 export interface ChangeProposalsProps {
   filter: string | null;
 }
 
-export const ChangeProposals: React.FunctionComponent<ChangeProposalsProps> = props => {
-  const { filter } = props;
+export const ChangeProposals: React.FunctionComponent<
+  ChangeProposalsProps
+> = ({ filter }) => {
   const { currentUser, currentUserLoading } = useCurrentUser();
   const [pageNumber, setPageNumber] = React.useState(1);
   const pageSize = 10;
-  const currCursorNum = (pageNumber - 1) * pageSize;
   const loadResult = useQuery<
     GetChangeProposalsQuery,
     GetChangeProposalsQueryVariables
@@ -75,39 +147,70 @@ export const ChangeProposals: React.FunctionComponent<ChangeProposalsProps> = pr
     variables: {
       filter,
       limit: pageSize,
-      cursor: currCursorNum.toString(),
+      cursor: String((pageNumber - 1) * pageSize),
     },
   });
 
   if (currentUserLoading) {
-    return <Spin spinning delay={500} className="middleSpinner" description="Loading..." />;
-  } else if (!currentUser) {
+    return (
+      <Spin
+        spinning
+        delay={500}
+        className="middleSpinner"
+        description="Loading..."
+      />
+    );
+  }
+  if (!currentUser) {
     return <Navigate to="/" replace />;
   }
+  if (loadResult.loading) {
+    return (
+      <Spin
+        delay={500}
+        className="middleSpinner"
+        description="Loading..."
+      />
+    );
+  }
+  if (loadResult.error) {
+    return (
+      <Alert
+        title="Error"
+        type="error"
+        description={loadResult.error.message}
+        showIcon
+      />
+    );
+  }
 
-  if (loadResult.loading) return <Spin delay={500} className="middleSpinner" description="Loading..." />;
-  if (loadResult.error) return <Alert title="Error" type="error" description={loadResult.error.message} showIcon />;
-  if (!loadResult.data || loadResult.data.idiomChangeProposals.edges.length <= 0) {
-    return <Empty image={Empty.PRESENTED_IMAGE_DEFAULT} description="Could not find a needle in a haystack." />;
+  const proposals = loadResult.data?.idiomChangeProposals;
+  if (!proposals?.edges.length) {
+    return (
+      <Empty
+        image={Empty.PRESENTED_IMAGE_DEFAULT}
+        description="Could not find a needle in a haystack."
+      />
+    );
   }
 
   return (
-    <List
-      className="changeProposalsListView"
-      itemLayout="vertical"
-      size="default"
-      pagination={{
-        defaultCurrent: pageNumber,
-        onChange: (page: number, size?: number) => {
-          setPageNumber(page);
-        },
-        pageSize: pageSize,
-        hideOnSinglePage: true,
-        total: loadResult.data.idiomChangeProposals.totalCount
-      }}
-      dataSource={loadResult.data.idiomChangeProposals.edges}
-      renderItem={item => <ChangeProposalItem item={item} />}
-    />
+    <div className="changeProposalsListView">
+      <div className="proposalList">
+        {proposals.edges.map((item) => (
+          <ChangeProposalItem key={item.node.id} item={item} />
+        ))}
+      </div>
+      {proposals.totalCount > pageSize && (
+        <Pagination
+          current={pageNumber}
+          onChange={setPageNumber}
+          pageSize={pageSize}
+          total={proposals.totalCount}
+          showSizeChanger={false}
+        />
+      )}
+    </div>
   );
 };
 
@@ -115,9 +218,16 @@ interface ChangeProposalItemProps {
   item: GetChangeProposalsQuery_idiomChangeProposals_edges;
 }
 
-export const ChangeProposalItem: React.FunctionComponent<ChangeProposalItemProps> = props => {
-  const proposal = props.item.node;
-  const [proposalBody, setProposalBody] = React.useState(proposal.body);
+export const ChangeProposalItem: React.FunctionComponent<
+  ChangeProposalItemProps
+> = ({ item }) => {
+  const proposal = item.node;
+  const initialProposal = React.useMemo(
+    () => parseProposalBody(proposal.body),
+    [proposal.body],
+  );
+  const [proposalBody, setProposalBody] =
+    React.useState<ProposalBody | null>(initialProposal.body);
   const [confirmAccept, setConfirmAccept] = React.useState(false);
   const [confirmReject, setConfirmReject] = React.useState(false);
   const [acceptProposalMutation, acceptProposalMutationResult] = useMutation<
@@ -130,91 +240,287 @@ export const ChangeProposalItem: React.FunctionComponent<ChangeProposalItemProps
   >(rejectChangeProposalQuery);
 
   const proposalResolved =
-    (acceptProposalMutationResult &&
-      acceptProposalMutationResult.data &&
-      acceptProposalMutationResult.data.acceptIdiomChangeProposal.status === OperationStatus.SUCCESS) ||
-    (rejectProposalMutationResult &&
-      rejectProposalMutationResult.data &&
-      rejectProposalMutationResult.data.rejectIdiomChangeProposal.status === OperationStatus.SUCCESS);
-
+    acceptProposalMutationResult.data?.acceptIdiomChangeProposal.status ===
+      OperationStatus.SUCCESS ||
+    rejectProposalMutationResult.data?.rejectIdiomChangeProposal.status ===
+      OperationStatus.SUCCESS;
   if (proposalResolved) {
     return null;
   }
 
   const error =
-    (acceptProposalMutationResult && acceptProposalMutationResult.error && acceptProposalMutationResult.error.message) ||
-    (rejectProposalMutationResult && rejectProposalMutationResult.error && rejectProposalMutationResult.error.message);
+    acceptProposalMutationResult.error?.message ||
+    rejectProposalMutationResult.error?.message ||
+    initialProposal.error;
+  const editableIdiomKey: EditableIdiomKey | null =
+    proposal.readOnlyType === "CreateIdiom"
+      ? "idiomToCreate"
+      : proposal.readOnlyType === "UpdateIdiom"
+        ? "idiomToUpdate"
+        : null;
+  const editableIdiom =
+    editableIdiomKey && proposalBody
+      ? proposalBody[editableIdiomKey]
+      : null;
+  const proposalUrl = proposal.readOnlySlug
+    ? `/idioms/${proposal.readOnlySlug}`
+    : "";
+  const title = proposal.readOnlyTitle || `Proposal ${proposal.id.slice(-6)}`;
 
-  const title = proposal.readOnlyTitle ? `${proposal.id} - ${proposal.readOnlyTitle}` : proposal.id;
-  const url = proposal.readOnlySlug ? `/idioms/${proposal.readOnlySlug}` : "";
-  const extra = <span className="proposalType">{proposal.readOnlyType}</span>;
-  const json = JSON.parse(proposalBody || proposal.body || "{}");
-
-  const editor = <JsonEditor json={json} onChangeText={code => setProposalBody(code)} />;
+  const updateIdiomField = (
+    field: EditableIdiomField,
+    value: string | string[],
+  ) => {
+    if (!editableIdiomKey) {
+      return;
+    }
+    setProposalBody((current) =>
+      current
+        ? {
+            ...current,
+            [editableIdiomKey]: {
+              ...(current[editableIdiomKey] || {}),
+              [field]: value,
+            },
+          }
+        : current,
+    );
+  };
 
   const acceptProposal = () => {
-    if (confirmAccept) {
-      acceptProposalMutation({ variables: { id: proposal.id, body: proposalBody } });
-      setConfirmAccept(false);
-    } else {
+    if (!confirmAccept) {
       setConfirmAccept(true);
+      setConfirmReject(false);
+      return;
     }
+    if (proposalBody) {
+      acceptProposalMutation({
+        variables: {
+          id: proposal.id,
+          body: JSON.stringify(proposalBody),
+        },
+      });
+    }
+    setConfirmAccept(false);
   };
 
   const rejectProposal = () => {
-    if (confirmReject) {
-      rejectProposalMutation({ variables: { id: proposal.id } });
-      setConfirmReject(false);
-    } else {
+    if (!confirmReject) {
       setConfirmReject(true);
+      setConfirmAccept(false);
+      return;
     }
+    rejectProposalMutation({ variables: { id: proposal.id } });
+    setConfirmReject(false);
   };
 
   const resetProposal = () => {
     setConfirmAccept(false);
     setConfirmReject(false);
-    setProposalBody(proposal.body);
+    setProposalBody(parseProposalBody(proposal.body).body);
   };
 
-  const acceptAction = (
-    <span>
-      <Button onClick={acceptProposal} type="link">
-        <CheckCircleFilled className="acceptButton proposalButton" />
-        {confirmAccept ? "Are you sure?" : "Accept Proposal"}
-      </Button>
-    </span>
-  );
-
-  const rejectAction = (
-    <span>
-      <Button onClick={rejectProposal} type="link">
-        <CloseCircleFilled className="rejectButton proposalButton" />
-        {confirmReject ? "Are you sure?" : "Reject Proposal"}
-      </Button>
-    </span>
-  );
-
-  const resetAction = (
-    <span>
-      <Button onClick={resetProposal} type="link">
-        <ClockCircleFilled className="resetButton proposalButton" />
-        Reset Proposal
-      </Button>
-    </span>
-  );
-
-  const itemDescription = (
-    <div>
-      {extra} <span>By {proposal.readOnlyCreatedBy}</span>
-    </div>
-  );
-
   return (
-    <List.Item key={proposal.id} className="changeProposalItem" actions={[acceptAction, rejectAction, resetAction]}>
-      <List.Item.Meta className="itemDetails" title={<Link to={url}>{title}</Link>} description={itemDescription} />
+    <Card
+      className="changeProposalItem"
+      title={
+        proposalUrl ? (
+          <Link to={proposalUrl}>{title}</Link>
+        ) : (
+          <span>{title}</span>
+        )
+      }
+      extra={
+        <Tag className="proposalType" color="orange">
+          {getProposalTypeLabel(proposal.readOnlyType)}
+        </Tag>
+      }
+    >
+      <Descriptions
+        className="proposalMetadata"
+        column={{ xs: 1, sm: 2 }}
+        size="small"
+        items={[
+          {
+            key: "submittedBy",
+            label: "Submitted by",
+            children: proposal.readOnlyCreatedBy,
+          },
+          {
+            key: "proposalId",
+            label: "Proposal ID",
+            children: <Text copyable>{proposal.id}</Text>,
+          },
+        ]}
+      />
 
-      {error && <Alert title="Error" type="error" description={error} showIcon />}
-      {editor}
-    </List.Item>
+      {error && (
+        <Alert
+          className="proposalError"
+          title="Unable to review proposal"
+          type="error"
+          description={error}
+          showIcon
+        />
+      )}
+
+      {editableIdiomKey && editableIdiom ? (
+        <Form className="proposalEditor" layout="vertical">
+          <div className="proposalFieldGrid">
+            <Form.Item label="Title">
+              <Input
+                aria-label="Proposed title"
+                value={editableIdiom.title || ""}
+                onChange={(event) =>
+                  updateIdiomField("title", event.target.value)
+                }
+              />
+            </Form.Item>
+            <Form.Item label="Language">
+              <LanguageSelect
+                value={editableIdiom.languageKey || ""}
+                onChange={(languageKey) =>
+                  updateIdiomField("languageKey", languageKey)
+                }
+              />
+            </Form.Item>
+            <Form.Item label="Countries">
+              <CountrySelect
+                languageKey={editableIdiom.languageKey}
+                value={editableIdiom.countryKeys || []}
+                onChange={(countryKeys) =>
+                  updateIdiomField("countryKeys", countryKeys)
+                }
+              />
+            </Form.Item>
+            <Form.Item
+              label="Tags"
+              extra="Separate multiple tags with commas."
+            >
+              <Input
+                aria-label="Proposed tags"
+                value={(editableIdiom.tags || []).join(", ")}
+                onChange={(event) =>
+                  updateIdiomField(
+                    "tags",
+                    event.target.value
+                      .split(",")
+                      .map((tag) => tag.trim())
+                      .filter(Boolean),
+                  )
+                }
+              />
+            </Form.Item>
+            <Form.Item label="Transliteration">
+              <Input
+                aria-label="Proposed transliteration"
+                value={editableIdiom.transliteration || ""}
+                onChange={(event) =>
+                  updateIdiomField("transliteration", event.target.value)
+                }
+              />
+            </Form.Item>
+            <Form.Item label="Literal translation">
+              <Input
+                aria-label="Proposed literal translation"
+                value={editableIdiom.literalTranslation || ""}
+                onChange={(event) =>
+                  updateIdiomField(
+                    "literalTranslation",
+                    event.target.value,
+                  )
+                }
+              />
+            </Form.Item>
+          </div>
+          <Form.Item label="Description">
+            <TextArea
+              aria-label="Proposed description"
+              autoSize={{ minRows: 3, maxRows: 8 }}
+              value={editableIdiom.description || ""}
+              onChange={(event) =>
+                updateIdiomField("description", event.target.value)
+              }
+            />
+          </Form.Item>
+        </Form>
+      ) : (
+        <ProposalDecisionSummary
+          proposalBody={proposalBody}
+          proposalType={proposal.readOnlyType}
+        />
+      )}
+
+      <Space className="proposalActions" wrap>
+        <Button
+          className="acceptAction"
+          disabled={!proposalBody}
+          loading={acceptProposalMutationResult.loading}
+          onClick={acceptProposal}
+          type={confirmAccept ? "primary" : "default"}
+        >
+          <CheckCircleFilled className="acceptButton proposalButton" />
+          {confirmAccept ? "Are you sure?" : "Accept Proposal"}
+        </Button>
+        <Button
+          className="rejectAction"
+          danger={confirmReject}
+          loading={rejectProposalMutationResult.loading}
+          onClick={rejectProposal}
+        >
+          <CloseCircleFilled className="rejectButton proposalButton" />
+          {confirmReject ? "Are you sure?" : "Reject Proposal"}
+        </Button>
+        {editableIdiomKey && (
+          <Button className="resetAction" onClick={resetProposal}>
+            <ClockCircleFilled className="resetButton proposalButton" />
+            Reset changes
+          </Button>
+        )}
+      </Space>
+    </Card>
   );
 };
+
+function ProposalDecisionSummary({
+  proposalBody,
+  proposalType,
+}: {
+  proposalBody: ProposalBody | null;
+  proposalType: string;
+}) {
+  if (!proposalBody) {
+    return null;
+  }
+
+  const descriptions: Record<string, string> = {
+    DeleteIdiom: "Delete this idiom.",
+    AddEquivalent: "Link this idiom to the related idiom.",
+    DeleteEquivalent: "Remove the link to the related idiom.",
+  };
+
+  return (
+    <Alert
+      className="proposalDecisionSummary"
+      type={proposalType === "DeleteIdiom" ? "warning" : "info"}
+      title={descriptions[proposalType] || "Review this proposal."}
+      description={
+        proposalBody.readOnlyEquivalentTitle ? (
+          <Paragraph>
+            Related idiom:{" "}
+            {proposalBody.readOnlyEquivalentSlug ? (
+              <Link
+                to={`/idioms/${proposalBody.readOnlyEquivalentSlug}`}
+              >
+                {proposalBody.readOnlyEquivalentTitle}
+              </Link>
+            ) : (
+              proposalBody.readOnlyEquivalentTitle
+            )}
+          </Paragraph>
+        ) : undefined
+      }
+      showIcon
+    />
+  );
+}

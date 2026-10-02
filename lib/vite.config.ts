@@ -15,4 +15,9 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
+  server: {
+    hmr: {
+      port: Number(process.env.VITE_HMR_PORT || 24678),
+    },
+  },
 });

@@ -359,8 +359,15 @@ test('administrator can review and accept a public idiom proposal', async ({ pag
   await page.goto('/admin/proposals');
   const proposal = page.locator('.changeProposalItem');
   await expect(proposal.getByRole('link', { name: /On the same page/ })).toBeVisible();
-  await expect(proposal.locator('.proposalType')).toHaveText('CreateIdiom');
-  await expect(proposal.getByText('By Local general', { exact: true })).toBeVisible();
+  await expect(proposal.locator('.proposalType')).toHaveText('Create idiom');
+  await expect(proposal.getByText('Submitted by', { exact: true })).toBeVisible();
+  await expect(proposal.getByText('Local general', { exact: true })).toBeVisible();
+  await expect(proposal.locator('.proposalEditor')).toHaveCount(1);
+  await expect(page.locator('.jsoneditor-react-container')).toHaveCount(0);
+  await expect(proposal.getByLabel('Proposed title')).toHaveValue('On the same page');
+  await proposal.getByLabel('Proposed description').fill(
+    'Reviewed: To share the same understanding.'
+  );
 
   await page.getByRole('button', { name: 'Accept Proposal' }).click();
   await page.getByRole('button', { name: 'Are you sure?' }).click();
@@ -368,7 +375,7 @@ test('administrator can review and accept a public idiom proposal', async ({ pag
 
   await page.goto('/idioms/on-the-same-page');
   await expect(page.getByRole('heading', { name: 'On the same page' })).toBeVisible();
-  await expect(page.getByText('To share the same understanding.')).toBeVisible();
+  await expect(page.getByText('Reviewed: To share the same understanding.')).toBeVisible();
 });
 
 test('all-language filter lists non-English idioms without a render loop', async ({ page }) => {
@@ -471,13 +478,15 @@ test('administrator can accept a General-user update proposal', async ({ page })
   await loginAs(page, 'Administrator');
   await page.goto('/admin/proposals');
   const proposal = page.locator('.changeProposalItem');
-  await expect(proposal.locator('.proposalType')).toHaveText('UpdateIdiom');
+  await expect(proposal.locator('.proposalType')).toHaveText('Update idiom');
+  await expect(proposal.getByLabel('Proposed title')).toHaveValue('Bite the proverbial bullet');
+  await proposal.getByLabel('Proposed title').fill('Bite the reviewed bullet');
   await proposal.getByRole('button', { name: 'Accept Proposal' }).click();
   await proposal.getByRole('button', { name: 'Are you sure?' }).click();
   await expect(proposal).not.toBeVisible();
 
   await page.goto('/idioms/bite-the-bullet');
-  await expect(page.getByRole('heading', { name: 'Bite the proverbial bullet' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Bite the reviewed bullet' })).toBeVisible();
   await expect(page.getByText('To face a difficult or unpleasant task.')).toBeVisible();
 });
 

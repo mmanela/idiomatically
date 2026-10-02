@@ -1,20 +1,43 @@
-
 .changeProposalsListView {
+  .proposalList {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
   .changeProposalItem {
-    .itemDetails {
-      h4 {
-        font-size: 15px;
-        margin-bottom: 0px;
-      }
+    .ant-card-head-title {
+      font-size: 1rem;
     }
+
     .proposalType {
       font-weight: bold;
-      color: darkorange;
-      margin-right: 10px;
+    }
+
+    .proposalMetadata {
+      margin-bottom: 20px;
+    }
+
+    .proposalError,
+    .proposalDecisionSummary {
+      margin-bottom: 20px;
+    }
+
+    .proposalFieldGrid {
+      display: grid;
+      gap: 0 16px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .proposalActions {
+      border-top: 1px solid #f0f0f0;
+      margin-top: 8px;
+      padding-top: 16px;
     }
 
     .proposalButton {
-      margin-right: 8px;
+      margin-right: 6px;
       color: #333;
     }
 
@@ -24,9 +47,11 @@
     .rejectButton {
       color: red;
     }
-
-    li {
-      padding: 0px;
-    }
+  }
 }
+
+@media screen and (max-width: 600px) {
+  .changeProposalsListView .changeProposalItem .proposalFieldGrid {
+    grid-template-columns: 1fr;
+  }
 }

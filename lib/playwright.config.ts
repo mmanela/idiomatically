@@ -40,7 +40,8 @@ export default defineConfig({
       GOOGLE_CLIENT_SECRET: 'e2e-disabled',
       LOCAL_AUTH_ENABLED: 'true',
       ADMIN_EMAILS: '',
-      BETTER_AUTH_SECRET: 'idiomatically-e2e-secret-at-least-thirty-two-characters'
+      BETTER_AUTH_SECRET: 'idiomatically-e2e-secret-at-least-thirty-two-characters',
+      VITE_HMR_PORT: '24679'
     }
   }
 });

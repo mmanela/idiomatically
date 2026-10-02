@@ -277,6 +277,47 @@ test('Better Auth generates a valid Google OAuth request', async ({ page }) => {
   expect(response.headers()['set-cookie']).toContain('idiomatically.');
 });
 
+test('sitemap reflects newly created idioms without a server restart', async ({ page }) => {
+  const initialResponse = await page.request.get('/sitemap.xml', {
+    headers: { 'Accept-Encoding': 'identity' }
+  });
+  expect(initialResponse.ok()).toBeTruthy();
+  expect(initialResponse.headers()['content-type']).toContain('application/xml');
+  expect(initialResponse.headers()['content-encoding']).toBeUndefined();
+  expect(initialResponse.headers()['cache-control']).toBe(
+    'public, max-age=0, must-revalidate'
+  );
+  const initialSitemap = await initialResponse.text();
+  expect(initialSitemap).toContain('<loc>http://localhost:3100/idioms</loc>');
+  expect(initialSitemap).not.toContain('/idioms/fresh-from-the-sitemap');
+
+  await loginAs(page, 'Administrator');
+  await createEnglishIdiomViaApi(
+    page,
+    'Fresh from the sitemap',
+    'An entry created after the sitemap was first requested.'
+  );
+
+  const updatedResponse = await page.request.get('/sitemap.xml');
+  expect(updatedResponse.ok()).toBeTruthy();
+  const updatedSitemap = await updatedResponse.text();
+  expect(updatedSitemap).toContain(
+    '<loc>http://localhost:3100/idioms/fresh-from-the-sitemap</loc>'
+  );
+  expect(updatedSitemap).toMatch(
+    /<lastmod>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z<\/lastmod>/
+  );
+  expect(updatedSitemap).toContain(
+    '<loc>http://localhost:3100/idioms?lang=en</loc>'
+  );
+
+  const robotsResponse = await page.request.get('/robots.txt');
+  expect(robotsResponse.ok()).toBeTruthy();
+  expect(await robotsResponse.text()).toContain(
+    'Sitemap: https://idiomatically.net/sitemap.xml'
+  );
+});
+
 test('local authentication supports role selection and logout', async ({ browser, page }) => {
   await page.goto(`${appUrl}/login?returnTo=/me`);
   await expect(page.getByRole('link', { name: 'General user' })).toBeVisible();

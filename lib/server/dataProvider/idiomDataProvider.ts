@@ -458,13 +458,16 @@ export class IdiomDataProvider {
     }
 
     async getLanguagesWithIdioms(): Promise<LanguageModel[]> {
-        const usedLanguages = await this.idiomCollection.distinct("languageKey") as string[];
+        const usedLanguages = await this.idiomCollection.distinct("languageKey", this.activeOnly()) as string[];
         return usedLanguages.map(x => Languages.Instance.getLangugage(x)).sort((a, b) => a.languageName.localeCompare(b.languageName));
     }
 
     async getAllIdioms(): Promise<MinimalIdiom[]> {
         const query = this.activeOnly();
-        const slugs = await this.idiomCollection.find(query, { projection: { slug: 1, updatedAt: 1, createdAt: 1 } }).toArray();
+        const slugs = await this.idiomCollection
+            .find(query, { projection: { slug: 1, updatedAt: 1, createdAt: 1 } })
+            .sort({ slug: 1 })
+            .toArray();
         return slugs.map(x => {
             return {
                 slug: x.slug,

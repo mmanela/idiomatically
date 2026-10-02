@@ -5,7 +5,6 @@ import dotenv from "dotenv";
 import express from "express";
 import { MongoClient } from "mongodb";
 import { SitemapStream, streamToPromise } from "sitemap";
-import { createGzip } from "node:zlib";
 import { createAuth, getLocalIdentity } from "./auth";
 import { createGraphqlRuntime, getCurrentUser } from "./graphql";
 import { initializeJobs, stopJobs } from "./jobScheduler";
@@ -207,21 +206,15 @@ app.get("/social/idioms/:slug.png", async (req, res, next) => {
   }
 });
 
-let sitemap: Buffer | null = null;
 app.get("/sitemap.xml", async (req, res) => {
-  res.header("Content-Type", "application/xml");
-  res.header("Content-Encoding", "gzip");
-  if (sitemap) {
-    return res.send(sitemap);
-  }
-
   const sitemapStream = new SitemapStream({ hostname: serverUrl });
-  const pipeline = sitemapStream.pipe(createGzip());
   const idioms = await dataProviders.idiom.getAllIdioms();
   const languages = await dataProviders.idiom.getLanguagesWithIdioms();
 
   sitemapStream.write({ url: "/", priority: 1 });
   sitemapStream.write({ url: "/about", priority: 0.8 });
+  sitemapStream.write({ url: "/idioms", priority: 0.9 });
+  sitemapStream.write({ url: "/idioms?lang=all", priority: 0.8 });
   for (const idiom of idioms) {
     sitemapStream.write({
       url: `/idioms/${idiom.slug}`,
@@ -237,7 +230,11 @@ app.get("/sitemap.xml", async (req, res) => {
   }
   sitemapStream.end();
 
-  sitemap = await streamToPromise(pipeline);
+  const sitemap = await streamToPromise(sitemapStream);
+  res.set({
+    "Cache-Control": "public, max-age=0, must-revalidate",
+    "Content-Type": "application/xml; charset=utf-8",
+  });
   return res.send(sitemap);
 });
 

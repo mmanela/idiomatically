@@ -12,7 +12,7 @@ import { CountryFlag } from "./CountryFlag";
 const geoUrl = "/static/world-110m.json";
 
 interface MapChartProps extends WorldIdiomMapProps {
-    setSelectedCountry: (tooltip: (SelectedCountry | null)) => void;
+    setSelectedCountry: (tooltip: SelectedCountry | null) => void;
     idiomMap: Map<string, IdiomMapInfo[]>;
 }
 
@@ -30,11 +30,24 @@ type IdiomMapInfo = {
 
 const MapChart: React.FunctionComponent<MapChartProps> = (props) => {
 
-    const handleSelection = (idioms: IdiomMapInfo[] | undefined, ISO_A2: any, NAME: any) => {
-        if (idioms) {
+    const handleSelection = (
+        event: React.MouseEvent<SVGPathElement>,
+        idioms: IdiomMapInfo[] | undefined,
+        countryKey: string,
+        countryName: string
+    ) => {
+        const map = event.currentTarget.ownerSVGElement;
+        if (idioms && map) {
+            const bounds = map.getBoundingClientRect();
+            const x = event.clientX - bounds.left;
+            const y = event.clientY - bounds.top;
             props.setSelectedCountry({
-                countryKey: ISO_A2,
-                countryName: NAME
+                countryKey,
+                countryName,
+                horizontalEdge: x <= bounds.width / 2 ? "left" : "right",
+                verticalEdge: y <= bounds.height / 2 ? "top" : "bottom",
+                x: x <= bounds.width / 2 ? x + 12 : bounds.width - x + 12,
+                y: y <= bounds.height / 2 ? y + 12 : bounds.height - y + 12
             });
         }
     }
@@ -55,11 +68,15 @@ const MapChart: React.FunctionComponent<MapChartProps> = (props) => {
                                     strokeWidth="0.8px"
                                     key={geo.rsmKey}
                                     geography={geo}
-                                    onMouseDown={() => {
-                                        handleSelection(idioms, ISO_A2, NAME);
+                                    aria-label={NAME}
+                                    onMouseDown={(event) => {
+                                        handleSelection(event, idioms, ISO_A2, NAME);
                                     }}
-                                    onMouseEnter={() => {
-                                        handleSelection(idioms, ISO_A2, NAME);
+                                    onMouseEnter={(event) => {
+                                        handleSelection(event, idioms, ISO_A2, NAME);
+                                    }}
+                                    onMouseMove={(event) => {
+                                        handleSelection(event, idioms, ISO_A2, NAME);
                                     }}
                                     onMouseLeave={() => {
                                         props.setSelectedCountry(null);
@@ -80,7 +97,11 @@ const MapChart: React.FunctionComponent<MapChartProps> = (props) => {
 
 type SelectedCountry = {
     countryKey: string,
-    countryName: string
+    countryName: string,
+    horizontalEdge: "left" | "right",
+    verticalEdge: "top" | "bottom",
+    x: number,
+    y: number
 }
 
 const WorldMap: React.FunctionComponent<WorldIdiomMapProps> = (props) => {
@@ -116,9 +137,20 @@ const WorldMap: React.FunctionComponent<WorldIdiomMapProps> = (props) => {
     }
 
     return (
-        <div>
+        <div className="worldIdiomMap">
             <MapChart idiomMap={idiomMap} {...newProps} />
-            {toolTipContent && <div className="worldIdiomTooltip">{toolTipContent}</div>}
+            {toolTipContent && selectedCountry && (
+                <div
+                    className="worldIdiomTooltip"
+                    role="tooltip"
+                    style={{
+                        [selectedCountry.horizontalEdge]: selectedCountry.x,
+                        [selectedCountry.verticalEdge]: selectedCountry.y
+                    }}
+                >
+                    {toolTipContent}
+                </div>
+            )}
         </div>
     );
 }

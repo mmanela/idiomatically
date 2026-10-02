@@ -336,6 +336,40 @@ test('all-language filter lists non-English idioms without a render loop', async
   });
   await expect(page).toHaveURL(/\/idioms\/die-koeel-is-deur-die-kerk$/);
 
+  await page.getByRole('tab', { name: 'Map' }).click();
+  const map = page.locator('.worldIdiomMap');
+  const southAfrica = map.locator('[aria-label="South Africa"]');
+  await expect(southAfrica).toBeVisible();
+  await southAfrica.hover();
+  const mapTooltip = page.getByRole('tooltip');
+  await expect(mapTooltip).toContainText('South Africa');
+  await expect(mapTooltip).toContainText('Afrikaans: Die koeël is deur die kerk');
+  const tooltipLayout = await page.evaluate(() => {
+    const mapBounds = document.querySelector('.worldIdiomMap')!.getBoundingClientRect();
+    const tooltip = document.querySelector('.worldIdiomTooltip')!;
+    const tooltipBounds = tooltip.getBoundingClientRect();
+    return {
+      map: {
+        bottom: mapBounds.bottom,
+        left: mapBounds.left,
+        right: mapBounds.right,
+        top: mapBounds.top
+      },
+      position: window.getComputedStyle(tooltip).position,
+      tooltip: {
+        bottom: tooltipBounds.bottom,
+        left: tooltipBounds.left,
+        right: tooltipBounds.right,
+        top: tooltipBounds.top
+      }
+    };
+  });
+  expect(tooltipLayout.position).toBe('absolute');
+  expect(tooltipLayout.tooltip.left).toBeGreaterThanOrEqual(tooltipLayout.map.left);
+  expect(tooltipLayout.tooltip.right).toBeLessThanOrEqual(tooltipLayout.map.right);
+  expect(tooltipLayout.tooltip.top).toBeGreaterThanOrEqual(tooltipLayout.map.top);
+  expect(tooltipLayout.tooltip.bottom).toBeLessThanOrEqual(tooltipLayout.map.bottom);
+
   await page.goto('/idioms?lang=af');
   await expect(page.getByText('Die koeël is deur die kerk')).toBeVisible();
   const languageFilter = page.getByRole('combobox', { name: 'Language' });

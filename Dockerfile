@@ -18,4 +18,4 @@ COPY --from=build /app/build ./build
 COPY --from=build /app/server.js ./server.js
 
 EXPOSE 80
-CMD ["npm", "start"]
+CMD ["node", "server.js"]

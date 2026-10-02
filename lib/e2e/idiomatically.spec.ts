@@ -18,6 +18,18 @@ async function loginAs(page: Page, role: 'General user' | 'Contributor' | 'Admin
   await page.goto(`${appUrl}/login?returnTo=/`);
   await page.getByRole('link', { name: role }).click();
   await expect(page).toHaveURL('http://localhost:3100/');
+  await waitForHydration(page);
+}
+
+async function waitForHydration(page: Page) {
+  await expect(page.locator('html')).toHaveAttribute('data-hydrated', 'true', {
+    timeout: 15_000
+  });
+}
+
+async function gotoHydrated(page: Page, url: string) {
+  await page.goto(url);
+  await waitForHydration(page);
 }
 
 async function logout(page: Page) {
@@ -103,10 +115,51 @@ async function addEnglishIdiom(page: Page, title: string, description: string) {
 }
 
 test('public navigation is readable and consistently spaced', async ({ page }) => {
-  await page.goto('/');
+  await gotoHydrated(page, '/');
 
   await expect(page.locator('#root > .container')).toBeVisible();
-  const layout = await page.evaluate(() => {
+  await expect.poll(async () => {
+    const currentLayout = await readLayout(page);
+    return currentLayout.background;
+  }, { timeout: 15_000 }).toBe('rgb(230, 236, 240)');
+  const layout = await readLayout(page);
+  expect(layout.background).toBe('rgb(230, 236, 240)');
+  expect(layout.bodyMargin).toBe('0px');
+  expect(layout.container.width).toBe(800);
+  expect(layout.container.x).toBeGreaterThan(0);
+  expect(layout.mainTop).toBeGreaterThanOrEqual(layout.headerBottom - 1);
+  expect(layout.footerTop).toBeGreaterThanOrEqual(layout.mainBottom - 1);
+  expect(layout.title.fontFamily).toContain('Lucida Sans');
+  expect(layout.title.fontSize).toBe(42);
+  expect(layout.title.fontWeight).toBe('500');
+  expect(layout.title.marginTop).toBe('0px');
+  expect(layout.subtitle.fontWeight).toBe('500');
+  expect(layout.subtitle.marginTop).toBe('0px');
+  expect(layout.subtitle.top).toBeCloseTo(layout.title.bottom + 2, 0);
+  expect(layout.navigation.top).toBeCloseTo(layout.subtitle.bottom + 15, 0);
+  expect(layout.searchControls.top).toBeCloseTo(layout.navigation.bottom, 0);
+  expect(layout.searchControls.width).toBe(700);
+  expect(layout.languageSelectWidth).toBeGreaterThanOrEqual(100);
+  expect(layout.languageSelectWidth).toBeLessThanOrEqual(220);
+  expect(layout.languageSelectorBackground).toBe('rgb(24, 144, 255)');
+  expect(layout.homeLinkColor).toBe('rgba(0, 0, 0, 0.65)');
+  expect(layout.searchButtonRightRadius).toEqual({ bottom: '0px', top: '0px' });
+
+  await expect(page.getByRole('searchbox', { name: 'Find an idiom' })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: 'Language' })).toBeVisible();
+
+  for (const name of ['Home', 'About', 'Login']) {
+    const link = page.getByRole('link', { name });
+    await expect(link).toBeVisible();
+    const linkGap = await link.evaluate(element =>
+      Number.parseFloat(window.getComputedStyle(element).columnGap)
+    );
+    expect(linkGap).toBeGreaterThan(0);
+  }
+});
+
+async function readLayout(page: Page) {
+  return page.evaluate(() => {
     const container = document.querySelector('#root > .container')!.getBoundingClientRect();
     const header = document.querySelector('header.ant-layout-header')!.getBoundingClientRect();
     const main = document.querySelector('main')!.getBoundingClientRect();
@@ -157,40 +210,7 @@ test('public navigation is readable and consistently spaced', async ({ page }) =
       }
     };
   });
-  expect(layout.background).toBe('rgb(230, 236, 240)');
-  expect(layout.bodyMargin).toBe('0px');
-  expect(layout.container.width).toBe(800);
-  expect(layout.container.x).toBeGreaterThan(0);
-  expect(layout.mainTop).toBeGreaterThanOrEqual(layout.headerBottom - 1);
-  expect(layout.footerTop).toBeGreaterThanOrEqual(layout.mainBottom - 1);
-  expect(layout.title.fontFamily).toContain('Lucida Sans');
-  expect(layout.title.fontSize).toBe(42);
-  expect(layout.title.fontWeight).toBe('500');
-  expect(layout.title.marginTop).toBe('0px');
-  expect(layout.subtitle.fontWeight).toBe('500');
-  expect(layout.subtitle.marginTop).toBe('0px');
-  expect(layout.subtitle.top).toBeCloseTo(layout.title.bottom + 2, 0);
-  expect(layout.navigation.top).toBeCloseTo(layout.subtitle.bottom + 15, 0);
-  expect(layout.searchControls.top).toBeCloseTo(layout.navigation.bottom, 0);
-  expect(layout.searchControls.width).toBe(700);
-  expect(layout.languageSelectWidth).toBeGreaterThanOrEqual(100);
-  expect(layout.languageSelectWidth).toBeLessThanOrEqual(220);
-  expect(layout.languageSelectorBackground).toBe('rgb(24, 144, 255)');
-  expect(layout.homeLinkColor).toBe('rgba(0, 0, 0, 0.65)');
-  expect(layout.searchButtonRightRadius).toEqual({ bottom: '0px', top: '0px' });
-
-  await expect(page.getByRole('searchbox', { name: 'Find an idiom' })).toBeVisible();
-  await expect(page.getByRole('combobox', { name: 'Language' })).toBeVisible();
-
-  for (const name of ['Home', 'About', 'Login']) {
-    const link = page.getByRole('link', { name });
-    await expect(link).toBeVisible();
-    const linkGap = await link.evaluate(element =>
-      Number.parseFloat(window.getComputedStyle(element).columnGap)
-    );
-    expect(linkGap).toBeGreaterThan(0);
-  }
-});
+}
 
 test('anonymous users are sent to local sign in before adding an idiom', async ({ page }) => {
   await page.goto('/new');
@@ -250,7 +270,7 @@ test('public idiom content is server rendered and client navigation stays hydrat
   expect(detailHtml).toContain('Read between the lines');
   expect(detailHtml).toContain('Find the hidden meaning.');
 
-  await page.goto('/idioms/read-between-the-lines');
+  await gotoHydrated(page, '/idioms/read-between-the-lines');
   await page.getByRole('link', { name: 'Home' }).click();
   await expect(page).toHaveURL('/');
   await expect(page.getByText('Read between the lines', { exact: true })).toBeVisible();
@@ -442,7 +462,7 @@ test('search and pagination preserve filters in deep links', async ({ page }) =>
     await createEnglishIdiomViaApi(page, `Test idiom ${String(index).padStart(2, '0')}`, `Description ${index}`);
   }
 
-  await page.goto('/idioms?lang=en');
+  await gotoHydrated(page, '/idioms?lang=en');
   await expect(page.getByText('Test idiom 01', { exact: true })).toBeVisible();
   await page.getByTitle('2').click();
   await expect(page).toHaveURL('/idioms?lang=en&page=2');

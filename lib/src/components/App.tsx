@@ -52,6 +52,10 @@ export default function App() {
     }
   }, [location.pathname]);
 
+  useEffect(() => {
+    document.documentElement.dataset.hydrated = "true";
+  }, []);
+
   return (
     <ConfigProvider theme={theme}>
       <Layout className="container">

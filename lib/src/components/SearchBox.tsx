@@ -36,6 +36,7 @@ export function SearchBox(props: SearchBoxProps) {
   useEffect(() => {
     setQuery(props.filter || "");
   }, [props.filter]);
+  const selectedLanguage = props.language || "en";
   const languages: GetLanguagesWithIdioms_languagesWithIdioms[] = [
     {
       languageKey: "all",
@@ -47,8 +48,16 @@ export function SearchBox(props: SearchBoxProps) {
       ? data.languagesWithIdioms
       : []),
   ];
-  const selectedLanguage =
-    props.language || getLanguageName(props.language) || "en";
+  if (!languages.some((language) => language.languageKey === selectedLanguage)) {
+    const selectedLanguageName =
+      getLanguageName(selectedLanguage) || selectedLanguage;
+    languages.push({
+      languageKey: selectedLanguage,
+      languageName: selectedLanguageName,
+      languageNativeName: selectedLanguageName,
+      __typename: "Language",
+    });
+  }
   const selectedLanguageLabel =
     languages.find(
       (language) => language.languageKey === selectedLanguage,

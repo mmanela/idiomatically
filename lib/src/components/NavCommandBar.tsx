@@ -6,11 +6,16 @@ import {
 } from "@ant-design/icons";
 import { Avatar, Button, Menu } from "antd";
 import { Link, useLocation, useNavigate } from "react-router";
+import type { GetCurrentUser_me } from "../__generated__/types";
 import "./NavCommandBar.scss";
 import { useCurrentUser } from "./withCurrentUser";
 
-export function NavCommandBar() {
-  const { currentUser } = useCurrentUser();
+export function NavCommandBar({
+  initialCurrentUser,
+}: {
+  initialCurrentUser?: GetCurrentUser_me | null;
+}) {
+  const { currentUser } = useCurrentUser(initialCurrentUser);
   const location = useLocation();
   const navigate = useNavigate();
   const isLoggedIn = Boolean(currentUser);

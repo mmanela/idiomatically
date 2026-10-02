@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@ant-design/cssinjs": "^2.1.2",
     "@ant-design/icons": "^6.3.4",
     "@apollo/client": "^4.3.1",
     "@apollo/server": "^5.5.1",
@@ -26,7 +27,6 @@
     "express": "^5.2.1",
     "graphql": "^16.11.0",
     "graphql-tag": "^2.12.7",
-    "isbot": "^5.1.36",
     "jsoneditor": "^10.4.3",
     "marked": "^18.0.14",
     "mongodb": "^7.7.0",

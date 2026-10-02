@@ -3,14 +3,19 @@ import { ConfigProvider, Layout } from "antd";
 import { useCallback, useEffect } from "react";
 import {
   Link,
+  type LoaderFunctionArgs,
   Outlet,
+  useLoaderData,
   useLocation,
   useNavigate,
 } from "react-router";
+import type { GetCurrentUser } from "../__generated__/types";
 import { DEFAULT_PAGE_TITLE } from "../constants";
+import { graphqlRequest } from "../graphql.server";
 import "./App.scss";
 import { NavCommandBar } from "./NavCommandBar";
 import { SearchBox } from "./SearchBox";
+import { getCurrentUserQuery } from "./withCurrentUser";
 
 const { Header, Footer, Content } = Layout;
 
@@ -22,7 +27,16 @@ const theme = {
   },
 };
 
+export function loader({ request }: LoaderFunctionArgs) {
+  return graphqlRequest<GetCurrentUser, Record<string, never>>(
+    request,
+    getCurrentUserQuery,
+    {},
+  );
+}
+
 export default function App() {
+  const initialCurrentUser = useLoaderData<typeof loader>().me;
   const location = useLocation();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
@@ -64,7 +78,7 @@ export default function App() {
             <Link to="/">Idiomatically</Link>
           </h1>
           <h2>Explore idioms translated across languages and countries</h2>
-          <NavCommandBar />
+          <NavCommandBar initialCurrentUser={initialCurrentUser} />
           <SearchBox
             onSearch={(value) => updateSearchParams(queryLang, value)}
             onLanguageChange={(value) =>

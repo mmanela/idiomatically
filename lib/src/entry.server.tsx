@@ -1,19 +1,18 @@
+import {
+  createCache,
+  extractStyle,
+  StyleProvider,
+} from "@ant-design/cssinjs";
 import { ApolloProvider } from "@apollo/client/react";
-import { PassThrough } from "node:stream";
-import { createReadableStreamFromReadable } from "@react-router/node";
-import { isbot } from "isbot";
 import type {
   EntryContext,
   RouterContextProvider,
 } from "react-router";
 import { ServerRouter } from "react-router";
-import type { RenderToPipeableStreamOptions } from "react-dom/server";
-import { renderToPipeableStream } from "react-dom/server";
+import { renderToReadableStream } from "react-dom/server";
 import { createApolloClient } from "./apollo";
 
-export const streamTimeout = 5_000;
-
-export default function handleRequest(
+export default async function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
@@ -28,53 +27,32 @@ export default function handleRequest(
   }
 
   const client = createApolloClient(request);
-
-  return new Promise<Response>((resolve, reject) => {
-    let shellRendered = false;
-    const userAgent = request.headers.get("user-agent");
-    const readyOption: keyof RenderToPipeableStreamOptions =
-      (userAgent && isbot(userAgent)) || routerContext.isSpaMode
-        ? "onAllReady"
-        : "onShellReady";
-    let timeoutId: ReturnType<typeof setTimeout> | undefined = setTimeout(
-      () => abort(),
-      streamTimeout + 1_000,
-    );
-
-    const { pipe, abort } = renderToPipeableStream(
+  const styleCache = createCache();
+  const stream = await renderToReadableStream(
+    <StyleProvider cache={styleCache}>
       <ApolloProvider client={client}>
         <ServerRouter context={routerContext} url={request.url} />
-      </ApolloProvider>,
-      {
-        [readyOption]() {
-          shellRendered = true;
-          const body = new PassThrough({
-            final(callback) {
-              clearTimeout(timeoutId);
-              timeoutId = undefined;
-              callback();
-            },
-          });
-          const stream = createReadableStreamFromReadable(body);
-          responseHeaders.set("Content-Type", "text/html");
-          pipe(body);
-          resolve(
-            new Response(stream, {
-              headers: responseHeaders,
-              status: responseStatusCode,
-            }),
-          );
-        },
-        onShellError(error: unknown) {
-          reject(error);
-        },
-        onError(error: unknown) {
-          responseStatusCode = 500;
-          if (shellRendered) {
-            console.error(error);
-          }
-        },
+      </ApolloProvider>
+    </StyleProvider>,
+    {
+      onError(error: unknown) {
+        responseStatusCode = 500;
+        console.error(error);
       },
+    },
+  );
+  await stream.allReady;
+  const html = await new Response(stream).text();
+  const antStyles = extractStyle(styleCache);
+  const document = `${html.startsWith("<!DOCTYPE") ? "" : "<!DOCTYPE html>"}${html}`
+    .replace(
+      /<meta name="antd-style-insertion-point"[^>]*>/,
+      antStyles,
     );
+
+  responseHeaders.set("Content-Type", "text/html");
+  return new Response(document, {
+    headers: responseHeaders,
+    status: responseStatusCode,
   });
 }

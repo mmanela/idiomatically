@@ -158,6 +158,26 @@ test('public navigation is readable and consistently spaced', async ({ page }) =
   }
 });
 
+test('server-rendered page is styled before JavaScript hydration', async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+
+  try {
+    await page.goto(appUrl);
+    await expect(page.locator('#root > .container')).toBeVisible();
+    const firstPaint = await readLayout(page);
+    expect(firstPaint.background).toBe('rgb(230, 236, 240)');
+    expect(firstPaint.bodyMargin).toBe('0px');
+    expect(firstPaint.container.width).toBe(800);
+    expect(firstPaint.title.fontSize).toBe(42);
+    expect(firstPaint.navigation.height).toBe(47);
+    expect(firstPaint.searchControls.height).toBeCloseTo(40, 0);
+    expect(firstPaint.mainTop).toBeCloseTo(firstPaint.headerBottom, 0);
+  } finally {
+    await context.close();
+  }
+});
+
 async function readLayout(page: Page) {
   return page.evaluate(() => {
     const container = document.querySelector('#root > .container')!.getBoundingClientRect();
@@ -196,8 +216,13 @@ async function readLayout(page: Page) {
         marginTop: subtitleStyles.marginTop,
         top: subtitle.getBoundingClientRect().top
       },
-      navigation: { bottom: navigation.bottom, top: navigation.top },
+      navigation: {
+        bottom: navigation.bottom,
+        height: navigation.height,
+        top: navigation.top
+      },
       searchControls: {
+        height: searchControls.height,
         top: searchControls.top,
         width: searchControls.width
       },
@@ -221,7 +246,7 @@ test('anonymous users are sent to local sign in before adding an idiom', async (
   await expect(page.getByRole('link', { name: 'Administrator' })).toBeVisible();
 });
 
-test('local authentication supports role selection and logout', async ({ page }) => {
+test('local authentication supports role selection and logout', async ({ browser, page }) => {
   await page.goto(`${appUrl}/login?returnTo=/me`);
   await expect(page.getByRole('link', { name: 'General user' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Contributor' })).toBeVisible();
@@ -232,6 +257,17 @@ test('local authentication supports role selection and logout', async ({ page })
   await expect(page.getByRole('heading', { name: 'Local admin' })).toBeVisible();
   await expect(page.getByText('Ardent Admin')).toBeVisible();
 
+  const serverRenderedContext = await browser.newContext({
+    javaScriptEnabled: false,
+    storageState: await page.context().storageState()
+  });
+  const serverRenderedPage = await serverRenderedContext.newPage();
+  await serverRenderedPage.goto(appUrl);
+  await expect(serverRenderedPage.getByRole('button', { name: 'Add an idiom' })).toBeVisible();
+  await expect(serverRenderedPage.getByRole('link', { name: 'Local admin' })).toBeVisible();
+  await expect(serverRenderedPage.getByRole('link', { name: 'Login' })).toHaveCount(0);
+  await serverRenderedContext.close();
+
   for (const navigationItem of [
     page.getByRole('button', { name: 'Add an idiom' }),
     page.getByRole('link', { name: 'Local admin' })
@@ -241,6 +277,18 @@ test('local authentication supports role selection and logout', async ({ page })
     );
     expect(gap).toBe(6);
   }
+  const navigationCenters = await page.evaluate(() => {
+    const home = document.querySelector('.navCommandBar a')!.getBoundingClientRect();
+    const user = document.querySelector('.userMenuItem a')!.getBoundingClientRect();
+    const avatar = document.querySelector('.userMenuItem .profileImage')!.getBoundingClientRect();
+    return {
+      avatar: avatar.top + avatar.height / 2,
+      home: home.top + home.height / 2,
+      user: user.top + user.height / 2
+    };
+  });
+  expect(navigationCenters.user).toBeCloseTo(navigationCenters.home, 0);
+  expect(navigationCenters.avatar).toBeCloseTo(navigationCenters.home, 0);
 
   await page.getByRole('button', { name: 'Log out' }).click();
   await expect(page.getByRole('link', { name: 'Login' })).toBeVisible();

@@ -22,13 +22,18 @@ export type CurrentUserModel = {
 }
 
 
-export function useCurrentUser() {
+export function useCurrentUser(
+    initialCurrentUser?: GetCurrentUser_me | null
+) {
     const client = useApolloClient();
     const { data, loading } = useQuery<GetCurrentUser | null>(getCurrentUserQuery);
+    const hasInitialCurrentUser = initialCurrentUser !== undefined;
 
     return {
-        currentUser: data && data.me,
-        currentUserLoading: loading,
+        currentUser: loading && hasInitialCurrentUser
+            ? initialCurrentUser
+            : data && data.me,
+        currentUserLoading: loading && !hasInitialCurrentUser,
         resetOnLogout: async () => client.resetStore()
     }
 }

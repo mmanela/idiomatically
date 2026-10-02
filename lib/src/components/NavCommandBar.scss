@@ -9,16 +9,24 @@
   .navCommandBar {
     border-bottom: none;
     align-self: flex-start;
+    height: 47px;
     width: 100%;
     line-height: 46px;
   }
 
   .ant-menu-item {
+    .ant-menu-title-content {
+      align-items: center;
+      display: flex;
+      height: 100%;
+    }
+
     a {
       align-items: center;
       color: rgba(0, 0, 0, 0.65);
       display: inline-flex;
       gap: 6px;
+      height: 100%;
 
       &:hover {
         color: #1890ff;
@@ -36,5 +44,9 @@
         margin-left: 0;
       }
     }
+  }
+
+  .userMenuItem a {
+    line-height: 1;
   }
 }

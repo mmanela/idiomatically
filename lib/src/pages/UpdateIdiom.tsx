@@ -8,13 +8,14 @@ import {
 } from "../__generated__/types";
 import "./NewIdiom.scss";
 import { Typography, Alert, Spin, Form } from "antd";
-import { Redirect } from "react-router";
+import { Navigate } from "react-router";
 import { FULL_IDIOM_ENTRY } from "../fragments/fragments";
 import { getIdiomQuery } from "../fragments/getIdiom";
 import { commonFormItems } from "../components/commonFormItems";
 import { getErrorMessage, isAuthenticationError } from "../utilities/errorUtils";
 import { useCurrentUser } from "../components/withCurrentUser";
-import { useMutation, useQuery, MutationFunction, gql } from "@apollo/client";
+import { gql } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { PendingOperationNotification } from "../components/PendingOperationNotification";
 import { Store } from "antd/lib/form/interface";
 const { Title } = Typography;
@@ -50,6 +51,7 @@ export const updateIdiomQuery = gql`
 
 export interface UpdateIdiomProps {
   slug: string;
+  initialData: GetIdiomQuery;
 }
 
 const formItemLayout = {
@@ -68,9 +70,11 @@ export const UpdateIdiom: React.FunctionComponent<UpdateIdiomProps> = props => {
   const [updateIdiom, { data, error, loading }] = useMutation<UpdateIdiomMutation, UpdateIdiomMutationVariables>(
     updateIdiomQuery
   );
-  const idiomLoadInfo = useQuery<GetIdiomQuery, GetIdiomQueryVariables>(getIdiomQuery, {
-    variables: { slug: props.slug }
-  });
+  const idiomLoadInfo = {
+    data: props.initialData,
+    loading: false,
+    error: undefined,
+  };
 
   const [form] = Form.useForm();
   const onFinishFailed = async (
@@ -82,7 +86,6 @@ export const UpdateIdiom: React.FunctionComponent<UpdateIdiomProps> = props => {
 
   const onFinish = async (
     values: Store,
-    updateIdiom: MutationFunction<UpdateIdiomMutation, UpdateIdiomMutationVariables>,
     idiomId: string
   ) => {
 
@@ -103,30 +106,30 @@ export const UpdateIdiom: React.FunctionComponent<UpdateIdiomProps> = props => {
   const userNoLongerSignedIn = isAuthenticationError(error);
   const userNeedsToAuthenticate = (!currentUser && !currentUserLoading) || userNoLongerSignedIn;
   if (userNeedsToAuthenticate) {
-    window.location.href = `${process.env.REACT_APP_SERVER}/login?/idioms/${props.slug}/update`;
+    window.location.href = `/login?returnTo=/idioms/${props.slug}/update`;
     return <></>;
   }
 
   if (currentUserLoading) {
-    return <Spin spinning delay={500} className="middleSpinner" tip="Loading..." />;
+    return <Spin spinning delay={500} className="middleSpinner" description="Loading..." />;
   }
 
   if (idiomLoadInfo.loading) {
-    return <Spin delay={500} className="middleSpinner" tip="Loading..." />;
+    return <Spin delay={500} className="middleSpinner" description="Loading..." />;
   }
 
   if (idiomLoadInfo.error) {
-    return <Alert message="Error" type="error" description={error} showIcon />;
+    return <Alert title="Error" type="error" description={getErrorMessage(idiomLoadInfo.error)} showIcon />;
   }
 
   if (!idiomLoadInfo.data || !idiomLoadInfo.data.idiom) {
-    return <Alert message="Oops!" description="It looks like you went barking up the wrong tree." type="warning" showIcon />;
+    return <Alert title="Oops!" description="It looks like you went barking up the wrong tree." type="warning" showIcon />;
   }
 
   return (
     <div>
       <Title level={2}>Update an Idiom</Title>
-      {data && !loading && !error && data.updateIdiom.idiom && <Redirect to={`/idioms/${data.updateIdiom.idiom.slug}`} />}
+      {data && !loading && !error && data.updateIdiom.idiom && <Navigate to={`/idioms/${data.updateIdiom.idiom.slug}`} replace />}
       {data &&
         !loading &&
         !error &&
@@ -134,8 +137,8 @@ export const UpdateIdiom: React.FunctionComponent<UpdateIdiomProps> = props => {
           <PendingOperationNotification operationStatus={data.updateIdiom.status} redirect={`/idioms/${props.slug}`} />
         )}
 
-      {(loading || currentUserLoading) && <Spin className="middleSpinner" delay={500} spinning tip="Loading..." />}
-      {error && <Alert type="error" message={getErrorMessage(error)} showIcon />}
+      {(loading || currentUserLoading) && <Spin className="middleSpinner" delay={500} spinning description="Loading..." />}
+      {error && <Alert type="error" title={getErrorMessage(error)} showIcon />}
       <Form
         name="updateIdiom"
         initialValues={{
@@ -150,7 +153,7 @@ export const UpdateIdiom: React.FunctionComponent<UpdateIdiomProps> = props => {
         labelAlign="left"
         {...formItemLayout}
         onFinishFailed={onFinishFailed}
-        onFinish={store => onFinish(store, updateIdiom, idiomLoadInfo.data!.idiom!.id)}
+        onFinish={store => onFinish(store, idiomLoadInfo.data!.idiom!.id)}
       >
         {commonFormItems(loading, undefined, undefined, idiomLoadInfo.data.idiom)}
       </Form>

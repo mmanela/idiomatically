@@ -29,3 +29,5 @@ npm-debug.log*
 lib/.eslintcache
 lib/playwright-report/
 lib/test-results/
+lib/.react-router/
+lib/*.tsbuildinfo

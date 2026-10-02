@@ -10,12 +10,13 @@ import {
 import "./NewIdiom.scss";
 import { Typography, Alert, Spin, Form } from "antd";
 import { useState } from "react";
-import { Redirect } from "react-router";
+import { Navigate } from "react-router";
 import { FULL_IDIOM_ENTRY } from "../fragments/fragments";
 import { getIdiomQuery } from "../fragments/getIdiom";
 import { commonFormItems } from "../components/commonFormItems";
 import { getErrorMessage, isAuthenticationError } from "../utilities/errorUtils";
-import { MutationFunction, useMutation, useLazyQuery, gql } from "@apollo/client";
+import { gql } from "@apollo/client";
+import { useLazyQuery, useMutation } from "@apollo/client/react";
 import { useCurrentUser } from "../components/withCurrentUser";
 import { PendingOperationNotification } from "../components/PendingOperationNotification";
 import { IdiomRenderer } from "../components/IdiomRenderer";
@@ -88,7 +89,6 @@ export const NewIdiom: React.FunctionComponent<NewIdiomProps> = props => {
 
   const onFinish = async (
     values: Store,
-    createIdiom: MutationFunction<CreateIdiomMutation, CreateIdiomMutationVariables>,
     equivalentIdiom: FullIdiomEntry | null
   ) => {
     console.log("Received values of form: ", values);
@@ -109,12 +109,12 @@ export const NewIdiom: React.FunctionComponent<NewIdiomProps> = props => {
   const userNoLongerSignedIn = isAuthenticationError(error);
   const userNeedsToAuthenticate = (!currentUser && !currentUserLoading) || userNoLongerSignedIn;
   if (userNeedsToAuthenticate) {
-    window.location.href = `${process.env.REACT_APP_SERVER}/login?returnTo=/new`;
+    window.location.href = "/login?returnTo=/new";
     return <></>;
   }
 
   if (currentUserLoading) {
-    return <Spin spinning delay={500} className="middleSpinner" tip="Loading..." />;
+    return <Spin spinning delay={500} className="middleSpinner" description="Loading..." />;
   }
 
   let equivilentIdiom: FullIdiomEntry | null = null;
@@ -132,7 +132,7 @@ export const NewIdiom: React.FunctionComponent<NewIdiomProps> = props => {
         to write idioms from non-Latin alphabets in their native characters. Then provide an English translation of that idiom.
       </Paragraph>
       {data && data.createIdiom.idiom && data.createIdiom.idiom.slug && (
-        <Redirect to={`/idioms/${data.createIdiom.idiom.slug}`} />
+        <Navigate to={`/idioms/${data.createIdiom.idiom.slug}`} replace />
       )}
       {data &&
         !loading &&
@@ -141,8 +141,8 @@ export const NewIdiom: React.FunctionComponent<NewIdiomProps> = props => {
           <PendingOperationNotification operationStatus={data.createIdiom.status} redirect={`/idioms`} />
         )}
 
-      {(loading || currentUserLoading) && <Spin className="middleSpinner" delay={500} spinning tip="Loading..." />}
-      {error && <Alert type="error" message={getErrorMessage(error)} showIcon />}
+      {(loading || currentUserLoading) && <Spin className="middleSpinner" delay={500} spinning description="Loading..." />}
+      {error && <Alert type="error" title={getErrorMessage(error)} showIcon />}
       <Form
         form={form}
         initialValues={
@@ -152,7 +152,7 @@ export const NewIdiom: React.FunctionComponent<NewIdiomProps> = props => {
         }
         labelAlign="left" {...formItemLayout}
         onFinishFailed={onFinishFailed}
-        onFinish={store => onFinish(store, createIdiom, equivilentIdiom)}>
+        onFinish={store => onFinish(store, equivilentIdiom)}>
         {equivilentIdiom && (
           <Form.Item label="Add an equivalent idiom for" colon>
             <div className="equivalentEntry">
@@ -173,13 +173,13 @@ export const NewIdiom: React.FunctionComponent<NewIdiomProps> = props => {
     }
 
     if (equivalentLoadInfo.loading) {
-      return <Spin delay={500} className="middleSpinner" tip="Loading..." />;
+      return <Spin delay={500} className="middleSpinner" description="Loading..." />;
     }
     if (equivalentLoadInfo.error) {
-      return <Alert message="Error" type="error" description={error} showIcon />;
+      return <Alert title="Error" type="error" description={getErrorMessage(equivalentLoadInfo.error)} showIcon />;
     }
     if (!equivalentLoadInfo.data || !equivalentLoadInfo.data.idiom) {
-      return <Alert message="Oops!" description="It looks like you went barking up the wrong tree." type="warning" showIcon />;
+      return <Alert title="Oops!" description="It looks like you went barking up the wrong tree." type="warning" showIcon />;
     }
     equivilentIdiom = equivalentLoadInfo.data.idiom;
     return <>{renderForm}</>;

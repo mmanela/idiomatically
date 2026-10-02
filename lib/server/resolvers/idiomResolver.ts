@@ -81,7 +81,7 @@ export default {
                 return await context.dataProviders.idiom.computeEquivalentClosure();
             }
             else {
-                const isRunning = !!EquivalentClosureJob.running;
+                const isRunning = EquivalentClosureJob.isActive;
                 const nextRunDate = EquivalentClosureJob.nextDate();
                 return {
                     status: OperationStatus.Success,

@@ -9,10 +9,11 @@ services:
       NODE_ENV: development
       DB_CONNECTION: mongodb://mongo:27017
       SERVER_URL: http://127.0.0.1:8000
-      CLIENT_URL: http://127.0.0.1:8000
       MONGO_DB: idiomatically
       GOOGLE_CLIENT_ID: local-development-disabled
       GOOGLE_CLIENT_SECRET: local-development-disabled
+      LOCAL_AUTH_ENABLED: "true"
+      BETTER_AUTH_SECRET: idiomatically-compose-secret-at-least-thirty-two-characters
     ports:
       - "8000:8000"
     depends_on:

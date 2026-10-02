@@ -1,6 +1,4 @@
-$primaryColor1: #513b56;
-$secondaryColor1: #525174;
-$buttonColor: #348aa7;
+@use "variables" as *;
 
 body {
   font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande", "Lucida Sans Unicode", Geneva, Verdana, sans-serif;

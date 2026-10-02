@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import "./WorldIdiomMap.scss";
-import ReactTooltip from "react-tooltip";
 import {
     ZoomableGroup,
     ComposableMap,
@@ -10,7 +9,7 @@ import {
 import { GetIdiomQuery_idiom, GetIdiomQuery_idiom_equivalents, GetIdiomQuery_idiom_equivalents_language_countries, GetIdiomQuery_idiom_language_countries } from "../__generated__/types";
 import { CountryFlag } from "./CountryFlag";
 
-const geoUrl = `${process.env.REACT_APP_SERVER}/static/world-110m.json`;
+const geoUrl = "/static/world-110m.json";
 
 interface MapChartProps extends WorldIdiomMapProps {
     setSelectedCountry: (tooltip: (SelectedCountry | null)) => void;
@@ -42,12 +41,13 @@ const MapChart: React.FunctionComponent<MapChartProps> = (props) => {
 
     return (
         <>
-            <ComposableMap projection="geoMercator" data-tip="" projectionConfig={{ scale: 135 }}>
+            <ComposableMap projection="geoMercator" projectionConfig={{ scale: 135 }}>
                 <ZoomableGroup>
                     <Geographies geography={geoUrl}>
                         {({ geographies }) =>
                             geographies.map(geo => {
-                                const { NAME, ISO_A2 } = geo.properties;
+                                const properties = geo.properties as Record<string, string>;
+                                const { NAME, ISO_A2 } = properties;
                                 const idioms = props.idiomMap.get(ISO_A2);
                                 const hasIdioms = !!idioms;
                                 return <Geography
@@ -65,18 +65,8 @@ const MapChart: React.FunctionComponent<MapChartProps> = (props) => {
                                         props.setSelectedCountry(null);
                                     }}
                                     style={{
-                                        default: {
-                                            fill: hasIdioms ? "#513b56" : "#D6D6DA",
-                                            outline: "none"
-                                        },
-                                        hover: {
-                                            fill: hasIdioms ? "#354A1B" : "#D6D6DA",
-                                            outline: "none"
-                                        },
-                                        pressed: {
-                                            fill: hasIdioms ? "#354A1B" : "#D6D6DA",
-                                            outline: "none"
-                                        }
+                                        fill: hasIdioms ? "#513b56" : "#D6D6DA",
+                                        outline: "none"
                                     }}
                                 />;
                             })
@@ -95,22 +85,19 @@ type SelectedCountry = {
 
 const WorldMap: React.FunctionComponent<WorldIdiomMapProps> = (props) => {
     const [selectedCountry, setSelectedCountry] = useState<SelectedCountry | null>(null);
-    const [idiomMap, setIdiomMap] = useState<Map<string, IdiomMapInfo[]>>(new Map());
+    const idiomMap = useMemo(() => {
+        const result = new Map<string, IdiomMapInfo[]>();
+        ProcessIdiom(result, props.idiom);
+        for (const equivalentIdiom of props.idiom.equivalents) {
+            ProcessIdiom(result, equivalentIdiom);
+        }
+        return result;
+    }, [props.idiom]);
     const newProps = { setSelectedCountry: setSelectedCountry, ...props };
 
     const idiom = props.idiom;
 
-    // Convert idioms into a map for plotting on a ... map ;)
-    if (idiomMap.size === 0) {
-        const localIdiomMap: Map<string, IdiomMapInfo[]> = new Map();
-        ProcessIdiom(localIdiomMap, idiom);
-        for (const equivIdiom of idiom.equivalents) {
-            ProcessIdiom(localIdiomMap, equivIdiom);
-        }
-        setIdiomMap(localIdiomMap);
-    }
-
-    let toolTipContent: JSX.Element | null = null;
+    let toolTipContent: React.ReactNode = null;
     if (selectedCountry) {
         const idioms = idiomMap.get(selectedCountry?.countryKey);
         const country = idioms ? idioms[0].country : null;
@@ -131,7 +118,7 @@ const WorldMap: React.FunctionComponent<WorldIdiomMapProps> = (props) => {
     return (
         <div>
             <MapChart idiomMap={idiomMap} {...newProps} />
-            <ReactTooltip className="worldIdiomTooltip">{toolTipContent}</ReactTooltip>
+            {toolTipContent && <div className="worldIdiomTooltip">{toolTipContent}</div>}
         </div>
     );
 }

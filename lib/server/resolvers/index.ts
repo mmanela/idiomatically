@@ -2,7 +2,6 @@ import { mergeResolvers } from '@graphql-tools/merge';
 import userResolvers from './userResolver';
 import idiomResolvers from './idiomResolver';
 import languageResolvers from './languageResolver';
-import { IResolvers } from 'apollo-server-express';
 import idiomChangeProposalResolver from './idiomChangeProposalResolver';
 
-export default mergeResolvers([userResolvers, idiomResolvers, languageResolvers, idiomChangeProposalResolver]) as IResolvers<any, any>;
+export default mergeResolvers([userResolvers, idiomResolvers, languageResolvers, idiomChangeProposalResolver]);

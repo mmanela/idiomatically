@@ -4,7 +4,8 @@ import {
   GetCountriesQuery,
   GetCountriesQueryVariables
 } from "../__generated__/types";
-import { useLazyQuery, gql } from "@apollo/client";
+import { gql } from "@apollo/client";
+import { useLazyQuery } from "@apollo/client/react";
 import { useEffect } from "react";
 const { Option } = Select;
 

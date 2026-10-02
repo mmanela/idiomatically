@@ -1,44 +1,41 @@
 # Idiomatically
 
 [![](https://github.com/mmanela/idiomatically/workflows/Node%20CI/badge.svg)](https://github.com/mmanela/idiomatically/actions?workflow=Node+CI) [![Docker Image CI](https://github.com/mmanela/idiomatically/actions/workflows/dockerimage.yml/badge.svg?branch=release)](https://github.com/mmanela/idiomatically/actions/workflows/dockerimage.yml)
-## About 
-[Idiomatically](https://idiomatically.net/) is a site for exploring idioms across languages and locales. 
 
-Check out this [blog post](https://medium.com/@mmanela/idiomatically-net-bc428a8d498f) to learn more about the inspiration for Idiomatically.net.
+Idiomatically is a site for exploring and correlating idioms across languages and locales.
 
-### Search for idioms and filter by language
-![Idiomatically Homepage](images/homePage.png)
+## Architecture
 
+- React 19 and React Router 8 Framework Mode
+- Server-side rendering with hydrated client-side navigation
+- Express 5 serving the React application, GraphQL API, and authentication on one origin
+- Apollo Server 5 and Apollo Client 4
+- Better Auth with Google OAuth and MongoDB-backed sessions
+- MongoDB 7
+- Ant Design 6
+- Vite 8 and TypeScript 7
+- Playwright end-to-end characterization tests
 
-### Explore different ways to express an idiom in other languages and locales
-![Idiom Map](images/idiomMap.png)
-
-
-### Contribute or update idioms
-![Add idiom](images/addIdiom.png)
-
-
-## Technologies
-Idiomatically started as a side project to explore different technologies. I hope it serves as an example of how to combine these together into a functioning application. Some of the technologies used are
-
-- [TypeScript](https://www.typescriptlang.org/)
-- [React](https://reactjs.org/)
-- [React Router](https://reacttraining.com/react-router/)
-- [Apollo](https://www.apollographql.com/) (server and client) with Server Side Rendering
-- [GraphQL](https://graphql.org/)
-- [MongoDB](https://www.mongodb.com/) (using the [Azure CosmosDB API for MongoDB](https://docs.microsoft.com/en-us/azure/cosmos-db/mongodb-introduction))
-- [Node.js](https://nodejs.org/)
-- [Express](http://expressjs.com/)
-- [Passport.js](http://www.passportjs.org/) for authentication
-- [Ant Design](https://ant.design/) (UX Framework)
-- [Docker](https://www.docker.com/)
-- [GitHub Actions](https://github.com/features/actions) (Used to build and publish docker image to Azure WebApps)
+Public idiom list and detail routes load through the GraphQL API during server rendering, so their content is present in the initial HTML. Client-side navigation continues to use React Router without full-page reloads.
 
 ## Running locally
 
-Local development uses Node.js 22, npm, and Docker for MongoDB. Start Docker Desktop before running the app.
+Local development requires Node.js 22, npm, and MongoDB.
 
-### Quick start
+Start MongoDB with either Homebrew:
+
+```sh
+brew services start mongodb-community@7.0
+```
+
+or Docker:
+
+```sh
+cd lib
+npm run db:start
+```
+
+Then start the unified application server:
 
 ```sh
 cd lib
@@ -46,33 +43,40 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. The `dev` command starts MongoDB with Docker Compose, then runs the API on port 8000 and the React client on port 3000 with live reload.
+Open http://localhost:3000. Vite development middleware, React Router SSR, GraphQL, and authentication all run on that single origin.
 
-The committed development configuration includes a local sign-in page with General, Contributor, and Administrator roles. It uses the same Passport session and authorization paths as production without contacting an external identity provider. Production continues to use Google OAuth.
+The committed development configuration enables a local role picker for General, Contributor, and Administrator users. It exercises Better Auth sessions plus the application's real role and GraphQL authorization paths without contacting Google.
 
-To test the real Google OAuth flow or optional integrations, copy `lib/.env.example.local` to `lib/.env.development.local`, set `LOCAL_AUTH_ENABLED=false`, and add the relevant credentials. Add `http://localhost:8000/auth/google/callback` to the Google OAuth client's authorized redirect URIs. Google permits localhost callback URLs for development, so ngrok is not required.
+To test Google OAuth, copy `lib/.env.example.local` to `lib/.env.development.local`, set `LOCAL_AUTH_ENABLED=false`, and add Google credentials. Register this authorized redirect URI:
+
+```text
+http://localhost:3000/api/auth/callback/google
+```
+
+Google supports localhost callbacks, so ngrok is not required.
 
 Useful commands:
 
 ```sh
-npm run dev       # MongoDB + API + client
-npm run db:stop   # stop the local MongoDB container
-npm run check     # regenerate GraphQL types and create a production build
-npm run test:e2e  # run isolated Chromium end-to-end tests
+npm run dev       # unified development server
+npm run codegen   # regenerate GraphQL schema and typed artifacts
+npm run check     # React Router type generation, TypeScript, and production build
+npm run test:e2e  # isolated Chromium end-to-end suite
+npm run db:stop   # stop the Docker MongoDB service
 ```
 
-The end-to-end suite starts the API and client on ports 8100 and 3100, resets the `idiomatically-e2e` database before each test, and preserves screenshots, videos, and traces under `lib/test-results` when a test fails. Run `npx playwright install chromium` once if the browser is not already installed.
+The end-to-end suite starts the application on port 3100, resets the `idiomatically-e2e` database before every test, and stores failure traces under `lib/test-results`.
 
-If you use nvm, run `nvm use` from `lib/`. The repository also includes an asdf Node version in `lib/.tool-versions`.
-
-### Containerized app
+## Containerized application
 
 ```sh
 docker compose --profile app up --build
 ```
 
-The containerized app is available at http://localhost:8000. Stop it with:
+The containerized application is available at http://localhost:8000. Stop it with:
 
 ```sh
 docker compose --profile app down
 ```
+
+Production requires `SERVER_URL`, `DB_CONNECTION`, `MONGO_DB`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET`.

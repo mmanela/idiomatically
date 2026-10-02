@@ -1,4 +1,4 @@
-import { languagesAll, languages as langaugesList, countries, Country, Language } from 'countries-list';
+import { countries, getEmojiFlag, languages, type ICountry, type ILanguage, type TCountryCode, type TLanguageCode } from 'countries-list';
 import worldCountries from 'world-countries'
 type WorldCountry = import("world-countries").Country;
 
@@ -45,7 +45,7 @@ export class Languages {
         }
 
         for (const countryCode of Object.keys(countries)) {
-            const country: Country = countries[countryCode];
+            const country = countries[countryCode as TCountryCode] as ICountry;
 
             // Grab from world country map to get lang/lat
             const worldCountry: WorldCountry = this.worldCountriesMap.get(countryCode);
@@ -54,7 +54,7 @@ export class Languages {
                 countryName: country.name,
                 countryNativeName: country.native,
                 countryKey: countryCode,
-                emojiFlag: country.emoji,
+                emojiFlag: getEmojiFlag(countryCode as TCountryCode),
                 latitude: worldCountry && worldCountry.latlng[0],
                 longitude: worldCountry && worldCountry.latlng[1]
             };
@@ -73,8 +73,8 @@ export class Languages {
                     continue;
                 }
 
-                const language: Language = languagesAll[langCode] || langaugesList[langCode];
-                if (language.name == null) {
+                const language = languages[langCode as TLanguageCode] as ILanguage | undefined;
+                if (!language?.name) {
                     continue;
                 }
 

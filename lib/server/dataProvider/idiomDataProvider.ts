@@ -1,4 +1,4 @@
-import { Db, Collection, ObjectID, FilterQuery } from 'mongodb'
+import { Db, Collection, ObjectId, Filter } from 'mongodb'
 import { Idiom, IdiomCreateInput, IdiomUpdateInput, QueryIdiomsArgs, IdiomOperationResult, OperationStatus, QueryIdiomArgs } from '../_graphql/types';
 import { Languages, LanguageModel } from './languages'
 import { UserModel, IdiomExpandOptions, MinimalIdiom } from '../model/types';
@@ -22,7 +22,7 @@ export class IdiomDataProvider {
     private idiomCollection: Collection<DbIdiom>;
     private closureStatusCollection: Collection<DbEquivalentClosureStatus>;
 
-    private activeIdiomFilter: FilterQuery<DbIdiom> = { isDeleted: { $ne: true } };
+    private activeIdiomFilter: Filter<DbIdiom> = { isDeleted: { $ne: true } };
 
     constructor(private mongodb: Db, private userDataProvider: UserDataProvider, collectionPrefix: string) {
         this.changeProposalCollection = mongodb.collection(collectionPrefix + 'idiomChangeProposal');
@@ -39,11 +39,11 @@ export class IdiomDataProvider {
      * Converts a idiom filter into one that excludes deleted and provisional idioms
      * @param idiomFilter A filter to extend to active idioms only
      */
-    private activeOnly(idiomFilter?: FilterQuery<DbIdiom>): FilterQuery<DbIdiom> {
+    private activeOnly(idiomFilter?: Filter<DbIdiom>): Filter<DbIdiom> {
         const active = this.activeIdiomFilter;
 
         if (idiomFilter) {
-            if (idiomFilter instanceof ObjectID) {
+            if (idiomFilter instanceof ObjectId) {
                 idiomFilter = { _id: { $eq: idiomFilter } };
             }
             return { $and: [active, idiomFilter] };
@@ -53,16 +53,16 @@ export class IdiomDataProvider {
         }
     }
 
-    async deleteIdiom(currentUser: UserModel, idiomId: string | ObjectID, forceWrite?: boolean): Promise<IdiomOperationResult> {
+    async deleteIdiom(currentUser: UserModel, idiomId: string | ObjectId, forceWrite?: boolean): Promise<IdiomOperationResult> {
         if (!idiomId) {
             throw new Error("Invalid idiomId");
         }
 
-        const objectId = new ObjectID(idiomId);
+        const objectId = new ObjectId(idiomId);
 
         if (this.isUserProvisional(currentUser) && !forceWrite) {
             const proposal: DbIdiomChangeProposal = {
-                userId: new ObjectID(currentUser.id),
+                userId: new ObjectId(currentUser.id),
                 readOnlyCreatedBy: currentUser.name,
                 createdAt: new Date(new Date().toUTCString()),
                 type: IdiomProposalType.DeleteIdiom,
@@ -119,7 +119,7 @@ export class IdiomDataProvider {
             countryKeys: createInput.countryKeys,
             transliteration: createInput.transliteration,
             literalTranslation: createInput.literalTranslation,
-            createdById: new ObjectID(currentUser.id),
+            createdById: new ObjectId(currentUser.id),
 
         };
 
@@ -128,7 +128,7 @@ export class IdiomDataProvider {
         return this.createIdiomInternal(false, currentUser, dbIdiom, relatedIdiomId, idiomExpandOptions);
     }
 
-    async createIdiomInternal(forceWrite: boolean, currentUser: UserModel, dbIdiom: DbIdiom, relatedIdiomId: string | ObjectID, idiomExpandOptions?: IdiomExpandOptions): Promise<IdiomOperationResult> {
+    async createIdiomInternal(forceWrite: boolean, currentUser: UserModel, dbIdiom: DbIdiom, relatedIdiomId: string | ObjectId, idiomExpandOptions?: IdiomExpandOptions): Promise<IdiomOperationResult> {
 
         dbIdiom.createdAt = new Date(new Date().toUTCString());
         this.validateAndNormalize(true, dbIdiom);
@@ -154,7 +154,7 @@ export class IdiomDataProvider {
 
         if (this.isUserProvisional(currentUser) && !forceWrite) {
 
-            let equivalentId = relatedIdiomId ? new ObjectID(relatedIdiomId) : null;
+            let equivalentId = relatedIdiomId ? new ObjectId(relatedIdiomId) : null;
             let equivalentIdiomTitle: string = null;
             let equivalentIdiomSlug: string = null;
             if (equivalentId) {
@@ -166,10 +166,10 @@ export class IdiomDataProvider {
             }
 
             const proposal: DbIdiomChangeProposal = {
-                userId: new ObjectID(currentUser.id),
+                userId: new ObjectId(currentUser.id),
                 readOnlyCreatedBy: currentUser.name,
                 createdAt: new Date(new Date().toUTCString()),
-                equivalentId: relatedIdiomId ? new ObjectID(relatedIdiomId) : null,
+                equivalentId: relatedIdiomId ? new ObjectId(relatedIdiomId) : null,
                 type: IdiomProposalType.CreateIdiom,
                 idiomToCreate: dbIdiom,
                 readOnlyTitle: dbIdiom.title,
@@ -183,10 +183,6 @@ export class IdiomDataProvider {
 
             const result = await this.idiomCollection.insertOne(dbIdiom);
 
-            if (result.insertedCount <= 0) {
-                throw new Error("Failed to insert idiom");
-            }
-
             if (relatedIdiomId) {
                 await this.addIdiomEquivalent(currentUser, result.insertedId, relatedIdiomId, forceWrite);
             }
@@ -198,7 +194,7 @@ export class IdiomDataProvider {
 
     async computeEquivalentClosure() {
 
-        let findFilter: FilterQuery<DbIdiom> = null;
+        let findFilter: Filter<DbIdiom> = null;
         const closureStatus = await this.closureStatusCollection.findOne({});
         if (closureStatus && closureStatus.nextRunDate) {
             findFilter = {
@@ -235,7 +231,7 @@ export class IdiomDataProvider {
                 continue;
             }
 
-            const equivalentObjectIds = equivalents.map(eq => new ObjectID(eq.equivalentId));
+            const equivalentObjectIds = equivalents.map(eq => new ObjectId(eq.equivalentId));
             const equivalentsToCloseSet = new Set(equivalentObjectIds.map(x => x.toHexString()));
 
             if (equivalentObjectIds && equivalentObjectIds.length > 0) {
@@ -247,9 +243,9 @@ export class IdiomDataProvider {
 
                 // Get all unique idiom ids and make sure the idiom to close is missing them
                 const idiomId = idiom._id.toHexString();
-                const equivalentsToAdd = Array.from(new Set<ObjectID>(dbEquivalents.flatMap(dbIdiom => (dbIdiom.equivalents || [])
+                const equivalentsToAdd = Array.from(new Set<ObjectId>(dbEquivalents.flatMap(dbIdiom => (dbIdiom.equivalents || [])
                     .filter(eq => !!eq.equivalentId)
-                    .map(eq => new ObjectID(eq.equivalentId))
+                    .map(eq => new ObjectId(eq.equivalentId))
                     .filter(eq => eq.toHexString() !== idiomId))))
                     .filter(x => !equivalentsToCloseSet.has(x.toHexString()));
 
@@ -274,7 +270,7 @@ export class IdiomDataProvider {
         let nextRunDate = new Date(new Date().toUTCString());
         nextRunDate.setMinutes(nextRunDate.getMinutes() - 20);
         const message = `Updated ${successes}, deleted: ${deletes} and failed ${failures}`;
-        const statusId = closureStatus ? closureStatus._id : new ObjectID();
+        const statusId = closureStatus ? closureStatus._id : new ObjectId();
         await this.closureStatusCollection.updateOne({ partition: "1", _id: statusId }, {
             $set: {
                 _id: statusId,
@@ -309,9 +305,9 @@ export class IdiomDataProvider {
         return await this.updateIdiomInternal(false, currentUser, updateInput.id, updates, idiomExpandOptions);
     }
 
-    async updateIdiomInternal(forceWrite: boolean, currentUser: UserModel, idiomId: string | ObjectID, updates: Partial<DbIdiom>, idiomExpandOptions?: IdiomExpandOptions): Promise<IdiomOperationResult> {
+    async updateIdiomInternal(forceWrite: boolean, currentUser: UserModel, idiomId: string | ObjectId, updates: Partial<DbIdiom>, idiomExpandOptions?: IdiomExpandOptions): Promise<IdiomOperationResult> {
 
-        const objId = new ObjectID(idiomId);
+        const objId = new ObjectId(idiomId);
         const dbIdiom = await this.getDbIdiom(objId);
         // Set the language key since we don't let you change it
         updates.languageKey = dbIdiom.languageKey;
@@ -332,10 +328,10 @@ export class IdiomDataProvider {
         }
 
         updates.updatedAt = new Date(new Date().toUTCString());
-        updates.updateById = new ObjectID(currentUser.id);
+        updates.updateById = new ObjectId(currentUser.id);
         if (this.isUserProvisional(currentUser) && !forceWrite) {
             const proposal: DbIdiomChangeProposal = {
-                userId: new ObjectID(currentUser.id),
+                userId: new ObjectId(currentUser.id),
                 readOnlyCreatedBy: currentUser.name,
                 createdAt: new Date(new Date().toUTCString()),
                 type: IdiomProposalType.UpdateIdiom,
@@ -422,14 +418,14 @@ export class IdiomDataProvider {
         }
     }
 
-    private async getDbIdiom(args: QueryIdiomArgs | ObjectID): Promise<DbIdiom> {
+    private async getDbIdiom(args: QueryIdiomArgs | ObjectId): Promise<DbIdiom> {
 
-        let query: FilterQuery<DbIdiom>;
-        if (args instanceof ObjectID) {
+        let query: Filter<DbIdiom>;
+        if (args instanceof ObjectId) {
             query = args;
         }
         else if (args.id) {
-            query = new ObjectID(args.id);
+            query = new ObjectId(args.id);
         }
         else if (args.slug) {
             query = { slug: { $eq: args.slug } };
@@ -439,14 +435,14 @@ export class IdiomDataProvider {
         return await this.idiomCollection.findOne(query);
     }
 
-    async getIdiom(args: QueryIdiomArgs | ObjectID, idiomExpandOptions?: IdiomExpandOptions): Promise<Idiom> {
+    async getIdiom(args: QueryIdiomArgs | ObjectId, idiomExpandOptions?: IdiomExpandOptions): Promise<Idiom> {
         const dbIdiom = await this.getDbIdiom(args);
         let dbEquivalents: DbIdiom[] = [];
         let users: UserModel[] = [];
 
         if (dbIdiom) {
             if (idiomExpandOptions && idiomExpandOptions.expandEquivalents) {
-                const equivalentObjIds = (dbIdiom.equivalents || []).map(eq => new ObjectID(eq.equivalentId));
+                const equivalentObjIds = (dbIdiom.equivalents || []).map(eq => new ObjectId(eq.equivalentId));
 
                 const equivalentQuery = this.activeOnly({ _id: { $in: equivalentObjIds } });
                 dbEquivalents = await this.idiomCollection.find(equivalentQuery).toArray();
@@ -488,7 +484,7 @@ export class IdiomDataProvider {
 
         let totalCount = null;
         let dbIdioms: DbIdiom[];
-        let findFilter: FilterQuery<DbIdiom>;
+        let findFilter: Filter<DbIdiom>;
         let sortObj: object = { "equivCount": -1 };
         let users: UserModel[];
 
@@ -499,7 +495,7 @@ export class IdiomDataProvider {
         if (filter) {
             const filterRegex = escapeRegex(filter);
             const filterRegexObj = { $regex: filterRegex, $options: 'i' };
-            const filterQuery: FilterQuery<DbIdiom> = {
+            const filterQuery: Filter<DbIdiom> = {
                 $or: [
                     { title: filterRegexObj },
                     { description: filterRegexObj },
@@ -519,7 +515,7 @@ export class IdiomDataProvider {
         findFilter = this.activeOnly(findFilter);
         totalCount = await this.idiomCollection.countDocuments(findFilter);
 
-        dbIdioms = await this.idiomCollection.aggregate([
+        dbIdioms = await this.idiomCollection.aggregate<DbIdiom>([
             { $match: findFilter },
             { $addFields: { equivCount: { $size: { "$ifNull": ["$equivalents", []] } } } },
             { $sort: sortObj }
@@ -530,7 +526,7 @@ export class IdiomDataProvider {
         let dbEquivalents: DbIdiom[] = [];
         if (dbIdioms) {
             if (idiomExpandOptions.expandEquivalents) {
-                const equivalentsObjIds = dbIdioms.flatMap(dbIdiom => (dbIdiom.equivalents || []).map(eq => new ObjectID(eq.equivalentId)));
+                const equivalentsObjIds = dbIdioms.flatMap(dbIdiom => (dbIdiom.equivalents || []).map(eq => new ObjectId(eq.equivalentId)));
                 const equivalentQuery = this.activeOnly({ _id: { $in: equivalentsObjIds } });
                 dbEquivalents = await this.idiomCollection.find(equivalentQuery).toArray();
             }
@@ -550,14 +546,14 @@ export class IdiomDataProvider {
         };
     }
 
-    async removeIdiomEquivalent(currentUser: UserModel, idiomId: string | ObjectID, equivalentId: string | ObjectID, forceWrite?: boolean): Promise<IdiomOperationResult> {
+    async removeIdiomEquivalent(currentUser: UserModel, idiomId: string | ObjectId, equivalentId: string | ObjectId, forceWrite?: boolean): Promise<IdiomOperationResult> {
         if (!idiomId || !equivalentId) {
             throw new Error("Empty id passed");
         }
 
-        const idiomObjId = new ObjectID(idiomId);
+        const idiomObjId = new ObjectId(idiomId);
         const idiomObjIdString = idiomObjId.toHexString();
-        const equivalentObjId = new ObjectID(equivalentId);
+        const equivalentObjId = new ObjectId(equivalentId);
         const equivalentObjIdString = equivalentObjId.toHexString();
         const objIds = [idiomObjId, equivalentObjId];
         const dbIdioms = await this.idiomCollection.find({ _id: { $in: objIds } }, { projection: { _id: 1, title: 1, slug: 1 } }).toArray();
@@ -570,7 +566,7 @@ export class IdiomDataProvider {
 
         if (this.isUserProvisional(currentUser) && !forceWrite) {
             const proposal: DbIdiomChangeProposal = {
-                userId: new ObjectID(currentUser.id),
+                userId: new ObjectId(currentUser.id),
                 readOnlyCreatedBy: currentUser.name,
                 readOnlyTitle: fromIdiom.title,
                 readOnlySlug: fromIdiom.slug,
@@ -593,14 +589,14 @@ export class IdiomDataProvider {
 
     }
 
-    async addIdiomEquivalent(currentUser: UserModel, idiomId: string | ObjectID, equivalentId: string | ObjectID, forceWrite?: boolean): Promise<IdiomOperationResult> {
+    async addIdiomEquivalent(currentUser: UserModel, idiomId: string | ObjectId, equivalentId: string | ObjectId, forceWrite?: boolean): Promise<IdiomOperationResult> {
         if (!idiomId || !equivalentId) {
             throw new Error("Empty id passed");
         }
 
-        const idiomObjId = new ObjectID(idiomId);
+        const idiomObjId = new ObjectId(idiomId);
         const idiomObjIdString = idiomObjId.toHexString();
-        const equivalentObjId = new ObjectID(equivalentId);
+        const equivalentObjId = new ObjectId(equivalentId);
         const equivalentObjIdString = equivalentObjId.toHexString();
         const objIds = [idiomObjId, equivalentObjId];
         const dbIdioms = await this.idiomCollection.find({ _id: { $in: objIds } }, { projection: { _id: 1, title: 1, slug: 1 } }).toArray();
@@ -611,7 +607,7 @@ export class IdiomDataProvider {
         const toIdiom = dbIdioms.filter(idiom => idiom._id.toHexString() == equivalentObjIdString)[0];
         if (this.isUserProvisional(currentUser) && !forceWrite) {
             const proposal: DbIdiomChangeProposal = {
-                userId: new ObjectID(currentUser.id),
+                userId: new ObjectId(currentUser.id),
                 readOnlyCreatedBy: currentUser.name,
                 readOnlyTitle: fromIdiom.title,
                 readOnlySlug: fromIdiom.slug,
@@ -629,27 +625,27 @@ export class IdiomDataProvider {
         }
     }
 
-    private async addEquivalentsInternal(equivalentObjIds: ObjectID[], userId: ObjectID | string, idiomObjId: ObjectID, source: EquivalentSource) {
+    private async addEquivalentsInternal(equivalentObjIds: ObjectId[], userId: ObjectId | string, idiomObjId: ObjectId, source: EquivalentSource) {
 
         if (!equivalentObjIds || equivalentObjIds.length <= 0) {
             return this.operationResult(OperationStatus.Failure, "No equivalents were given");
         }
 
         const updatedAt = new Date(new Date().toUTCString());
-        const updateById = new ObjectID(userId);
+        const updateById = new ObjectId(userId);
         var bulk = this.idiomCollection.initializeOrderedBulkOp();
         const equivalentsToAddToSource: DbEquivalent[] = equivalentObjIds.map((equivalentObjId) => {
             return {
                 equivalentId: equivalentObjId,
                 source: source,
-                createdById: new ObjectID(userId)
+                createdById: new ObjectId(userId)
             }
         });
 
         const equivalentToAddToTarget: DbEquivalent = {
             equivalentId: idiomObjId,
             source: source,
-            createdById: new ObjectID(userId)
+            createdById: new ObjectId(userId)
         };
 
         const equivalentsToAddToSourceIds = equivalentsToAddToSource.map(x => x.equivalentId);

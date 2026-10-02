@@ -18,7 +18,7 @@ export const CountryFlag: React.FunctionComponent<CountryFlagProps> = (props) =>
   const flagEmoji = emojiResults ? emojiResults[0].url : undefined;
 
   return (
-    <Tooltip className="flagImage" placement="top" title={props.country.countryName} key={props.country.countryKey} arrowPointAtCenter>
+    <Tooltip className="flagImage" placement="top" title={props.country.countryName} key={props.country.countryKey}>
       <Avatar src={flagEmoji} size={props.size} alt={props.country.countryName} />
     </Tooltip>
   );

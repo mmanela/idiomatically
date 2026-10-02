@@ -1,7 +1,10 @@
-.react-mde {
-    .grip {
-        svg {
-            margin-bottom: 10px;
-        }
-    }
+.markdownEditorToolbar {
+  margin-bottom: 8px;
+}
+
+.markdownPreview {
+  min-height: 300px;
+  padding: 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
 }

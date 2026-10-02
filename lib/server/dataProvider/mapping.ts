@@ -1,6 +1,6 @@
 import { UserModel } from '../model/types';
 import { Idiom, Login, UserRole, ProviderType } from '../_graphql/types';
-import { ObjectID, ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { Languages } from './languages'
 
 
@@ -16,13 +16,13 @@ export type Paged<T> = {
  * Represents a proposed creation or update to an idiom
  */
 export interface DbIdiomChangeProposal {
-    _id?: ObjectID,
+    _id?: ObjectId,
     type: IdiomProposalType,
     idiomId?: ObjectId,
     equivalentId?: ObjectId,
     idiomToCreate?: DbIdiom,
     idiomToUpdate?: Partial<DbIdiom>,
-    userId: ObjectID,
+    userId: ObjectId,
     createdAt?: Date,
     readOnlyCreatedBy: string,
     readOnlyTitle?: string,
@@ -46,13 +46,13 @@ export enum EquivalentSource {
 }
 
 export interface DbEquivalent {
-    equivalentId: ObjectID,
+    equivalentId: ObjectId,
     source: EquivalentSource,
-    createdById?: ObjectID,
+    createdById?: ObjectId,
 }
 
 export interface DbEquivalentClosureStatus {
-    _id?: ObjectID,
+    _id?: ObjectId,
     partition: string,
     lastRunDate?: Date,
     nextRunDate?: Date,
@@ -60,7 +60,7 @@ export interface DbEquivalentClosureStatus {
 }
 
 export interface DbIdiom {
-    _id?: ObjectID,
+    _id?: ObjectId,
     partition: string,
     slug: string,
     title: string,
@@ -73,15 +73,15 @@ export interface DbIdiom {
     languageKey?: string;
     countryKeys?: string[];
 
-    createdById?: ObjectID,
+    createdById?: ObjectId,
     createdAt?: Date,
-    updateById?: ObjectID
+    updateById?: ObjectId
     updatedAt?: Date
     isDeleted?: boolean;
 }
 
 export interface DbUser {
-    _id?: ObjectID,
+    _id?: ObjectId,
     name: string,
     avatar: string,
     providers: DbLogin[],

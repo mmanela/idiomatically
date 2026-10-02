@@ -34,6 +34,8 @@ jobs:
       run: |
         cd ./lib
         npm ci
+        npm run codegen
+        git diff --exit-code
         npm run check
         npx playwright install --with-deps chromium
         npm run test:e2e

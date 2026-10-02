@@ -1,14 +1,11 @@
 import { expect, Page, test } from '@playwright/test';
 import { MongoClient } from 'mongodb';
 
-const apiUrl = 'http://localhost:8100';
-const graphqlUrl = `${apiUrl}/graphql`;
+const appUrl = 'http://localhost:3100';
+const graphqlUrl = `${appUrl}/graphql`;
 
 test.beforeEach(async () => {
-  const client = await MongoClient.connect('mongodb://localhost:27017', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  });
+  const client = await MongoClient.connect('mongodb://localhost:27017');
 
   try {
     await client.db('idiomatically-e2e').dropDatabase();
@@ -18,7 +15,7 @@ test.beforeEach(async () => {
 });
 
 async function loginAs(page: Page, role: 'General user' | 'Contributor' | 'Administrator') {
-  await page.goto(`${apiUrl}/login?returnTo=/`);
+  await page.goto(`${appUrl}/login?returnTo=/`);
   await page.getByRole('link', { name: role }).click();
   await expect(page).toHaveURL('http://localhost:3100/');
 }
@@ -70,7 +67,9 @@ type IdiomInput = {
 };
 
 async function addIdiom(page: Page, idiom: IdiomInput) {
-  await page.getByRole('button', { name: 'Add an idiom' }).click();
+  if (new URL(page.url()).pathname !== '/new') {
+    await page.getByRole('button', { name: 'Add an idiom' }).click();
+  }
   await expect(page.getByRole('heading', { name: 'Add an Idiom' })).toBeVisible();
 
   const form = page.locator('form');
@@ -119,14 +118,14 @@ test('public navigation is readable and consistently spaced', async ({ page }) =
 test('anonymous users are sent to local sign in before adding an idiom', async ({ page }) => {
   await page.goto('/new');
 
-  await expect(page).toHaveURL(`${apiUrl}/login?returnTo=/new`);
+  await expect(page).toHaveURL(`${appUrl}/login?returnTo=/new`);
   await expect(page.getByRole('link', { name: 'General user' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Contributor' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Administrator' })).toBeVisible();
 });
 
 test('local authentication supports role selection and logout', async ({ page }) => {
-  await page.goto(`${apiUrl}/login?returnTo=/me`);
+  await page.goto(`${appUrl}/login?returnTo=/me`);
   await expect(page.getByRole('link', { name: 'General user' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Contributor' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Administrator' })).toBeVisible();
@@ -159,6 +158,27 @@ test('administrator can add an English idiom and view it', async ({ page }) => {
   await expect(page.getByText('A way to wish someone good luck.')).toBeVisible();
 });
 
+test('public idiom content is server rendered and client navigation stays hydrated', async ({ page }) => {
+  await loginAs(page, 'Administrator');
+  await createEnglishIdiomViaApi(page, 'Read between the lines', 'Find the hidden meaning.');
+  await logout(page);
+
+  const listResponse = await page.request.get('/idioms?lang=en');
+  expect(listResponse.ok()).toBeTruthy();
+  expect(await listResponse.text()).toContain('Read between the lines');
+
+  const detailResponse = await page.request.get('/idioms/read-between-the-lines');
+  expect(detailResponse.ok()).toBeTruthy();
+  const detailHtml = await detailResponse.text();
+  expect(detailHtml).toContain('Read between the lines');
+  expect(detailHtml).toContain('Find the hidden meaning.');
+
+  await page.goto('/idioms/read-between-the-lines');
+  await page.getByRole('link', { name: 'Home' }).click();
+  await expect(page).toHaveURL('/');
+  await expect(page.getByText('Read between the lines', { exact: true })).toBeVisible();
+});
+
 test('administrator can update an existing idiom', async ({ page }) => {
   await loginAs(page, 'Administrator');
   await addEnglishIdiom(page, 'Hit the road', 'To leave or begin a journey.');
@@ -181,7 +201,7 @@ test('administrator can review and accept a public idiom proposal', async ({ pag
   await addEnglishIdiom(page, 'On the same page', 'To share the same understanding.');
 
   const proposalDialog = page.getByRole('dialog');
-  await expect(proposalDialog.getByText('Idiom change proposal received!')).toBeVisible();
+  await expect(proposalDialog.locator('.ant-modal-confirm-title')).toHaveText('Idiom change proposal received!');
   await expect(proposalDialog.getByText('Thanks for suggesting the change, we will review it shortly.')).toBeVisible();
   await proposalDialog.getByRole('button', { name: 'OK' }).click();
   await expect(page).toHaveURL('http://localhost:3100/idioms');
@@ -222,7 +242,7 @@ test('all-language filter lists non-English idioms without a render loop', async
   await page.goto('/idioms?lang=es');
   await expect(page.getByText('Más vale tarde que nunca')).toBeVisible();
 
-  await page.locator('.languageSelect .ant-select-selector').click();
+  await page.getByRole('combobox', { name: 'Language' }).click();
   await page.locator('.languageOption').filter({ hasText: /^All$/ }).click();
 
   await expect(page).toHaveURL('/idioms?lang=all');
@@ -233,7 +253,7 @@ test('all-language filter lists non-English idioms without a render loop', async
 test('administrator can reject a public idiom proposal', async ({ page }) => {
   await loginAs(page, 'General user');
   await addEnglishIdiom(page, 'A watched pot never boils', 'Waiting makes time feel slower.');
-  await page.getByRole('dialog').getByRole('button', { name: 'OK' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'OK' }).last().click();
   await logout(page);
 
   await loginAs(page, 'Administrator');
@@ -259,7 +279,7 @@ test('administrator can accept a General-user update proposal', async ({ page })
   await page.getByRole('textbox', { name: /Idiom \(In the language's own alphabet\)/ }).fill('Bite the proverbial bullet');
   await page.locator('.mde-text').fill('To face a difficult or unpleasant task.');
   await page.getByRole('button', { name: 'Submit' }).click();
-  await page.getByRole('dialog').getByRole('button', { name: 'OK' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'OK' }).last().click();
   await logout(page);
 
   await loginAs(page, 'Administrator');
@@ -313,7 +333,7 @@ test('administrator can add and remove equivalent idioms', async ({ page }) => {
 
 test('idiom form validates required fields and duplicate titles', async ({ page }) => {
   await loginAs(page, 'Administrator');
-  await page.getByRole('button', { name: 'Add an idiom' }).click();
+  await page.goto('/new');
   await page.getByRole('button', { name: 'Submit' }).click();
   await expect(page.getByText('An Idiom is required')).toBeVisible();
   await expect(page.getByText('Unknown language')).toBeVisible();
@@ -344,9 +364,9 @@ test('search and pagination preserve filters in deep links', async ({ page }) =>
   await expect(page).toHaveURL('/idioms?lang=en&page=2');
   await expect(page.getByText('Test idiom 11', { exact: true })).toBeVisible();
 
-  await page.getByRole('textbox', { name: 'Find an idiom' }).fill('Test idiom 03');
+  await page.getByRole('searchbox', { name: 'Find an idiom' }).fill('Test idiom 03');
   await page.getByRole('button', { name: 'search' }).click();
-  await expect(page).toHaveURL('/idioms?q=Test%20idiom%2003&lang=en');
+  await expect(page).toHaveURL('/idioms?q=Test+idiom+03&lang=en');
   await expect(page.getByText('Test idiom 03', { exact: true })).toBeVisible();
   await expect(page.getByText('Test idiom 11', { exact: true })).not.toBeVisible();
 });

@@ -56,7 +56,6 @@ const renderFlag = (countries: FullIdiomEntry_language_countries[], size?: FlagS
             className="flagOverflow"
             placement="top"
             title={<div className="flagOverflowTooltip">{renderFlagList(countriesToRender.slice(1), size)}</div>}
-            arrowPointAtCenter
           >
             <span className="flagOverflowText">+{countriesToRender.length - 1}</span>
           </Tooltip>

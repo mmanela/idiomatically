@@ -1,31 +1,15 @@
-import { ApolloError } from "@apollo/client";
+import { CombinedGraphQLErrors } from "@apollo/client";
 
-export function isAuthenticationError(error?: ApolloError) {
-  // Hack until apollo exposes error in mutation component
-  if (
-    error &&
-    error.graphQLErrors &&
-    error.graphQLErrors.length > 0 &&
-    error.graphQLErrors[0].extensions &&
-    error.graphQLErrors[0].extensions &&
-    error.graphQLErrors[0].extensions.exception
-  ) {
-    return error.graphQLErrors[0].extensions.exception.name === "401";
-  }
-
-  return false;
+export function isAuthenticationError(error?: unknown) {
+  return getErrorMessage(error).includes("User must be logged in");
 }
 
-export function getErrorMessage(error: ApolloError) {
-  if (error) {
-    // Hack until apollo exposes error in mutation component
-    const networkError = error.networkError as any;
-    if (error.graphQLErrors && error.graphQLErrors.length > 0) {
-      return error.graphQLErrors[0].message;
-    } else if (error.networkError && networkError.result && networkError.result.errors && networkError.result.errors.length > 0) {
-      return networkError.result.errors[0].message;
-    } else {
-      return "Invalid idiom, please try again";
-    }
+export function getErrorMessage(error?: unknown) {
+  if (CombinedGraphQLErrors.is(error)) {
+    return error.errors[0]?.message || "Invalid idiom, please try again";
   }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return "Invalid idiom, please try again";
 }

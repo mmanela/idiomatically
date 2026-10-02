@@ -12,11 +12,11 @@ import {
 import "./ChangeProposals.scss";
 import { CheckCircleFilled, ClockCircleFilled, CloseCircleFilled } from '@ant-design/icons';
 import { Alert, Spin, List, Empty, Button } from "antd";
-import { Link, Redirect } from "react-router-dom";
-import { useLazyQuery, useMutation, gql } from "@apollo/client";
+import { Link, Navigate } from "react-router";
+import { gql } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { JsonEditor } from "../components/JsonEditor";
 import { useCurrentUser } from "../components/withCurrentUser";
-import { useEffect } from "react";
 
 export const getChangeProposalsQuery = gql`
   query GetChangeProposalsQuery($filter: String, $limit: Int, $cursor: String) {
@@ -66,41 +66,27 @@ export const ChangeProposals: React.FunctionComponent<ChangeProposalsProps> = pr
   const { filter } = props;
   const { currentUser, currentUserLoading } = useCurrentUser();
   const [pageNumber, setPageNumber] = React.useState(1);
-  const [lastFilter, setLastFilter] = React.useState(props.filter);
-  const [queryPage, loadResult] = useLazyQuery<GetChangeProposalsQuery, GetChangeProposalsQueryVariables>(
-    getChangeProposalsQuery
-  );
   const pageSize = 10;
-
-  useEffect(() => {
-    setLastFilter(props.filter);
-  }, [props.filter]);
+  const currCursorNum = (pageNumber - 1) * pageSize;
+  const loadResult = useQuery<
+    GetChangeProposalsQuery,
+    GetChangeProposalsQueryVariables
+  >(getChangeProposalsQuery, {
+    variables: {
+      filter,
+      limit: pageSize,
+      cursor: currCursorNum.toString(),
+    },
+  });
 
   if (currentUserLoading) {
-    return <Spin spinning delay={500} className="middleSpinner" tip="Loading..." />;
+    return <Spin spinning delay={500} className="middleSpinner" description="Loading..." />;
   } else if (!currentUser) {
-    return <Redirect to="/" />;
+    return <Navigate to="/" replace />;
   }
 
-  // Based on the page number we get from state we calculate the bounds of the cursors
-  // we then check if the data we current have has a endCursor that falls in that range. If so,
-  // we have the data for this page, no need to query. Otherwise, run the query.
-  const currCursorNum = (pageNumber - 1) * pageSize;
-  const nextCursorNum = pageNumber * pageSize;
-  const incomingEndCursorNum =
-    loadResult.data && loadResult.data.idiomChangeProposals.totalCount > 0 && loadResult.data.idiomChangeProposals.edges.length > 0
-      ? Number.parseInt(loadResult.data.idiomChangeProposals.pageInfo.endCursor)
-      : null;
-  const changePage =
-    incomingEndCursorNum != null && !(currCursorNum < incomingEndCursorNum && nextCursorNum >= incomingEndCursorNum);
-  const filterChanged = props.filter !== lastFilter;
-  if (!loadResult.called || (!loadResult.loading && loadResult.data && changePage) || filterChanged) {
-    queryPage({
-      variables: { filter, limit: pageSize, cursor: currCursorNum.toString() }
-    });
-  }
-  if (loadResult.loading) return <Spin delay={500} className="middleSpinner" tip="Loading..." />;
-  if (loadResult.error) return <Alert message="Error" type="error" description={loadResult.error.message} showIcon />;
+  if (loadResult.loading) return <Spin delay={500} className="middleSpinner" description="Loading..." />;
+  if (loadResult.error) return <Alert title="Error" type="error" description={loadResult.error.message} showIcon />;
   if (!loadResult.data || loadResult.data.idiomChangeProposals.edges.length <= 0) {
     return <Empty image={Empty.PRESENTED_IMAGE_DEFAULT} description="Could not find a needle in a haystack." />;
   }
@@ -227,7 +213,7 @@ export const ChangeProposalItem: React.FunctionComponent<ChangeProposalItemProps
     <List.Item key={proposal.id} className="changeProposalItem" actions={[acceptAction, rejectAction, resetAction]}>
       <List.Item.Meta className="itemDetails" title={<Link to={url}>{title}</Link>} description={itemDescription} />
 
-      {error && <Alert message="Error" type="error" description={error} showIcon />}
+      {error && <Alert title="Error" type="error" description={error} showIcon />}
       {editor}
     </List.Item>
   );

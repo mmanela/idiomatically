@@ -1,7 +1,8 @@
 import {
     GetCurrentUser, GetCurrentUser_me
 } from "../__generated__/types";
-import { useQuery, useApolloClient, ApolloQueryResult, gql } from "@apollo/client";
+import { ApolloQueryResult, gql } from "@apollo/client";
+import { useApolloClient, useQuery } from "@apollo/client/react";
 
 export const getCurrentUserQuery = gql`
   query GetCurrentUser {

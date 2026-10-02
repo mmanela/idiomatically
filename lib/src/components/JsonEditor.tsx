@@ -1,7 +1,7 @@
-import React, { Component } from "react";
+import type JSONEditor from "jsoneditor";
+import type { JSONEditorOptions } from "jsoneditor";
+import { Component, createRef, type RefObject } from "react";
 import "jsoneditor/dist/jsoneditor.css";
-type JSONEditor = import("jsoneditor").default;
-type JSONEditorOptions = import("jsoneditor").JSONEditorOptions;
 
 export type JsonEditorProps = {
   json: string;
@@ -9,41 +9,44 @@ export type JsonEditorProps = {
 
 export class JsonEditor extends Component<JsonEditorProps> {
   private jsoneditor?: JSONEditor;
-  private containerRef: React.RefObject<HTMLDivElement>;
+  private containerRef: RefObject<HTMLDivElement | null> = createRef();
+  private mounted = false;
 
-  constructor(props: JsonEditorProps) {
-    super(props);
-    this.containerRef = React.createRef();
-  }
+  async componentDidMount() {
+    this.mounted = true;
+    const { default: Editor } = await import("jsoneditor");
+    if (!this.mounted || !this.containerRef.current) {
+      return;
+    }
 
-  componentDidMount() {
-    const Editor = require("jsoneditor");
     const defaults: JSONEditorOptions = {
       mainMenuBar: false,
       mode: "form",
-      navigationBar: false
+      navigationBar: false,
     };
-    const options = { ...defaults, ...this.props };
-    this.jsoneditor = new Editor(this.containerRef.current!, options);
-    if (this.jsoneditor) {
-      this.jsoneditor.set(this.props.json);
-      this.jsoneditor.expandAll();
-    }
+    this.jsoneditor = new Editor(this.containerRef.current, {
+      ...defaults,
+      ...this.props,
+    });
+    this.jsoneditor.set(this.props.json);
+    this.jsoneditor.expandAll();
   }
 
   componentWillUnmount() {
-    if (this.jsoneditor) {
-      this.jsoneditor.destroy();
-    }
+    this.mounted = false;
+    this.jsoneditor?.destroy();
   }
 
   componentDidUpdate() {
-    if (this.jsoneditor) {
-      this.jsoneditor.update(this.props.json);
-    }
+    this.jsoneditor?.update(this.props.json);
   }
 
   render() {
-    return <div className="jsoneditor-react-container" ref={this.containerRef} />;
+    return (
+      <div
+        className="jsoneditor-react-container"
+        ref={this.containerRef}
+      />
+    );
   }
 }

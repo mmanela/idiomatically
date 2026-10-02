@@ -1,0 +1,272 @@
+import { expressMiddleware } from "@as-integrations/express5";
+import { createRequestHandler } from "@react-router/express";
+import { toNodeHandler } from "better-auth/node";
+import dotenv from "dotenv";
+import express from "express";
+import { MongoClient } from "mongodb";
+import { SitemapStream, streamToPromise } from "sitemap";
+import { createGzip } from "node:zlib";
+import { createAuth, getLocalIdentity } from "./auth";
+import { createGraphqlRuntime, getCurrentUser } from "./graphql";
+import { initializeJobs, stopJobs } from "./jobScheduler";
+
+dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
+dotenv.config({ path: `.env.${process.env.NODE_ENV}.local`, override: true });
+
+const isProduction = process.env.NODE_ENV === "production";
+const port = Number.parseInt(process.env.PORT || "3000", 10);
+const serverUrl = process.env.SERVER_URL || `http://localhost:${port}`;
+const databaseName = process.env.MONGO_DB || "idiomatically";
+const databaseConnection = process.env.DB_CONNECTION || "mongodb://localhost:27017";
+const adminEmails = (process.env.ADMIN_EMAILS || "")
+  .split(",")
+  .map((email) => email.trim().toLowerCase())
+  .filter(Boolean);
+const localAuthEnabled =
+  !isProduction && process.env.LOCAL_AUTH_ENABLED === "true";
+
+const mongoClient = new MongoClient(databaseConnection);
+await mongoClient.connect();
+const database = mongoClient.db(databaseName);
+const auth = createAuth({
+  client: mongoClient,
+  database,
+  serverUrl,
+  adminEmails,
+  localAuthEnabled,
+});
+const { dataProviders, server: apolloServer } = createGraphqlRuntime({
+  auth,
+  database,
+  isProduction,
+  adminEmails,
+});
+
+await initializeJobs(dataProviders, adminEmails);
+await apolloServer.start();
+
+export const app = express();
+
+app.disable("x-powered-by");
+app.all("/api/auth/*splat", toNodeHandler(auth));
+
+app.get("/hello", async (req, res) => {
+  const currentUser = await getCurrentUser(
+    auth,
+    dataProviders,
+    requestHeaders(req),
+    adminEmails,
+  );
+  res.send(
+    currentUser
+      ? `Welcome back, ${currentUser.name}`
+      : "Welcome to Idiomatically!",
+  );
+});
+
+app.get("/login", async (req, res, next) => {
+  try {
+    const returnTo = safeReturnPath(req.query.returnTo);
+    const currentSession = await auth.api.getSession({
+      headers: requestHeaders(req),
+    });
+    if (currentSession) {
+      return res.redirect(returnTo);
+    }
+
+    if (localAuthEnabled) {
+      const encodedReturnPath = encodeURIComponent(returnTo);
+      return res.send(`
+        <!doctype html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Local sign in</title>
+            <style>
+              body { font-family: system-ui, sans-serif; max-width: 480px; margin: 64px auto; padding: 0 24px; }
+              a { display: block; margin: 12px 0; padding: 12px 16px; color: white; background: #1677ff; border-radius: 6px; text-align: center; text-decoration: none; }
+            </style>
+          </head>
+          <body>
+            <h1>Local sign in</h1>
+            <p>Choose a role to test the authenticated experience.</p>
+            <a href="/auth/local?role=GENERAL&returnTo=${encodedReturnPath}">General user</a>
+            <a href="/auth/local?role=CONTRIBUTOR&returnTo=${encodedReturnPath}">Contributor</a>
+            <a href="/auth/local?role=ADMIN&returnTo=${encodedReturnPath}">Administrator</a>
+          </body>
+        </html>
+      `);
+    }
+
+    const result = await auth.api.signInSocial({
+      returnHeaders: true,
+      headers: requestHeaders(req),
+      body: {
+        provider: "google",
+        callbackURL: returnTo,
+      },
+    });
+    appendSetCookieHeaders(res, result.headers);
+    return res.redirect(result.response.url);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/auth/local", async (req, res, next) => {
+  try {
+    if (!localAuthEnabled) {
+      return res.sendStatus(404);
+    }
+
+    const identity = getLocalIdentity(String(req.query.role || ""));
+    if (!identity) {
+      return res.status(400).send("Invalid local role");
+    }
+
+    const existingUser = await database
+      .collection("authUser")
+      .findOne({ email: identity.email });
+    const response = existingUser
+      ? await auth.api.signInEmail({
+          asResponse: true,
+          headers: requestHeaders(req),
+          body: {
+            email: identity.email,
+            password: identity.password,
+          },
+        })
+      : await auth.api.signUpEmail({
+          asResponse: true,
+          headers: requestHeaders(req),
+          body: identity,
+        });
+
+    if (!response.ok) {
+      return res
+        .status(response.status)
+        .send(await response.text());
+    }
+
+    appendSetCookieHeaders(res, response.headers);
+    return res.redirect(safeReturnPath(req.query.returnTo));
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/logout", async (req, res, next) => {
+  try {
+    const response = await auth.api.signOut({
+      asResponse: true,
+      headers: requestHeaders(req),
+    });
+    appendSetCookieHeaders(res, response.headers);
+    return res.redirect("/");
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.use(
+  "/graphql",
+  express.json(),
+  expressMiddleware(apolloServer, {
+    context: async ({ req }) => ({
+      dataProviders,
+      currentUser: await getCurrentUser(
+        auth,
+        dataProviders,
+        requestHeaders(req),
+        adminEmails,
+      ),
+    }),
+  }),
+);
+
+let sitemap: Buffer | null = null;
+app.get("/sitemap.xml", async (req, res) => {
+  res.header("Content-Type", "application/xml");
+  res.header("Content-Encoding", "gzip");
+  if (sitemap) {
+    return res.send(sitemap);
+  }
+
+  const sitemapStream = new SitemapStream({ hostname: serverUrl });
+  const pipeline = sitemapStream.pipe(createGzip());
+  const idioms = await dataProviders.idiom.getAllIdioms();
+  const languages = await dataProviders.idiom.getLanguagesWithIdioms();
+
+  sitemapStream.write({ url: "/", priority: 1 });
+  sitemapStream.write({ url: "/about", priority: 0.8 });
+  for (const idiom of idioms) {
+    sitemapStream.write({
+      url: `/idioms/${idiom.slug}`,
+      priority: 0.8,
+      lastmod: idiom.lastModifiedDate.toISOString(),
+    });
+  }
+  for (const language of languages) {
+    sitemapStream.write({
+      url: `/idioms?lang=${language.languageKey}`,
+      priority: 0.7,
+    });
+  }
+  sitemapStream.end();
+
+  sitemap = await streamToPromise(pipeline);
+  return res.send(sitemap);
+});
+
+app.use(
+  createRequestHandler({
+    build: () => import("virtual:react-router/server-build"),
+  }),
+);
+
+function requestHeaders(req: express.Request) {
+  const headers = new Headers();
+  for (const [name, value] of Object.entries(req.headers)) {
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        headers.append(name, entry);
+      }
+    } else if (value !== undefined) {
+      headers.set(name, value);
+    }
+  }
+  return headers;
+}
+
+function appendSetCookieHeaders(
+  res: express.Response,
+  headers: Headers,
+) {
+  for (const cookie of headers.getSetCookie()) {
+    res.append("Set-Cookie", cookie);
+  }
+}
+
+function safeReturnPath(value: unknown) {
+  const candidate = typeof value === "string" ? value : "/";
+  try {
+    const parsed = new URL(candidate, serverUrl);
+    return parsed.origin === serverUrl ? `${parsed.pathname}${parsed.search}` : "/";
+  } catch {
+    return "/";
+  }
+}
+
+async function shutdown() {
+  stopJobs();
+  await apolloServer.stop();
+  await mongoClient.close();
+}
+
+process.once("SIGTERM", () => {
+  void shutdown().finally(() => process.exit(0));
+});
+process.once("SIGINT", () => {
+  void shutdown().finally(() => process.exit(0));
+});

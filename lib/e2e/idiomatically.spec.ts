@@ -75,6 +75,16 @@ test('local authentication supports role selection and logout', async ({ page })
   await expect(page.getByRole('heading', { name: 'Local admin' })).toBeVisible();
   await expect(page.getByText('Ardent Admin')).toBeVisible();
 
+  for (const navigationItem of [
+    page.getByRole('button', { name: 'Add an idiom' }),
+    page.getByRole('link', { name: 'Local admin' })
+  ]) {
+    const gap = await navigationItem.evaluate(element =>
+      Number.parseFloat(window.getComputedStyle(element).columnGap)
+    );
+    expect(gap).toBe(6);
+  }
+
   await page.getByRole('button', { name: 'Log out' }).click();
   await expect(page.getByRole('link', { name: 'Login' })).toBeVisible();
 });

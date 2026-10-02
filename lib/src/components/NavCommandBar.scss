@@ -2,7 +2,7 @@
 
 .ant-menu-item {
   .profileImage {
-    margin-right: 10px;
+    margin-right: 0;
   }
 }
 
@@ -22,6 +22,9 @@
     }
 
     .ant-btn {
+      align-items: center;
+      display: inline-flex;
+      gap: 6px;
       padding-left: 0;
       padding-right: 0;
 

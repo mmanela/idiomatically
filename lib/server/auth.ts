@@ -32,9 +32,11 @@ export function createAuth(options: {
       ? undefined
       : "idiomatically-development-secret-change-before-production");
 
-  if (!secret) {
-    throw new Error("BETTER_AUTH_SECRET is required in production");
-  }
+  validateAuthConfiguration({
+    serverUrl: options.serverUrl,
+    localAuthEnabled: options.localAuthEnabled,
+    secret,
+  });
 
   return betterAuth({
     appName: "Idiomatically",
@@ -101,6 +103,66 @@ export function createAuth(options: {
 }
 
 export type Auth = ReturnType<typeof createAuth>;
+
+function validateAuthConfiguration(options: {
+  serverUrl: string;
+  localAuthEnabled: boolean;
+  secret?: string;
+}) {
+  let publicUrl: URL;
+  try {
+    publicUrl = new URL(options.serverUrl);
+  } catch {
+    throw new Error("SERVER_URL must be a valid absolute URL");
+  }
+
+  if (!["http:", "https:"].includes(publicUrl.protocol)) {
+    throw new Error("SERVER_URL must use HTTP or HTTPS");
+  }
+
+  const isProduction = process.env.NODE_ENV === "production";
+  if (isProduction) {
+    if (!process.env.SERVER_URL) {
+      throw new Error("SERVER_URL is required in production");
+    }
+    if (publicUrl.protocol !== "https:") {
+      throw new Error("SERVER_URL must use HTTPS in production");
+    }
+    if (["localhost", "127.0.0.1"].includes(publicUrl.hostname)) {
+      throw new Error("SERVER_URL must use the public production hostname");
+    }
+    if (
+      !options.secret ||
+      options.secret.length < 32 ||
+      options.secret.includes("AT_LEAST_32_CHARACTERS") ||
+      options.secret.includes("change-before-production")
+    ) {
+      throw new Error(
+        "BETTER_AUTH_SECRET must be a non-placeholder value of at least 32 characters in production",
+      );
+    }
+  }
+
+  if (!options.localAuthEnabled) {
+    requireGoogleCredential("GOOGLE_CLIENT_ID");
+    requireGoogleCredential("GOOGLE_CLIENT_SECRET");
+  }
+}
+
+function requireGoogleCredential(
+  name: "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET",
+) {
+  const value = process.env[name]?.trim();
+  if (
+    !value ||
+    value.toLowerCase().includes("disabled") ||
+    value.startsWith("GOOGLE_CLIENT_")
+  ) {
+    throw new Error(
+      `${name} must be configured when Google authentication is enabled`,
+    );
+  }
+}
 
 export function getLocalIdentity(role: string) {
   const normalizedRole = role.toUpperCase();

@@ -65,6 +65,7 @@
     "dev": "cross-env NODE_ENV=development node --conditions development server.js",
     "start": "cross-env NODE_ENV=production node server.js",
     "build": "react-router build",
+    "auth:smoke": "tsx server/scripts/authSmoke.ts",
     "typecheck": "react-router typegen && tsc -b",
     "check": "npm run typecheck && npm run build",
     "codegen": "tsx server/scripts/genJoined.ts && graphql-codegen --config server/codegen.yml",

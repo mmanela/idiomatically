@@ -55,6 +55,22 @@ http://localhost:3000/api/auth/callback/google
 
 Google supports localhost callbacks, so ngrok is not required.
 
+This manual Google login is the only way to verify the complete provider
+round-trip before production. The automated suite also verifies that Better
+Auth creates a Google authorization request with OAuth state, PKCE, a state
+cookie, and the expected callback URL.
+
+After deploying, run the non-interactive OAuth configuration smoke check:
+
+```sh
+cd lib
+npm run auth:smoke -- https://your-production-domain
+```
+
+This checks the deployed Better Auth route and callback URL without logging in
+or exposing Google credentials. Then complete one real Google login on the
+deployed environment before directing users to it.
+
 Useful commands:
 
 ```sh
@@ -79,4 +95,4 @@ The containerized application is available at http://localhost:8000. Stop it wit
 docker compose --profile app down
 ```
 
-Production requires `SERVER_URL`, `DB_CONNECTION`, `MONGO_DB`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET`.
+Production requires `SERVER_URL`, `DB_CONNECTION`, `MONGO_DB`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET`. Startup fails if the public URL is not HTTPS, the Better Auth secret is too short, or Google credentials are missing/placeholders.

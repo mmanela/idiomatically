@@ -246,6 +246,37 @@ test('anonymous users are sent to local sign in before adding an idiom', async (
   await expect(page.getByRole('link', { name: 'Administrator' })).toBeVisible();
 });
 
+test('Better Auth generates a valid Google OAuth request', async ({ page }) => {
+  const response = await page.request.post('/api/auth/sign-in/social', {
+    data: {
+      provider: 'google',
+      callbackURL: '/me',
+      disableRedirect: true
+    },
+    headers: {
+      Origin: appUrl
+    }
+  });
+
+  expect(response.ok()).toBeTruthy();
+  const result = await response.json() as {
+    redirect: boolean;
+    url: string;
+  };
+  const authorizationUrl = new URL(result.url);
+
+  expect(result.redirect).toBe(false);
+  expect(authorizationUrl.origin).toBe('https://accounts.google.com');
+  expect(authorizationUrl.searchParams.get('client_id')).toBe('e2e-disabled');
+  expect(authorizationUrl.searchParams.get('redirect_uri')).toBe(
+    `${appUrl}/api/auth/callback/google`
+  );
+  expect(authorizationUrl.searchParams.get('state')).toBeTruthy();
+  expect(authorizationUrl.searchParams.get('code_challenge')).toBeTruthy();
+  expect(authorizationUrl.searchParams.get('code_challenge_method')).toBe('S256');
+  expect(response.headers()['set-cookie']).toContain('idiomatically.');
+});
+
 test('local authentication supports role selection and logout', async ({ browser, page }) => {
   await page.goto(`${appUrl}/login?returnTo=/me`);
   await expect(page.getByRole('link', { name: 'General user' })).toBeVisible();

@@ -1,7 +1,7 @@
 import * as React from "react";
 import "./Idiom.scss";
 import { LanguageFlags } from "../components/LanguageFlags";
-import { RouteChildrenProps, Redirect } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 import { getIdiomQuery } from "../fragments/getIdiom";
 import {
   GetIdiomQuery,
@@ -12,19 +12,19 @@ import {
   OperationStatus
 } from "../__generated__/types";
 import { useCurrentUser } from "../components/withCurrentUser";
-import { useQuery, useMutation, gql } from "@apollo/client";
+import { gql } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { useState, Suspense, useEffect } from "react";
 import { marked } from "marked";
 import dompurifyFactory from "dompurify";
 import { AddEquivalentSection } from "../components/AddEquivalentSection";
 import { EquivalentIdiomList } from "../components/EquivalentIdiomList";
 import { DeleteFilled } from '@ant-design/icons';
-import { Typography, Alert, Spin, Button, PageHeader, Tabs } from "antd";
+import { Typography, Alert, Spin, Button, Tabs } from "antd";
 import screenfull from 'screenfull';
-import Fullscreen from "react-full-screen";
+import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { DEFAULT_PAGE_TITLE } from "../constants";
 const WorldMap = React.lazy(() => import('../components/WorldIdiomMap'));
-const { TabPane } = Tabs;
 const { Title, Paragraph } = Typography;
 
 export const deleteIdiomQuery = gql`
@@ -43,22 +43,20 @@ enum DeleteActionState {
 
 export interface IdiomProps {
   slug: string;
+  initialData: GetIdiomQuery;
 }
-type IdiomCombinedProps = RouteChildrenProps<any> & IdiomProps;
-
-
-export const Idiom: React.FunctionComponent<IdiomCombinedProps> = props => {
+export const Idiom: React.FunctionComponent<IdiomProps> = props => {
   const { slug } = props;
+  const navigate = useNavigate();
   const [equivalentTab, setEquivalentTab] = useState<string>("List");
-  const [isMapFullscreen, setMapFullscreen] = useState(false);
+  const [renderedDescription, setRenderedDescription] = useState<string | null>(null);
+  const mapFullScreen = useFullScreenHandle();
   const { currentUser, currentUserLoading } = useCurrentUser();
   const [deleteConfirmation, setDeleteConfirmation] = useState(DeleteActionState.None);
   const showEdit = currentUser && !currentUserLoading;
   const showDelete = currentUser && !currentUserLoading && currentUser.role === UserRole.ADMIN;
 
-  const { loading, data, error } = useQuery<GetIdiomQuery, GetIdiomQueryVariables>(getIdiomQuery, {
-    variables: { slug: slug }
-  });
+  const data = props.initialData;
 
   const [deleteIdiom, deleteStatusInfo] = useMutation<DeleteIdiomMutation, DeleteIdiomMutationVariables>(deleteIdiomQuery);
 
@@ -74,22 +72,28 @@ export const Idiom: React.FunctionComponent<IdiomCombinedProps> = props => {
     }
   }, [idiomTitle]);
 
+  useEffect(() => {
+    if (!data.idiom?.description) {
+      setRenderedDescription(null);
+      return;
+    }
+
+    const dompurify = dompurifyFactory(window);
+    setRenderedDescription(
+      dompurify.sanitize(
+        marked.parse(data.idiom.description, { async: false }) as string,
+      ),
+    );
+  }, [data.idiom?.description]);
+
   if (deleteStatusInfo.data && deleteStatusInfo.data.deleteIdiom.status === OperationStatus.SUCCESS) {
-    return <Redirect to="/" />;
+    return <Navigate to="/" replace />;
   }
 
-  if (loading) return <Spin delay={500} className="middleSpinner" tip="Loading..." />;
-  if (error) return <Alert message="Error" type="error" description={error} showIcon />;
-  if (!data || !data.idiom)
-    return <Alert message="Oops!" description="It looks like you went barking up the wrong tree." type="warning" showIcon />;
+  if (!data.idiom)
+    return <Alert title="Oops!" description="It looks like you went barking up the wrong tree." type="warning" showIcon />;
 
   const { idiom } = data;
-
-  let renderedDescription = idiom.description;
-  if (idiom && idiom.description) {
-    const dompurify = dompurifyFactory(window);
-    renderedDescription = dompurify.sanitize(marked(idiom.description));
-  }
 
   const buttons = [
     showDelete && (
@@ -111,12 +115,12 @@ export const Idiom: React.FunctionComponent<IdiomCombinedProps> = props => {
   ];
   const editConfig = {
     onStart: () => {
-      props.history.push("/idioms/" + idiom.slug + "/update");
+      navigate("/idioms/" + idiom.slug + "/update");
     }
   };
   const onFullScreenClick: React.MouseEventHandler<HTMLElement> = (e) => {
     if (screenfull.isEnabled && equivalentTab === "Map") {
-      setMapFullscreen(true);
+      mapFullScreen.enter();
     }
   }
 
@@ -126,15 +130,13 @@ export const Idiom: React.FunctionComponent<IdiomCombinedProps> = props => {
   }
   return (
     <article className="idiom">
-      <PageHeader
-        title={
+      <div className="page-header">
+        <div className="page-header-title">
           <Title className="idiomTitle" level={3} editable={showEdit ? editConfig : false}>
             {idiom.title}
           </Title>
-        }
-        className="page-header"
-        extra={buttons}
-      >
+          <div className="page-header-actions">{buttons}</div>
+        </div>
         <LanguageFlags languageInfo={idiom.language} size="large" showLabel />
         {idiom.transliteration && (
           <>
@@ -150,34 +152,50 @@ export const Idiom: React.FunctionComponent<IdiomCombinedProps> = props => {
           </>
         )}
 
-        {renderedDescription && (
+        {idiom.description && (
           <>
             <Title level={4}>Description</Title>
             <Paragraph className="content description">
-              <div className="markdown" dangerouslySetInnerHTML={{ __html: renderedDescription }}></div>
+              {renderedDescription ? (
+                <div
+                  className="markdown"
+                  dangerouslySetInnerHTML={{ __html: renderedDescription }}
+                />
+              ) : (
+                <div className="markdown">{idiom.description}</div>
+              )}
             </Paragraph>
           </>
         )}
 
         <Title level={4}>Equivalents</Title>
         <Paragraph className="info">This is how you express this idiom across languages and locales.</Paragraph>
-        <Tabs animated={false} tabBarExtraContent={fullScreenMapButton} onChange={onTabChange}>
-          <TabPane key="List" tab="List">
-            <EquivalentIdiomList idiom={idiom} user={currentUser} />
-          </TabPane>
-          <TabPane key="Map" tab="Map" className="worldMapPanel">
-            <Suspense fallback={<Spin delay={150} className="middleSpinner" tip="Loading..." />}>
-              <Fullscreen
-                enabled={isMapFullscreen}
-                onChange={isFull => setMapFullscreen(isFull)}
-              >
-                <WorldMap idiom={idiom} />
-              </Fullscreen>
-            </Suspense>
-          </TabPane>
-        </Tabs>
-        <AddEquivalentSection idiom={idiom} user={currentUser} history={props.history} />
-      </PageHeader>
+        <Tabs
+          animated={false}
+          tabBarExtraContent={fullScreenMapButton}
+          onChange={onTabChange}
+          items={[
+            {
+              key: "List",
+              label: "List",
+              children: <EquivalentIdiomList idiom={idiom} user={currentUser} />,
+            },
+            {
+              key: "Map",
+              label: "Map",
+              className: "worldMapPanel",
+              children: (
+                <Suspense fallback={<Spin delay={150} className="middleSpinner" description="Loading..." />}>
+                  <FullScreen handle={mapFullScreen}>
+                    <WorldMap idiom={idiom} />
+                  </FullScreen>
+                </Suspense>
+              ),
+            },
+          ]}
+        />
+        <AddEquivalentSection idiom={idiom} user={currentUser} navigate={navigate} />
+      </div>
     </article>
 
   );

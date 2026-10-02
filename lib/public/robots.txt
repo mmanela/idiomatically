@@ -1,2 +1,9 @@
 User-agent: *
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
 Disallow: /login
+Disallow: /me
+Disallow: /new
+
+Sitemap: https://idiomatically.net/sitemap.xml

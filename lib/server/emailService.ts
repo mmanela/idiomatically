@@ -1,5 +1,7 @@
 import { DataProviders } from './dataProvider/dataProviders';
-import sgMail, { MailDataRequired } from '@sendgrid/mail';
+import sgMail from '@sendgrid/mail';
+
+type MailData = Parameters<typeof sgMail.send>[0];
 
 export async function sendMailIfPendingProposals(dataProviders: DataProviders, adminEmails: string[]) {
   if (process.env.SENDGRID_API_KEY && adminEmails && adminEmails.length > 0) {
@@ -8,7 +10,7 @@ export async function sendMailIfPendingProposals(dataProviders: DataProviders, a
       if (pendingProposals > 0) {
         const message = `There are ${pendingProposals} idiom change proposals pending review`;
         sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-        const msg: MailDataRequired = {
+        const msg: MailData = {
           to: adminEmails,
           from: 'notifications@idiomatically.net',
           subject: message,
@@ -36,7 +38,7 @@ export async function sendAcceptedProposalEmail(slug: string, title: string, ema
       const subject = `Your contribution to Idiomatically.net was approved!`;
       const message = `We accepted your contribution for ${title}, please view it here: ${url} . Thanks for your support!`;
       sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-      const msg: MailDataRequired = {
+      const msg: MailData = {
         to: [email],
         from: 'notifications@idiomatically.net',
         subject: subject,

@@ -2,7 +2,7 @@ import * as React from "react";
 import { FullIdiomEntry, MinimalIdiomEntry } from "../__generated__/types";
 import "./IdiomListRenderer.scss";
 import { List } from "antd";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { LanguageFlags } from "../components/LanguageFlags";
 import { ListSize } from "antd/lib/list";
 
@@ -35,7 +35,7 @@ export const IdiomListRenderer: React.FunctionComponent<IdiomListRendererProps> 
         hideOnSinglePage: true,
         total: props.totalCount,
         showSizeChanger: false,
-        size: props.paginationSize || "default"
+        size: props.paginationSize === "small" ? "small" : undefined
       }}
       dataSource={props.idioms}
       renderItem={item =>

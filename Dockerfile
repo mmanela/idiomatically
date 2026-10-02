@@ -1,21 +1,21 @@
-FROM node:16
+FROM node:22-bookworm-slim AS build
 
-LABEL NAME=idiom
-
-ENV REACT_APP_SERVER https://idiomatically.net
-
-# Setup app
+WORKDIR /app
 COPY lib/package*.json ./
-COPY lib/yarn.lock ./
-RUN yarn install --production=false
-
-# Copy contents
+RUN npm ci
 COPY lib/ .
+RUN npm run build
 
-# Build Client
-RUN yarn client:build
+FROM node:22-bookworm-slim
 
-# Start Server
-ENV PORT 80
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=80
+
+COPY lib/package*.json ./
+RUN npm ci --omit=dev
+COPY --from=build /app/build ./build
+COPY --from=build /app/server.js ./server.js
+
 EXPOSE 80
-CMD ["yarn","server:prod"]
+CMD ["npm", "start"]

@@ -1,5 +1,5 @@
 import React from "react";
-import { History } from "history";
+import type { NavigateFunction } from "react-router";
 import {
   OperationStatus,
   GetIdiomQuery_idiom,
@@ -10,7 +10,8 @@ import {
   FindIdiomsQueryVariables,
   FindIdiomsQuery_idioms_edges_node
 } from "../__generated__/types";
-import { useMutation, useLazyQuery, gql } from "@apollo/client";
+import { gql } from "@apollo/client";
+import { useLazyQuery, useMutation } from "@apollo/client/react";
 import { MINIMAL_IDIOM_ENTRY } from "../fragments/fragments";
 import "./AddEquivalentSection.scss";
 import { PlusCircleOutlined } from '@ant-design/icons';
@@ -49,7 +50,7 @@ export const findIdiomsQuery = gql`
 interface AddEquivalentListProps {
   user?: GetCurrentUser_me | null;
   idiom: GetIdiomQuery_idiom;
-  history: History;
+  navigate: NavigateFunction;
 }
 type SelectedIdiomState = {
   idiom?: FindIdiomsQuery_idioms_edges_node | null;
@@ -92,7 +93,7 @@ export const AddEquivalentSection: React.FunctionComponent<AddEquivalentListProp
   };
   if (!props.user) {
     return (
-      <Button type="link" icon={<PlusCircleOutlined />} onClick={e => loginClick(e, props.idiom!.slug, props.history)}>
+      <Button type="link" icon={<PlusCircleOutlined />} onClick={e => loginClick(e, props.idiom!.slug)}>
         Login to correlate with other idioms
       </Button>
     );
@@ -135,7 +136,7 @@ export const AddEquivalentSection: React.FunctionComponent<AddEquivalentListProp
       {selectedIdiomState.idiom && selectedIdiomState.status !== undefined && (
         <Alert
           className="addEquivalentResult"
-          message={getMessageFromStatus(selectedIdiomState.status)}
+          title={getMessageFromStatus(selectedIdiomState.status)}
           type={getSuccessFromStatus(selectedIdiomState.status) ? "success" : "error"}
         />
       )}
@@ -148,7 +149,7 @@ export const AddEquivalentSection: React.FunctionComponent<AddEquivalentListProp
       <Text strong>Add a new idiom...</Text>
       <Text className="addEquivalentDescription">If the related idiom doesn't exist on the site yet, please add it</Text>
       <div>
-        <Button type="link" icon={<PlusCircleOutlined />} onClick={e => handleAddEquivalentClick(e, props.idiom!.id, props.history)}>
+        <Button type="link" icon={<PlusCircleOutlined />} onClick={e => handleAddEquivalentClick(e, props.idiom!.id, props.navigate)}>
           Add idiom
         </Button>
       </div>
@@ -179,11 +180,11 @@ const getSuccessFromStatus = (status: OperationStatus) => {
   }
 };
 
-export const handleAddEquivalentClick = (e: React.MouseEvent<any, any>, idiomId: string, history: History) => {
-  history.push(`/new?equivalentIdiomId=${idiomId}`);
+export const handleAddEquivalentClick = (e: React.MouseEvent<any, any>, idiomId: string, navigate: NavigateFunction) => {
+  navigate(`/new?equivalentIdiomId=${idiomId}`);
 };
 
-export const loginClick = (e: React.MouseEvent<any, any>, idiomSlug: string, history: History) => {
+export const loginClick = (e: React.MouseEvent<any, any>, idiomSlug: string) => {
   const returnUrl = `/idioms/${idiomSlug}`;
-  window.location.href = `${process.env.REACT_APP_SERVER}/login?returnTo=${returnUrl}`;
+  window.location.href = `/login?returnTo=${returnUrl}`;
 };

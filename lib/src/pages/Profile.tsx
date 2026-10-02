@@ -3,10 +3,9 @@ import "./Profile.scss";
 import { PoweroffOutlined } from '@ant-design/icons';
 import { Avatar, Typography, Button, Spin } from "antd";
 import { useState } from "react";
-import { Redirect } from "react-router";
+import { Link, Navigate } from "react-router";
 import { useCurrentUser } from "../components/withCurrentUser";
 import { UserRole } from "../__generated__/types";
-import { Link } from "react-router-dom";
 const { Title } = Typography;
 
 export interface ProfileProps {}
@@ -45,7 +44,7 @@ export const Profile: React.FunctionComponent<ProfileProps> = props => {
   const logOut = async () => {
     setIsLoggingOut(true);
     try {
-      await fetch(`${process.env.REACT_APP_SERVER}/logout`, { method: "POST", mode: "cors", credentials: "include" });
+      await fetch("/logout", { method: "POST", credentials: "include" });
     } catch (e) {
       console.error(e);
     }
@@ -55,9 +54,9 @@ export const Profile: React.FunctionComponent<ProfileProps> = props => {
   };
 
   if (currentUserLoading) {
-    return <Spin spinning delay={500} className="middleSpinner" tip="Loading..." />;
+    return <Spin spinning delay={500} className="middleSpinner" description="Loading..." />;
   } else if (!currentUser) {
-    return <Redirect to="/" />;
+    return <Navigate to="/" replace />;
   }
 
   const showAdminLinks = currentUser && !currentUserLoading && currentUser.role === UserRole.ADMIN;

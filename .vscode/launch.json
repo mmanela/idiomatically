@@ -9,7 +9,7 @@
       "request": "launch",
       "name": "Debug Server",
       "sourceMaps": true,
-      "runtimeExecutable": "yarn",
+      "runtimeExecutable": "npm",
       "trace": true,
       "restart": true,
       "cwd": "${workspaceRoot}/lib/server",

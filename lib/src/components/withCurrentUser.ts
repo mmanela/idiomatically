@@ -1,7 +1,8 @@
 import {
     GetCurrentUser, GetCurrentUser_me
 } from "../__generated__/types";
-import { useQuery, useApolloClient, ApolloQueryResult, gql } from "@apollo/client";
+import { ApolloQueryResult, gql } from "@apollo/client";
+import { useApolloClient, useQuery } from "@apollo/client/react";
 
 export const getCurrentUserQuery = gql`
   query GetCurrentUser {
@@ -21,13 +22,18 @@ export type CurrentUserModel = {
 }
 
 
-export function useCurrentUser() {
+export function useCurrentUser(
+    initialCurrentUser?: GetCurrentUser_me | null
+) {
     const client = useApolloClient();
     const { data, loading } = useQuery<GetCurrentUser | null>(getCurrentUserQuery);
+    const hasInitialCurrentUser = initialCurrentUser !== undefined;
 
     return {
-        currentUser: data && data.me,
-        currentUserLoading: loading,
+        currentUser: loading && hasInitialCurrentUser
+            ? initialCurrentUser
+            : data && data.me,
+        currentUserLoading: loading && !hasInitialCurrentUser,
         resetOnLogout: async () => client.resetStore()
     }
 }

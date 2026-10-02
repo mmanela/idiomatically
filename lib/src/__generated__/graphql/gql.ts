@@ -1,0 +1,142 @@
+/* eslint-disable */
+import * as types from './graphql';
+import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
+
+/**
+ * Map of all GraphQL operations in the project.
+ *
+ * This map has several performance disadvantages:
+ * 1. It is not tree-shakeable, so it will include all operations in the project.
+ * 2. It is not minifiable, so the string of a GraphQL query will be multiple times inside the bundle.
+ * 3. It does not support dead code elimination, so it will add unused operations.
+ *
+ * Therefore it is highly recommended to use the babel or swc plugin for production.
+ * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
+ */
+type Documents = {
+    "\n  mutation AddEquivalentIdiomMutation($idiomId: ID!, $equivalentId: ID!) {\n    addEquivalent(idiomId: $idiomId, equivalentId: $equivalentId) {\n      status\n      message\n    }\n  }\n": typeof types.AddEquivalentIdiomMutationDocument,
+    "\n  query FindIdiomsQuery($filter: String) {\n    idioms(filter: $filter, limit: 10, locale: \"all\") {\n      totalCount\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n      edges {\n        node {\n          ...MinimalIdiomEntry\n        }\n      }\n    }\n  }\n  \n": typeof types.FindIdiomsQueryDocument,
+    "\n  query GetCountriesQuery($languageKey: String) {\n    countries(languageKey: $languageKey) {\n      countryKey\n      countryName\n      countryNativeName\n    }\n  }\n": typeof types.GetCountriesQueryDocument,
+    "\n  mutation RemoveEquivalentIdiomMutation($idiomId: ID!, $equivalentId: ID!) {\n    removeEquivalent(idiomId: $idiomId, equivalentId: $equivalentId) {\n      status\n      message\n    }\n  }\n": typeof types.RemoveEquivalentIdiomMutationDocument,
+    "\n  query GetLanguagesQuery {\n    languages {\n      languageKey\n      languageName\n      languageNativeName\n    }\n  }\n": typeof types.GetLanguagesQueryDocument,
+    "\n  query GetLanguagesWithIdioms {\n    languagesWithIdioms {\n      languageName\n      languageNativeName\n      languageKey\n    }\n  }\n": typeof types.GetLanguagesWithIdiomsDocument,
+    "\n  query GetCurrentUser {\n    me {\n        id\n        name\n        avatar\n        role\n    }\n  }\n": typeof types.GetCurrentUserDocument,
+    "\nfragment FullIdiomEntry on Idiom {\n    id\n    slug\n    title\n    literalTranslation\n    transliteration\n    description\n    language {\n        languageKey\n        languageName\n        countries {\n            countryKey\n            countryName\n            emojiFlag\n            latitude\n            longitude\n        }\n    }\n    equivalents {\n        id\n        slug\n        title\n        literalTranslation\n        transliteration\n        language {\n            languageKey\n            languageName\n            countries {\n                countryKey\n                countryName\n                emojiFlag\n                latitude\n                longitude\n            }\n        }\n    }\n}": typeof types.FullIdiomEntryFragmentDoc,
+    "\nfragment MinimalIdiomEntry on Idiom {\n    id\n    slug\n    title\n    literalTranslation\n    transliteration\n    language {\n        languageKey\n        languageName\n        countries {\n            countryKey\n            countryName\n            emojiFlag\n            latitude\n            longitude\n        }\n    } \n}": typeof types.MinimalIdiomEntryFragmentDoc,
+    "\n  query GetIdiomQuery($slug: String, $id: ID) {\n    idiom(slug: $slug, id: $id) {\n      ...FullIdiomEntry\n    }\n  }\n  \n": typeof types.GetIdiomQueryDocument,
+    "\n  query GetChangeProposalsQuery($filter: String, $limit: Int, $cursor: String) {\n    idiomChangeProposals(filter: $filter, limit: $limit, cursor: $cursor) {\n      totalCount\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n      edges {\n        node {\n          id\n          body\n          readOnlyType\n          readOnlyCreatedBy\n          readOnlyTitle\n          readOnlySlug\n        }\n      }\n    }\n  }\n": typeof types.GetChangeProposalsQueryDocument,
+    "\n  mutation AcceptChangeProposalMutation($id: ID!, $body: String) {\n    acceptIdiomChangeProposal(proposalId: $id, body: $body) {\n      status\n      message\n    }\n  }\n": typeof types.AcceptChangeProposalMutationDocument,
+    "\n  mutation RejectChangeProposalMutation($id: ID!) {\n    rejectIdiomChangeProposal(proposalId: $id) {\n      status\n      message\n    }\n  }\n": typeof types.RejectChangeProposalMutationDocument,
+    "\n  mutation DeleteIdiomMutation($id: ID!) {\n    deleteIdiom(idiomId: $id) {\n      status\n      message\n    }\n  }\n": typeof types.DeleteIdiomMutationDocument,
+    "\n  query GetIdiomListQuery(\n    $filter: String\n    $locale: String\n    $limit: Int\n    $cursor: String\n  ) {\n    idioms(filter: $filter, locale: $locale, limit: $limit, cursor: $cursor) {\n      totalCount\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n      edges {\n        node {\n          ...FullIdiomEntry\n        }\n      }\n    }\n  }\n  \n": typeof types.GetIdiomListQueryDocument,
+    "\n  mutation CreateIdiomMutation(\n    $title: String!\n    $languageKey: String!\n    $countryKeys: [String!]!\n    $description: String\n    $literalTranslation: String\n    $transliteration: String\n    $relatedIdiomId: ID\n  ) {\n    createIdiom(\n      idiom: {\n        title: $title\n        description: $description\n        transliteration: $transliteration\n        literalTranslation: $literalTranslation\n        languageKey: $languageKey\n        countryKeys: $countryKeys\n        relatedIdiomId: $relatedIdiomId\n      }\n    ) {\n      status\n      message\n      idiom {\n        ...FullIdiomEntry\n      }\n    }\n  }\n  \n": typeof types.CreateIdiomMutationDocument,
+    "\n  mutation UpdateIdiomMutation(\n    $id: ID!\n    $title: String\n    $countryKeys: [String!]\n    $description: String\n    $literalTranslation: String\n    $transliteration: String\n  ) {\n    updateIdiom(\n      idiom: {\n        id: $id\n        title: $title\n        description: $description\n        transliteration: $transliteration\n        literalTranslation: $literalTranslation\n        countryKeys: $countryKeys\n      }\n    ) {\n      status\n      message\n      idiom {\n        ...FullIdiomEntry\n      }\n    }\n  }\n  \n": typeof types.UpdateIdiomMutationDocument,
+};
+const documents: Documents = {
+    "\n  mutation AddEquivalentIdiomMutation($idiomId: ID!, $equivalentId: ID!) {\n    addEquivalent(idiomId: $idiomId, equivalentId: $equivalentId) {\n      status\n      message\n    }\n  }\n": types.AddEquivalentIdiomMutationDocument,
+    "\n  query FindIdiomsQuery($filter: String) {\n    idioms(filter: $filter, limit: 10, locale: \"all\") {\n      totalCount\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n      edges {\n        node {\n          ...MinimalIdiomEntry\n        }\n      }\n    }\n  }\n  \n": types.FindIdiomsQueryDocument,
+    "\n  query GetCountriesQuery($languageKey: String) {\n    countries(languageKey: $languageKey) {\n      countryKey\n      countryName\n      countryNativeName\n    }\n  }\n": types.GetCountriesQueryDocument,
+    "\n  mutation RemoveEquivalentIdiomMutation($idiomId: ID!, $equivalentId: ID!) {\n    removeEquivalent(idiomId: $idiomId, equivalentId: $equivalentId) {\n      status\n      message\n    }\n  }\n": types.RemoveEquivalentIdiomMutationDocument,
+    "\n  query GetLanguagesQuery {\n    languages {\n      languageKey\n      languageName\n      languageNativeName\n    }\n  }\n": types.GetLanguagesQueryDocument,
+    "\n  query GetLanguagesWithIdioms {\n    languagesWithIdioms {\n      languageName\n      languageNativeName\n      languageKey\n    }\n  }\n": types.GetLanguagesWithIdiomsDocument,
+    "\n  query GetCurrentUser {\n    me {\n        id\n        name\n        avatar\n        role\n    }\n  }\n": types.GetCurrentUserDocument,
+    "\nfragment FullIdiomEntry on Idiom {\n    id\n    slug\n    title\n    literalTranslation\n    transliteration\n    description\n    language {\n        languageKey\n        languageName\n        countries {\n            countryKey\n            countryName\n            emojiFlag\n            latitude\n            longitude\n        }\n    }\n    equivalents {\n        id\n        slug\n        title\n        literalTranslation\n        transliteration\n        language {\n            languageKey\n            languageName\n            countries {\n                countryKey\n                countryName\n                emojiFlag\n                latitude\n                longitude\n            }\n        }\n    }\n}": types.FullIdiomEntryFragmentDoc,
+    "\nfragment MinimalIdiomEntry on Idiom {\n    id\n    slug\n    title\n    literalTranslation\n    transliteration\n    language {\n        languageKey\n        languageName\n        countries {\n            countryKey\n            countryName\n            emojiFlag\n            latitude\n            longitude\n        }\n    } \n}": types.MinimalIdiomEntryFragmentDoc,
+    "\n  query GetIdiomQuery($slug: String, $id: ID) {\n    idiom(slug: $slug, id: $id) {\n      ...FullIdiomEntry\n    }\n  }\n  \n": types.GetIdiomQueryDocument,
+    "\n  query GetChangeProposalsQuery($filter: String, $limit: Int, $cursor: String) {\n    idiomChangeProposals(filter: $filter, limit: $limit, cursor: $cursor) {\n      totalCount\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n      edges {\n        node {\n          id\n          body\n          readOnlyType\n          readOnlyCreatedBy\n          readOnlyTitle\n          readOnlySlug\n        }\n      }\n    }\n  }\n": types.GetChangeProposalsQueryDocument,
+    "\n  mutation AcceptChangeProposalMutation($id: ID!, $body: String) {\n    acceptIdiomChangeProposal(proposalId: $id, body: $body) {\n      status\n      message\n    }\n  }\n": types.AcceptChangeProposalMutationDocument,
+    "\n  mutation RejectChangeProposalMutation($id: ID!) {\n    rejectIdiomChangeProposal(proposalId: $id) {\n      status\n      message\n    }\n  }\n": types.RejectChangeProposalMutationDocument,
+    "\n  mutation DeleteIdiomMutation($id: ID!) {\n    deleteIdiom(idiomId: $id) {\n      status\n      message\n    }\n  }\n": types.DeleteIdiomMutationDocument,
+    "\n  query GetIdiomListQuery(\n    $filter: String\n    $locale: String\n    $limit: Int\n    $cursor: String\n  ) {\n    idioms(filter: $filter, locale: $locale, limit: $limit, cursor: $cursor) {\n      totalCount\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n      edges {\n        node {\n          ...FullIdiomEntry\n        }\n      }\n    }\n  }\n  \n": types.GetIdiomListQueryDocument,
+    "\n  mutation CreateIdiomMutation(\n    $title: String!\n    $languageKey: String!\n    $countryKeys: [String!]!\n    $description: String\n    $literalTranslation: String\n    $transliteration: String\n    $relatedIdiomId: ID\n  ) {\n    createIdiom(\n      idiom: {\n        title: $title\n        description: $description\n        transliteration: $transliteration\n        literalTranslation: $literalTranslation\n        languageKey: $languageKey\n        countryKeys: $countryKeys\n        relatedIdiomId: $relatedIdiomId\n      }\n    ) {\n      status\n      message\n      idiom {\n        ...FullIdiomEntry\n      }\n    }\n  }\n  \n": types.CreateIdiomMutationDocument,
+    "\n  mutation UpdateIdiomMutation(\n    $id: ID!\n    $title: String\n    $countryKeys: [String!]\n    $description: String\n    $literalTranslation: String\n    $transliteration: String\n  ) {\n    updateIdiom(\n      idiom: {\n        id: $id\n        title: $title\n        description: $description\n        transliteration: $transliteration\n        literalTranslation: $literalTranslation\n        countryKeys: $countryKeys\n      }\n    ) {\n      status\n      message\n      idiom {\n        ...FullIdiomEntry\n      }\n    }\n  }\n  \n": types.UpdateIdiomMutationDocument,
+};
+
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ *
+ *
+ * @example
+ * ```ts
+ * const query = graphql(`query GetUser($id: ID!) { user(id: $id) { name } }`);
+ * ```
+ *
+ * The query argument is unknown!
+ * Please regenerate the types.
+ */
+export function graphql(source: string): unknown;
+
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation AddEquivalentIdiomMutation($idiomId: ID!, $equivalentId: ID!) {\n    addEquivalent(idiomId: $idiomId, equivalentId: $equivalentId) {\n      status\n      message\n    }\n  }\n"): (typeof documents)["\n  mutation AddEquivalentIdiomMutation($idiomId: ID!, $equivalentId: ID!) {\n    addEquivalent(idiomId: $idiomId, equivalentId: $equivalentId) {\n      status\n      message\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query FindIdiomsQuery($filter: String) {\n    idioms(filter: $filter, limit: 10, locale: \"all\") {\n      totalCount\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n      edges {\n        node {\n          ...MinimalIdiomEntry\n        }\n      }\n    }\n  }\n  \n"): (typeof documents)["\n  query FindIdiomsQuery($filter: String) {\n    idioms(filter: $filter, limit: 10, locale: \"all\") {\n      totalCount\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n      edges {\n        node {\n          ...MinimalIdiomEntry\n        }\n      }\n    }\n  }\n  \n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetCountriesQuery($languageKey: String) {\n    countries(languageKey: $languageKey) {\n      countryKey\n      countryName\n      countryNativeName\n    }\n  }\n"): (typeof documents)["\n  query GetCountriesQuery($languageKey: String) {\n    countries(languageKey: $languageKey) {\n      countryKey\n      countryName\n      countryNativeName\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation RemoveEquivalentIdiomMutation($idiomId: ID!, $equivalentId: ID!) {\n    removeEquivalent(idiomId: $idiomId, equivalentId: $equivalentId) {\n      status\n      message\n    }\n  }\n"): (typeof documents)["\n  mutation RemoveEquivalentIdiomMutation($idiomId: ID!, $equivalentId: ID!) {\n    removeEquivalent(idiomId: $idiomId, equivalentId: $equivalentId) {\n      status\n      message\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetLanguagesQuery {\n    languages {\n      languageKey\n      languageName\n      languageNativeName\n    }\n  }\n"): (typeof documents)["\n  query GetLanguagesQuery {\n    languages {\n      languageKey\n      languageName\n      languageNativeName\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetLanguagesWithIdioms {\n    languagesWithIdioms {\n      languageName\n      languageNativeName\n      languageKey\n    }\n  }\n"): (typeof documents)["\n  query GetLanguagesWithIdioms {\n    languagesWithIdioms {\n      languageName\n      languageNativeName\n      languageKey\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetCurrentUser {\n    me {\n        id\n        name\n        avatar\n        role\n    }\n  }\n"): (typeof documents)["\n  query GetCurrentUser {\n    me {\n        id\n        name\n        avatar\n        role\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\nfragment FullIdiomEntry on Idiom {\n    id\n    slug\n    title\n    literalTranslation\n    transliteration\n    description\n    language {\n        languageKey\n        languageName\n        countries {\n            countryKey\n            countryName\n            emojiFlag\n            latitude\n            longitude\n        }\n    }\n    equivalents {\n        id\n        slug\n        title\n        literalTranslation\n        transliteration\n        language {\n            languageKey\n            languageName\n            countries {\n                countryKey\n                countryName\n                emojiFlag\n                latitude\n                longitude\n            }\n        }\n    }\n}"): (typeof documents)["\nfragment FullIdiomEntry on Idiom {\n    id\n    slug\n    title\n    literalTranslation\n    transliteration\n    description\n    language {\n        languageKey\n        languageName\n        countries {\n            countryKey\n            countryName\n            emojiFlag\n            latitude\n            longitude\n        }\n    }\n    equivalents {\n        id\n        slug\n        title\n        literalTranslation\n        transliteration\n        language {\n            languageKey\n            languageName\n            countries {\n                countryKey\n                countryName\n                emojiFlag\n                latitude\n                longitude\n            }\n        }\n    }\n}"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\nfragment MinimalIdiomEntry on Idiom {\n    id\n    slug\n    title\n    literalTranslation\n    transliteration\n    language {\n        languageKey\n        languageName\n        countries {\n            countryKey\n            countryName\n            emojiFlag\n            latitude\n            longitude\n        }\n    } \n}"): (typeof documents)["\nfragment MinimalIdiomEntry on Idiom {\n    id\n    slug\n    title\n    literalTranslation\n    transliteration\n    language {\n        languageKey\n        languageName\n        countries {\n            countryKey\n            countryName\n            emojiFlag\n            latitude\n            longitude\n        }\n    } \n}"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetIdiomQuery($slug: String, $id: ID) {\n    idiom(slug: $slug, id: $id) {\n      ...FullIdiomEntry\n    }\n  }\n  \n"): (typeof documents)["\n  query GetIdiomQuery($slug: String, $id: ID) {\n    idiom(slug: $slug, id: $id) {\n      ...FullIdiomEntry\n    }\n  }\n  \n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetChangeProposalsQuery($filter: String, $limit: Int, $cursor: String) {\n    idiomChangeProposals(filter: $filter, limit: $limit, cursor: $cursor) {\n      totalCount\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n      edges {\n        node {\n          id\n          body\n          readOnlyType\n          readOnlyCreatedBy\n          readOnlyTitle\n          readOnlySlug\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetChangeProposalsQuery($filter: String, $limit: Int, $cursor: String) {\n    idiomChangeProposals(filter: $filter, limit: $limit, cursor: $cursor) {\n      totalCount\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n      edges {\n        node {\n          id\n          body\n          readOnlyType\n          readOnlyCreatedBy\n          readOnlyTitle\n          readOnlySlug\n        }\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation AcceptChangeProposalMutation($id: ID!, $body: String) {\n    acceptIdiomChangeProposal(proposalId: $id, body: $body) {\n      status\n      message\n    }\n  }\n"): (typeof documents)["\n  mutation AcceptChangeProposalMutation($id: ID!, $body: String) {\n    acceptIdiomChangeProposal(proposalId: $id, body: $body) {\n      status\n      message\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation RejectChangeProposalMutation($id: ID!) {\n    rejectIdiomChangeProposal(proposalId: $id) {\n      status\n      message\n    }\n  }\n"): (typeof documents)["\n  mutation RejectChangeProposalMutation($id: ID!) {\n    rejectIdiomChangeProposal(proposalId: $id) {\n      status\n      message\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation DeleteIdiomMutation($id: ID!) {\n    deleteIdiom(idiomId: $id) {\n      status\n      message\n    }\n  }\n"): (typeof documents)["\n  mutation DeleteIdiomMutation($id: ID!) {\n    deleteIdiom(idiomId: $id) {\n      status\n      message\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query GetIdiomListQuery(\n    $filter: String\n    $locale: String\n    $limit: Int\n    $cursor: String\n  ) {\n    idioms(filter: $filter, locale: $locale, limit: $limit, cursor: $cursor) {\n      totalCount\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n      edges {\n        node {\n          ...FullIdiomEntry\n        }\n      }\n    }\n  }\n  \n"): (typeof documents)["\n  query GetIdiomListQuery(\n    $filter: String\n    $locale: String\n    $limit: Int\n    $cursor: String\n  ) {\n    idioms(filter: $filter, locale: $locale, limit: $limit, cursor: $cursor) {\n      totalCount\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n      edges {\n        node {\n          ...FullIdiomEntry\n        }\n      }\n    }\n  }\n  \n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreateIdiomMutation(\n    $title: String!\n    $languageKey: String!\n    $countryKeys: [String!]!\n    $description: String\n    $literalTranslation: String\n    $transliteration: String\n    $relatedIdiomId: ID\n  ) {\n    createIdiom(\n      idiom: {\n        title: $title\n        description: $description\n        transliteration: $transliteration\n        literalTranslation: $literalTranslation\n        languageKey: $languageKey\n        countryKeys: $countryKeys\n        relatedIdiomId: $relatedIdiomId\n      }\n    ) {\n      status\n      message\n      idiom {\n        ...FullIdiomEntry\n      }\n    }\n  }\n  \n"): (typeof documents)["\n  mutation CreateIdiomMutation(\n    $title: String!\n    $languageKey: String!\n    $countryKeys: [String!]!\n    $description: String\n    $literalTranslation: String\n    $transliteration: String\n    $relatedIdiomId: ID\n  ) {\n    createIdiom(\n      idiom: {\n        title: $title\n        description: $description\n        transliteration: $transliteration\n        literalTranslation: $literalTranslation\n        languageKey: $languageKey\n        countryKeys: $countryKeys\n        relatedIdiomId: $relatedIdiomId\n      }\n    ) {\n      status\n      message\n      idiom {\n        ...FullIdiomEntry\n      }\n    }\n  }\n  \n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation UpdateIdiomMutation(\n    $id: ID!\n    $title: String\n    $countryKeys: [String!]\n    $description: String\n    $literalTranslation: String\n    $transliteration: String\n  ) {\n    updateIdiom(\n      idiom: {\n        id: $id\n        title: $title\n        description: $description\n        transliteration: $transliteration\n        literalTranslation: $literalTranslation\n        countryKeys: $countryKeys\n      }\n    ) {\n      status\n      message\n      idiom {\n        ...FullIdiomEntry\n      }\n    }\n  }\n  \n"): (typeof documents)["\n  mutation UpdateIdiomMutation(\n    $id: ID!\n    $title: String\n    $countryKeys: [String!]\n    $description: String\n    $literalTranslation: String\n    $transliteration: String\n  ) {\n    updateIdiom(\n      idiom: {\n        id: $id\n        title: $title\n        description: $description\n        transliteration: $transliteration\n        literalTranslation: $literalTranslation\n        countryKeys: $countryKeys\n      }\n    ) {\n      status\n      message\n      idiom {\n        ...FullIdiomEntry\n      }\n    }\n  }\n  \n"];
+
+export function graphql(source: string) {
+  return (documents as any)[source] ?? {};
+}
+
+export type DocumentType<TDocumentNode extends DocumentNode<any, any>> = TDocumentNode extends DocumentNode<  infer TType,  any>  ? TType  : never;

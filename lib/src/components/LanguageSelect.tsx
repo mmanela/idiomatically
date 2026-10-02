@@ -1,7 +1,9 @@
 import * as React from "react";
 import { Select } from "antd";
 import { GetLanguagesQuery } from "../__generated__/types";
-import { useLazyQuery, gql } from "@apollo/client";
+import { gql } from "@apollo/client";
+import { useLazyQuery } from "@apollo/client/react";
+import { useEffect } from "react";
 const { Option } = Select;
 
 export const getLanguagesQuery = gql`
@@ -22,6 +24,8 @@ export interface LanguageSelectProps {
   readOnly?: boolean;
 
   readOnlyText?: string;
+
+  value?: string;
 }
 
 export const LanguageSelect: React.FunctionComponent<LanguageSelectProps> = (props) => {
@@ -29,14 +33,12 @@ export const LanguageSelect: React.FunctionComponent<LanguageSelectProps> = (pro
     getLanguagesQuery
   );
 
-  const called = getLanguagesLoadResult && getLanguagesLoadResult.called;
   const data = getLanguagesLoadResult && getLanguagesLoadResult.data;
   const loading = getLanguagesLoadResult && getLanguagesLoadResult.loading;
-  if ((!called
-    && !loading)) {
-    getLanguages();
-  }
 
+  useEffect(() => {
+    getLanguages();
+  }, [getLanguages]);
 
   const options = data ? buildOptions(data!) : undefined;
   if (props.readOnly) {
@@ -46,6 +48,7 @@ export const LanguageSelect: React.FunctionComponent<LanguageSelectProps> = (pro
   return (
     <Select
       loading={loading}
+      value={props.value}
       onChange={props.onChange}
       // This ensure the box opens so you can type right away
       showAction={["focus", "click"]}

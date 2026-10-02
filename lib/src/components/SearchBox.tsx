@@ -1,14 +1,15 @@
-import * as React from "react";
-import "./SearchBox.scss";
+import { gql } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { Input, Select } from "antd";
-import { useQuery, gql } from "@apollo/client";
+import { useEffect, useState, type CSSProperties } from "react";
 import {
   GetLanguagesWithIdioms,
-  GetLanguagesWithIdioms_languagesWithIdioms
+  GetLanguagesWithIdioms_languagesWithIdioms,
 } from "../__generated__/types";
 import { getLanguageName } from "../utilities/languageUtil";
+import "./SearchBox.scss";
+
 const { Search } = Input;
-const { Option } = Select;
 
 export const getLanguagesWithIdiomsQuery = gql`
   query GetLanguagesWithIdioms {
@@ -28,58 +29,74 @@ export interface SearchBoxProps {
 }
 
 export function SearchBox(props: SearchBoxProps) {
+  const [query, setQuery] = useState(props.filter || "");
   const { data, loading } = useQuery<GetLanguagesWithIdioms>(
-    getLanguagesWithIdiomsQuery
+    getLanguagesWithIdiomsQuery,
   );
-
-  const loadLangs = !loading && data && data.languagesWithIdioms;
-  const defaultLangs: GetLanguagesWithIdioms_languagesWithIdioms[] = [
+  useEffect(() => {
+    setQuery(props.filter || "");
+  }, [props.filter]);
+  const selectedLanguage = props.language || "en";
+  const languages: GetLanguagesWithIdioms_languagesWithIdioms[] = [
     {
       languageKey: "all",
       languageName: "All",
       languageNativeName: "All",
-      __typename: "Language"
-    }
+      __typename: "Language",
+    },
+    ...(!loading && data?.languagesWithIdioms
+      ? data.languagesWithIdioms
+      : []),
   ];
-  let langs: GetLanguagesWithIdioms_languagesWithIdioms[] = defaultLangs;
-  if (loadLangs) {
-    langs = langs.concat(loadLangs);
+  if (!languages.some((language) => language.languageKey === selectedLanguage)) {
+    const selectedLanguageName =
+      getLanguageName(selectedLanguage) || selectedLanguage;
+    languages.push({
+      languageKey: selectedLanguage,
+      languageName: selectedLanguageName,
+      languageNativeName: selectedLanguageName,
+      __typename: "Language",
+    });
   }
-
-  let defaultValue: string = getLanguageName(props.language) || "English";
-
-  let selectAfter: JSX.Element = (
-    <Select
-      defaultValue={defaultValue}
-      value={props.language ? props.language : defaultValue}
-      className="languageSelect"
-      dropdownClassName="languageOptionContainer"
-      onChange={props.onLanguageChange}
-    >
-      {langs.map(lang => {
-        return (
-          <Option
-            key={lang.languageKey}
-            value={lang.languageKey}
-            title={lang.languageNativeName}
-            className="languageOption"
-          >
-            {lang.languageName}
-          </Option>
-        );
-      })}
-    </Select>
+  const selectedLanguageLabel =
+    languages.find(
+      (language) => language.languageKey === selectedLanguage,
+    )?.languageName ||
+    getLanguageName(selectedLanguage) ||
+    selectedLanguage;
+  const languageSelectWidth = Math.min(
+    220,
+    Math.max(100, selectedLanguageLabel.length * 9 + 48),
   );
 
   return (
-    <Search
-      defaultValue={props.filter || undefined}
-      className="idiomSearchBox"
-      placeholder="Find an idiom"
-      size="large"
-      enterButton
-      addonAfter={selectAfter}
-      onSearch={props.onSearch}
-    />
+    <div className="idiomSearchControls">
+      <Search
+        aria-label="Find an idiom"
+        value={query}
+        className="idiomSearchBox"
+        placeholder="Find an idiom"
+        size="large"
+        enterButton
+        onChange={(event) => setQuery(event.target.value)}
+        onSearch={props.onSearch}
+      />
+      <Select
+        aria-label="Language"
+        value={selectedLanguage}
+        className="languageSelect"
+        size="large"
+        style={{ width: languageSelectWidth } as CSSProperties}
+        title={selectedLanguageLabel}
+        classNames={{ popup: { root: "languageOptionContainer" } }}
+        onChange={props.onLanguageChange}
+        options={languages.map((language) => ({
+          value: language.languageKey,
+          label: language.languageName,
+          title: language.languageNativeName,
+          className: "languageOption",
+        }))}
+      />
+    </div>
   );
 }

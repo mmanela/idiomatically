@@ -1,6 +1,6 @@
 import React from "react";
 import { LanguageFlags } from "./LanguageFlags";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import "./IdiomRenderer.scss";
 import { MinimalIdiomEntry } from "../__generated__/types";
 

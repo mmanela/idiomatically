@@ -3,8 +3,6 @@ import {
   CreateIdiomMutation,
   CreateIdiomMutationVariables,
   FullIdiomEntry,
-  GetIdiomQuery,
-  GetIdiomQueryVariables,
   OperationStatus
 } from "../__generated__/types";
 import "./NewIdiom.scss";
@@ -12,11 +10,10 @@ import { Typography, Alert, Spin, Form } from "antd";
 import { useState } from "react";
 import { Navigate } from "react-router";
 import { FULL_IDIOM_ENTRY } from "../fragments/fragments";
-import { getIdiomQuery } from "../fragments/getIdiom";
 import { commonFormItems } from "../components/commonFormItems";
 import { getErrorMessage, isAuthenticationError } from "../utilities/errorUtils";
 import { gql } from "@apollo/client";
-import { useLazyQuery, useMutation } from "@apollo/client/react";
+import { useMutation } from "@apollo/client/react";
 import { useCurrentUser } from "../components/withCurrentUser";
 import { PendingOperationNotification } from "../components/PendingOperationNotification";
 import { IdiomRenderer } from "../components/IdiomRenderer";
@@ -55,6 +52,7 @@ export const createIdiomQuery = gql`
 `;
 
 export interface NewIdiomProps {
+  equivalentIdiom?: FullIdiomEntry | null;
   equivalentIdiomId?: string;
 }
 
@@ -74,10 +72,9 @@ export const NewIdiom: React.FunctionComponent<NewIdiomProps> = props => {
 
   const [languageKey, setLanguageKey] = useState("");
 
-  const [createIdiom, { data, error, loading, client }] = useMutation<CreateIdiomMutation, CreateIdiomMutationVariables>(
+  const [createIdiom, { data, error, loading }] = useMutation<CreateIdiomMutation, CreateIdiomMutationVariables>(
     createIdiomQuery
   );
-  const [getEquivalentIdiom, equivalentLoadInfo] = useLazyQuery<GetIdiomQuery, GetIdiomQueryVariables>(getIdiomQuery);
 
   const [form] = Form.useForm();
   const onFinishFailed = async (
@@ -117,13 +114,11 @@ export const NewIdiom: React.FunctionComponent<NewIdiomProps> = props => {
     return <Spin spinning delay={500} className="middleSpinner" description="Loading..." />;
   }
 
-  let equivilentIdiom: FullIdiomEntry | null = null;
-  if (props.equivalentIdiomId) {
-    equivilentIdiom = client!.readFragment<FullIdiomEntry>({
-      id: "Idiom:" + props.equivalentIdiomId,
-      fragment: FULL_IDIOM_ENTRY
-    });
+  if (props.equivalentIdiomId && !props.equivalentIdiom) {
+    return <Alert title="Oops!" description="It looks like you went barking up the wrong tree." type="warning" showIcon />;
   }
+
+  const equivalentIdiom = props.equivalentIdiom || null;
   const renderForm = (
     <div>
       <Title level={2}>Add an Idiom</Title>
@@ -152,11 +147,11 @@ export const NewIdiom: React.FunctionComponent<NewIdiomProps> = props => {
         }
         labelAlign="left" {...formItemLayout}
         onFinishFailed={onFinishFailed}
-        onFinish={store => onFinish(store, equivilentIdiom)}>
-        {equivilentIdiom && (
+        onFinish={store => onFinish(store, equivalentIdiom)}>
+        {equivalentIdiom && (
           <Form.Item label="Add an equivalent idiom for" colon>
             <div className="equivalentEntry">
-              <IdiomRenderer idiom={equivilentIdiom} />
+              <IdiomRenderer idiom={equivalentIdiom} />
             </div>
           </Form.Item>
         )}
@@ -166,24 +161,5 @@ export const NewIdiom: React.FunctionComponent<NewIdiomProps> = props => {
     </div>
   );
 
-  if (props.equivalentIdiomId) {
-    // Get the idiom
-    if (!equivalentLoadInfo.called) {
-      getEquivalentIdiom({ variables: { id: props.equivalentIdiomId } });
-    }
-
-    if (equivalentLoadInfo.loading) {
-      return <Spin delay={500} className="middleSpinner" description="Loading..." />;
-    }
-    if (equivalentLoadInfo.error) {
-      return <Alert title="Error" type="error" description={getErrorMessage(equivalentLoadInfo.error)} showIcon />;
-    }
-    if (!equivalentLoadInfo.data || !equivalentLoadInfo.data.idiom) {
-      return <Alert title="Oops!" description="It looks like you went barking up the wrong tree." type="warning" showIcon />;
-    }
-    equivilentIdiom = equivalentLoadInfo.data.idiom;
-    return <>{renderForm}</>;
-  } else {
-    return renderForm;
-  }
+  return renderForm;
 };

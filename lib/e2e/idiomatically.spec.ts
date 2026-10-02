@@ -483,7 +483,7 @@ test('administrator can accept a General-user update proposal', async ({ page })
 
 test('administrator can add and remove equivalent idioms', async ({ page }) => {
   await loginAs(page, 'Administrator');
-  await createEnglishIdiomViaApi(page, 'Piece of cake', 'Something that is easy.');
+  const sourceIdiom = await createEnglishIdiomViaApi(page, 'Piece of cake', 'Something that is easy.');
   const equivalent = await graphql<{
     createIdiom: { status: string; idiom?: { id: string; slug: string; title: string } };
   }>(page, `
@@ -501,6 +501,14 @@ test('administrator can add and remove equivalent idioms', async ({ page }) => {
     }
   `);
   expect(equivalent.data?.createIdiom.status).toBe('SUCCESS');
+
+  await page.goto('/idioms/piece-of-cake');
+  await page.locator('.addNew').getByRole('button', { name: 'Add idiom' }).click();
+  await expect(page).toHaveURL(`/new?equivalentIdiomId=${sourceIdiom.id}`);
+  await expect(page.getByRole('heading', { name: 'Add an Idiom' })).toBeVisible();
+  await expect(page.getByText('Add an equivalent idiom for')).toBeVisible();
+  await expect(page.getByText('Piece of cake', { exact: true })).toBeVisible();
+  await expect(page.getByText(/useLazyQuery/)).toHaveCount(0);
 
   await page.goto('/idioms/piece-of-cake');
   const equivalentSearch = page.locator('.findSelectControl').getByRole('combobox');

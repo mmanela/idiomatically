@@ -6,8 +6,8 @@
     "@ant-design/icons": "4.8.3",
     "@apollo/client": "3.13.9",
     "@babel/register": "^7.29.7",
-    "@graphql-tools/merge": "^9.2.6",
     "@graphql-codegen/typescript-resolvers": "1.20.0",
+    "@graphql-tools/merge": "^9.2.6",
     "@sendgrid/mail": "^8.1.6",
     "@twemoji/parser": "^15.1.1",
     "@types/connect-ensure-login": "^0.1.9",
@@ -90,6 +90,7 @@
     "@graphql-codegen/cli": "1.21.8",
     "@graphql-codegen/typescript": "1.23.0",
     "@graphql-codegen/typescript-operations": "1.18.4",
+    "@playwright/test": "^1.63.0",
     "@types/jest": "^24.9.1",
     "@types/node": "^16.18",
     "@types/prop-types": "15.7.15",
@@ -99,13 +100,13 @@
     "apollo": "2.34.0",
     "apollo-codegen-core": "0.40.9",
     "apollo-language-server": "1.26.9",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
     "graphql-tools": "4.0.8",
     "nodemon": "^2.0.22",
     "react-test-renderer": "16.14.0",
     "ts-node": "^10.9.2",
-    "typescript": "^4.9.5",
-    "concurrently": "^9.2.1",
-    "cross-env": "^10.1.0"
+    "typescript": "^4.9.5"
   },
   "scripts": {
     "client:start": "react-app-rewired start",
@@ -131,7 +132,10 @@
     "predev": "npm run db:start",
     "dev": "concurrently --kill-others --names server,client --prefix-colors blue,green \"npm run server:start\" \"npm run client:start\"",
     "build": "npm run server:pre && npm run client:pre && npm run client:build",
-    "check": "npm run build"
+    "check": "npm run build",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report"
   },
   "browserslist": {
     "production": [

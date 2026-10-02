@@ -27,3 +27,5 @@ lib/src/build
 
 npm-debug.log*
 lib/.eslintcache
+lib/playwright-report/
+lib/test-results/

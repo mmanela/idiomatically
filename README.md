@@ -58,7 +58,10 @@ Useful commands:
 npm run dev       # MongoDB + API + client
 npm run db:stop   # stop the local MongoDB container
 npm run check     # regenerate GraphQL types and create a production build
+npm run test:e2e  # run isolated Chromium end-to-end tests
 ```
+
+The end-to-end suite starts the API and client on ports 8100 and 3100, resets the `idiomatically-e2e` database before each test, and preserves screenshots, videos, and traces under `lib/test-results` when a test fails. Run `npx playwright install chromium` once if the browser is not already installed.
 
 If you use nvm, run `nvm use` from `lib/`. The repository also includes an asdf Node version in `lib/.tool-versions`.
 

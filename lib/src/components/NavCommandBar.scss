@@ -15,8 +15,10 @@
   }
 
   .ant-menu-item {
-    & > a > .anticon {
-      margin-right: 6px;
+    a {
+      align-items: center;
+      display: inline-flex;
+      gap: 6px;
     }
 
     .ant-btn {

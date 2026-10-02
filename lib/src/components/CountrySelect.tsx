@@ -5,7 +5,7 @@ import {
   GetCountriesQueryVariables
 } from "../__generated__/types";
 import { useLazyQuery, gql } from "@apollo/client";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 const { Option } = Select;
 
 export const getCountriesQuery = gql`
@@ -21,6 +21,7 @@ export const getCountriesQuery = gql`
 export interface CountrySelectProps {
   initialValue?: string[];
   languageKey?: string;
+  value?: string[];
   onChange?: (
     value: string[]
   ) => void;
@@ -28,29 +29,22 @@ export interface CountrySelectProps {
 
 export const CountrySelect: React.FunctionComponent<CountrySelectProps> = (props) => {
 
-  const [lastLanguageKey, setLastLanguageKey] = useState<(string | undefined)>(props.languageKey);
   const [getCountries, getCountriesLoadResult] = useLazyQuery<
     GetCountriesQuery,
     GetCountriesQueryVariables
   >(getCountriesQuery);
 
   useEffect(() => {
-    setLastLanguageKey(props.languageKey);
-  }, [props.languageKey]);
+    getCountries({ variables: { languageKey: props.languageKey } });
+  }, [getCountries, props.languageKey]);
 
-  const called = getCountriesLoadResult && getCountriesLoadResult.called;
   const data = getCountriesLoadResult && getCountriesLoadResult.data;
   const loading = getCountriesLoadResult && getCountriesLoadResult.loading;
-  if ((!called
-    && !loading)
-    || (props.languageKey && lastLanguageKey !== props.languageKey)) {
-    getCountries({ variables: { languageKey: props.languageKey } });
-  }
   const options = data ? buildOptions(data!) : undefined;
   return (
     <Select
       loading={loading}
-      defaultValue={props.initialValue}
+      value={props.value || props.initialValue}
       onChange={props.onChange}
       mode="multiple"
       placeholder={

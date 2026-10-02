@@ -11,6 +11,17 @@ jobs:
       matrix:
         node-version: [22.x]
 
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ ping: 1 }).ok'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
@@ -24,5 +35,7 @@ jobs:
         cd ./lib
         npm ci
         npm run check
+        npx playwright install --with-deps chromium
+        npm run test:e2e
       env:
         CI: true

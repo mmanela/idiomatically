@@ -173,7 +173,8 @@ test('public navigation is readable and consistently spaced', async ({ page }) =
   expect(layout.navigation.top).toBeCloseTo(layout.subtitle.bottom + 15, 0);
   expect(layout.searchControls.top).toBeCloseTo(layout.navigation.bottom, 0);
   expect(layout.searchControls.width).toBe(700);
-  expect(layout.languageSelectWidth).toBe(100);
+  expect(layout.languageSelectWidth).toBeGreaterThanOrEqual(100);
+  expect(layout.languageSelectWidth).toBeLessThanOrEqual(220);
   expect(layout.languageSelectorBackground).toBe('rgb(24, 144, 255)');
   expect(layout.homeLinkColor).toBe('rgba(0, 0, 0, 0.65)');
   expect(layout.searchButtonRightRadius).toEqual({ bottom: '0px', top: '0px' });
@@ -305,24 +306,31 @@ test('administrator can review and accept a public idiom proposal', async ({ pag
 test('all-language filter lists non-English idioms without a render loop', async ({ page }) => {
   await loginAs(page, 'Administrator');
   await addIdiom(page, {
-    title: 'Más vale tarde que nunca',
-    description: 'It is better to do something late than not at all.',
-    languageSearch: 'Spanish',
-    languageDisplay: 'Spanish (Español)',
-    countrySearch: 'Argentina',
-    countryDisplay: 'Argentina (Argentina)',
-    literalTranslation: 'Better late than never'
+    title: 'Die koeël is deur die kerk',
+    description: 'The decision has been made and cannot be reversed.',
+    languageSearch: 'Afrikaans',
+    languageDisplay: 'Afrikaans (Afrikaans)',
+    countrySearch: 'South Africa',
+    countryDisplay: 'South Africa (South Africa)',
+    literalTranslation: 'The bullet is through the church'
   });
-  await expect(page).toHaveURL(/\/idioms\/mas-vale-tarde-que-nunca$/);
+  await expect(page).toHaveURL(/\/idioms\/die-koeel-is-deur-die-kerk$/);
 
-  await page.goto('/idioms?lang=es');
-  await expect(page.getByText('Más vale tarde que nunca')).toBeVisible();
+  await page.goto('/idioms?lang=af');
+  await expect(page.getByText('Die koeël is deur die kerk')).toBeVisible();
+  const languageFilter = page.getByRole('combobox', { name: 'Language' });
+  const languageFilterLabel = page.locator('.languageSelect .ant-select-content-value');
+  await expect(languageFilterLabel).toHaveText('Afrikaans');
+  const languageLabelFits = await languageFilterLabel.evaluate(
+    element => element.scrollWidth <= element.clientWidth
+  );
+  expect(languageLabelFits).toBe(true);
 
-  await page.getByRole('combobox', { name: 'Language' }).click();
+  await languageFilter.click();
   await page.locator('.languageOption').filter({ hasText: /^All$/ }).click();
 
   await expect(page).toHaveURL('/idioms?lang=all');
-  await expect(page.getByText('Más vale tarde que nunca')).toBeVisible();
+  await expect(page.getByText('Die koeël is deur die kerk')).toBeVisible();
   await expect(page.locator('#webpack-dev-server-client-overlay')).toHaveCount(0);
 });
 

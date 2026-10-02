@@ -17,7 +17,6 @@
     border-bottom-left-radius: 0 !important;
     border-left-color: #0069cc !important;
     border-top-left-radius: 0 !important;
-    width: 100px;
 
     .ant-select-content,
     .ant-select-input {
@@ -32,7 +31,9 @@
 }
 
 .languageOptionContainer {
-  width: 150px !important;
+  max-width: calc(100vw - 20px);
+  min-width: 180px !important;
+  width: max-content !important;
 }
 
 @media screen and (max-width: 600px) {
@@ -41,7 +42,7 @@
     gap: 8px;
 
     .languageSelect {
-      width: 100%;
+      width: 100% !important;
     }
   }
 }

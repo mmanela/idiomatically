@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
 import { Input, Select } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import {
   GetLanguagesWithIdioms,
   GetLanguagesWithIdioms_languagesWithIdioms,
@@ -49,6 +49,16 @@ export function SearchBox(props: SearchBoxProps) {
   ];
   const selectedLanguage =
     props.language || getLanguageName(props.language) || "en";
+  const selectedLanguageLabel =
+    languages.find(
+      (language) => language.languageKey === selectedLanguage,
+    )?.languageName ||
+    getLanguageName(selectedLanguage) ||
+    selectedLanguage;
+  const languageSelectWidth = Math.min(
+    220,
+    Math.max(100, selectedLanguageLabel.length * 9 + 48),
+  );
 
   return (
     <div className="idiomSearchControls">
@@ -67,6 +77,8 @@ export function SearchBox(props: SearchBoxProps) {
         value={selectedLanguage}
         className="languageSelect"
         size="large"
+        style={{ width: languageSelectWidth } as CSSProperties}
+        title={selectedLanguageLabel}
         classNames={{ popup: { root: "languageOptionContainer" } }}
         onChange={props.onLanguageChange}
         options={languages.map((language) => ({

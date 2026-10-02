@@ -64,7 +64,7 @@
   },
   "scripts": {
     "dev": "cross-env NODE_ENV=development node --conditions development server.js",
-    "start": "cross-env NODE_ENV=production node server.js",
+    "start": "node server.js",
     "build": "react-router build",
     "auth:smoke": "node server/scripts/authSmoke.mjs",
     "typecheck": "react-router typegen && tsc -b",

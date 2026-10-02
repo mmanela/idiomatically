@@ -31,10 +31,17 @@ jobs:
         docker build . --file Dockerfile -t idiomatically:${{ github.sha }} -t idiomatically893a.azurecr.io/idiomatically:production
         docker push idiomatically893a.azurecr.io/idiomatically:production
       
-    - uses: Azure/webapps-deploy@v3
+    - name: Deploy production image
+      uses: Azure/webapps-deploy@v3
       with:
         app-name: 'Idiomatically'
         images: 'idiomatically893a.azurecr.io/idiomatically:production'
+
+    - name: Verify production Google authentication
+      run: node lib/server/scripts/authSmoke.mjs https://idiomatically.net
+      env:
+        AUTH_SMOKE_ATTEMPTS: 18
+        AUTH_SMOKE_RETRY_DELAY_MS: 10000
     
     - name: Azure logout
       run: |

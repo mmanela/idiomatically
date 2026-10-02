@@ -47,10 +47,11 @@ Open http://localhost:3000. Vite development middleware, React Router SSR, Graph
 
 The committed development configuration enables a local role picker for General, Contributor, and Administrator users. It exercises Better Auth sessions plus the application's real role and GraphQL authorization paths without contacting Google.
 
-To test Google OAuth, copy `lib/.env.example.local` to `lib/.env.development.local`, set `LOCAL_AUTH_ENABLED=false`, and add Google credentials. Register this authorized redirect URI:
+To test Google OAuth, copy `lib/.env.example.local` to `lib/.env.development.local`, set `LOCAL_AUTH_ENABLED=false`, and add Google credentials. Register these authorized redirect URIs:
 
 ```text
 http://localhost:3000/api/auth/callback/google
+https://idiomatically.net/api/auth/callback/google
 ```
 
 Google supports localhost callbacks, so ngrok is not required.
@@ -64,7 +65,7 @@ After deploying, run the non-interactive OAuth configuration smoke check:
 
 ```sh
 cd lib
-npm run auth:smoke -- https://your-production-domain
+npm run auth:smoke -- https://idiomatically.net
 ```
 
 This checks the deployed Better Auth route and callback URL without logging in

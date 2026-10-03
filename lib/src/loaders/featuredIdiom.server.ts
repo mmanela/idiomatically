@@ -8,20 +8,29 @@ const featuredIdiomCandidatesQuery = gql`
       edges {
         node {
           id
-          slug
-          title
-          description
-          literalTranslation
-          language {
-            languageKey
-            languageName
-            countries {
-              countryKey
-              countryName
-              emojiFlag
-            }
-          }
           equivalentCount
+        }
+      }
+    }
+  }
+`;
+
+const featuredIdiomQuery = gql`
+  query GetFeaturedIdiom($id: ID!) {
+    idiom(id: $id) {
+      id
+      slug
+      title
+      description
+      literalTranslation
+      equivalentCount
+      language {
+        languageKey
+        languageName
+        countries {
+          countryKey
+          countryName
+          emojiFlag
         }
       }
     }
@@ -49,8 +58,17 @@ export interface FeaturedIdiom {
 interface FeaturedIdiomCandidates {
   idioms: {
     totalCount: number;
-    edges: Array<{ node: FeaturedIdiom }>;
+    edges: Array<{
+      node: {
+        id: string;
+        equivalentCount: number;
+      };
+    }>;
   };
+}
+
+interface FeaturedIdiomResult {
+  idiom: FeaturedIdiom | null;
 }
 
 export async function loadFeaturedIdiom(
@@ -86,7 +104,11 @@ export async function loadFeaturedIdiom(
 
   const dayNumber = Math.floor(Date.now() / 86_400_000);
   const index = (dayNumber + hashLocale(locale)) % candidates.length;
-  return candidates[index];
+  const selected = await graphqlRequest<
+    FeaturedIdiomResult,
+    { id: string }
+  >(request, featuredIdiomQuery, { id: candidates[index].id });
+  return selected.idiom;
 }
 
 function hashLocale(locale: string) {

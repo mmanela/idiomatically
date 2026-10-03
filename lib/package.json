@@ -67,6 +67,8 @@
     "start": "node server.js",
     "build": "react-router build",
     "auth:smoke": "node server/scripts/authSmoke.mjs",
+    "seo:smoke": "node server/scripts/seoSmoke.mjs",
+    "seo:content-report": "node server/scripts/seoContentReport.mjs",
     "typecheck": "react-router typegen && tsc -b",
     "check": "npm run typecheck && npm run build",
     "codegen": "tsx server/scripts/genJoined.ts && graphql-codegen --config server/codegen.yml",

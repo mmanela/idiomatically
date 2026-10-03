@@ -1,26 +1,42 @@
-import { redirect, useLoaderData, useSearchParams } from "react-router";
-import { loadIdiomList } from "../loaders/idioms.server";
+import {
+  data as responseData,
+  redirect,
+  useLoaderData,
+  useSearchParams,
+} from "react-router";
+import {
+  getIdiomListPage,
+  loadIdiomList,
+} from "../loaders/idioms.server";
 import { IdiomListView } from "../pages/IdiomListView";
 import type { Route } from "./+types/idioms";
 import { loadLanguagesWithIdioms } from "../loaders/languages.server";
-import { getLanguageName, getLanguagePath } from "../utilities/languageUtil";
+import { getLanguageName } from "../utilities/languageUtil";
+import { getLanguagePath } from "../utilities/languagePath";
 import { getCanonicalUrl } from "../seo.server";
 import { buildPageMeta, pageTitle } from "../seo";
 import { loadFeaturedIdiom } from "../loaders/featuredIdiom.server";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
+  const page = getIdiomListPage(request);
   const legacyLanguageKey = url.searchParams.get("lang");
   if (legacyLanguageKey) {
     url.searchParams.delete("lang");
+    if (page.redirectTo) {
+      url.searchParams.delete("page");
+    }
     if (legacyLanguageKey.toLowerCase() === "all") {
-      return redirect(`/idioms${url.search}`);
+      return redirect(`/idioms${url.search}`, 301);
     }
     const languageName = getLanguageName(legacyLanguageKey);
     if (!languageName) {
       throw new Response("Language not found", { status: 404 });
     }
-    return redirect(`${getLanguagePath(languageName)}${url.search}`);
+    return redirect(`${getLanguagePath(languageName)}${url.search}`, 301);
+  }
+  if (page.redirectTo) {
+    return redirect(page.redirectTo, 301);
   }
 
   const [data, languages] = await Promise.all([
@@ -32,9 +48,10 @@ export async function loader({ request }: Route.LoaderArgs) {
     "all",
     data.idioms.totalCount,
   );
-  return {
+  const notFound = page.pageNumber > 1 && data.idioms.edges.length === 0;
+  const result = {
     ...data,
-    languages,
+    languageCount: languages.length,
     featuredIdiom,
     seo: {
       canonicalUrl: getCanonicalUrl(request, "/idioms"),
@@ -42,19 +59,27 @@ export async function loader({ request }: Route.LoaderArgs) {
       languageName: "All",
       noIndex: url.searchParams.has("q"),
       page: url.searchParams.get("page"),
+      notFound,
     },
   };
+  return notFound ? responseData(result, { status: 404 }) : result;
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => {
   if (!loaderData) {
     return [{ title: "Idioms | Idiomatically" }];
   }
+  if (loaderData.seo.notFound) {
+    return [
+      { title: "Page not found | Idiomatically" },
+      { name: "robots", content: "noindex,follow" },
+    ];
+  }
   const page = loaderData?.seo.page;
   const suffix = page && page !== "1" ? ` – Page ${page}` : "";
   return buildPageMeta({
     title: pageTitle(`Idioms from around the world${suffix}`),
-    description: `Browse idioms from ${loaderData.languages.length} languages with meanings, literal translations, regional usage, and equivalent expressions.`,
+    description: `Browse idioms from ${loaderData.languageCount} languages with meanings, literal translations, regional usage, and equivalent expressions.`,
     canonicalUrl: loaderData.seo.canonicalUrl,
     noIndex: loaderData.seo.noIndex,
     jsonLd: {

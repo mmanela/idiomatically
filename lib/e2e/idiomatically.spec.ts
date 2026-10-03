@@ -319,6 +319,12 @@ test('sitemap reflects newly created idioms without a server restart', async ({ 
   expect(updatedSitemap).toContain(
     '<loc>http://localhost:3100/languages/english/idioms</loc>'
   );
+  expect(updatedSitemap).toMatch(
+    /<loc>http:\/\/localhost:3100\/idioms<\/loc><lastmod>[^<]+<\/lastmod>/
+  );
+  expect(updatedSitemap).toMatch(
+    /<loc>http:\/\/localhost:3100\/languages\/english\/idioms<\/loc><lastmod>[^<]+<\/lastmod>/
+  );
 
   const robotsResponse = await page.request.get('/robots.txt');
   expect(robotsResponse.ok()).toBeTruthy();
@@ -508,7 +514,7 @@ test('home page is a global discovery hub', async ({ page }) => {
   const redirectedSearch = await page.request.get('/?q=global', {
     maxRedirects: 0
   });
-  expect(redirectedSearch.status()).toBe(302);
+  expect(redirectedSearch.status()).toBe(301);
   expect(redirectedSearch.headers()['location']).toBe('/idioms?q=global');
 });
 
@@ -616,7 +622,7 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
   const legacyResponse = await page.request.get('/idioms?lang=es', {
     maxRedirects: 0
   });
-  expect(legacyResponse.status()).toBe(302);
+  expect(legacyResponse.status()).toBe(301);
   expect(legacyResponse.headers()['location']).toBe(
     '/languages/spanish/idioms'
   );
@@ -632,6 +638,55 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
   expect(
     (await page.request.get('/idioms/missing-idiom')).status()
   ).toBe(404);
+});
+
+test('directory pagination normalizes invalid pages and rejects pages beyond the result set', async ({ page }) => {
+  await loginAs(page, 'Administrator');
+  for (let index = 1; index <= 12; index++) {
+    await createEnglishIdiomViaApi(
+      page,
+      `Pagination idiom ${String(index).padStart(2, '0')}`,
+      `Pagination description ${index}`
+    );
+  }
+  await logout(page);
+
+  for (const path of [
+    '/idioms?page=0',
+    '/idioms?page=1',
+    '/idioms?page=abc',
+    '/idioms?page=999999999999999999999'
+  ]) {
+    const response = await page.request.get(path, { maxRedirects: 0 });
+    expect(response.status()).toBe(301);
+    expect(response.headers()['location']).toBe('/idioms');
+  }
+
+  for (const path of [
+    '/languages/english/idioms?page=0',
+    '/languages/english/idioms?page=1',
+    '/languages/english/idioms?page=abc'
+  ]) {
+    const response = await page.request.get(path, { maxRedirects: 0 });
+    expect(response.status()).toBe(301);
+    expect(response.headers()['location']).toBe(
+      '/languages/english/idioms'
+    );
+  }
+
+  for (const path of [
+    '/idioms?page=999',
+    '/languages/english/idioms?page=999'
+  ]) {
+    const response = await page.request.get(path);
+    expect(response.status()).toBe(404);
+    const html = await response.text();
+    expect(html).toContain(
+      '<meta name="robots" content="noindex,follow"/>'
+    );
+    expect(html).not.toContain('rel="canonical"');
+    expect(html).toContain('Could not find a needle in a haystack.');
+  }
 });
 
 test('administrator can update an existing idiom', async ({ page }) => {

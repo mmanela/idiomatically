@@ -9,6 +9,7 @@ export interface GlobalContext {
 
 export interface MinimalIdiom {
     slug: string;
+    languageKey: string;
     lastModifiedDate: Date;
 }
 

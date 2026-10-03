@@ -9,10 +9,10 @@ import { HomePage } from "../pages/HomePage";
 export async function loader({ request }: Route.LoaderArgs) {
   const requestUrl = new URL(request.url);
   if (requestUrl.search) {
-    return redirect(`/idioms${requestUrl.search}`);
+    return redirect(`/idioms${requestUrl.search}`, 301);
   }
 
-  const data = await loadIdiomList(request, "all");
+  const data = await loadIdiomList(request, "all", 7);
   const featuredIdiom = await loadFeaturedIdiom(
     request,
     "all",

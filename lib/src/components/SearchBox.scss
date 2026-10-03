@@ -17,6 +17,8 @@
     border-bottom-left-radius: 0 !important;
     border-left-color: #0069cc !important;
     border-top-left-radius: 0 !important;
+    flex-shrink: 0;
+    transition: none !important;
 
     .ant-select-content,
     .ant-select-input {

@@ -6,7 +6,6 @@ import {
   GetLanguagesWithIdioms,
   GetLanguagesWithIdioms_languagesWithIdioms,
 } from "../__generated__/types";
-import { getLanguageName } from "../utilities/languageUtil";
 import "./SearchBox.scss";
 
 const { Search } = Input;
@@ -49,8 +48,7 @@ export function SearchBox(props: SearchBoxProps) {
       : []),
   ];
   if (!languages.some((language) => language.languageKey === selectedLanguage)) {
-    const selectedLanguageName =
-      getLanguageName(selectedLanguage) || selectedLanguage;
+    const selectedLanguageName = selectedLanguage;
     languages.push({
       languageKey: selectedLanguage,
       languageName: selectedLanguageName,
@@ -62,11 +60,10 @@ export function SearchBox(props: SearchBoxProps) {
     languages.find(
       (language) => language.languageKey === selectedLanguage,
     )?.languageName ||
-    getLanguageName(selectedLanguage) ||
     selectedLanguage;
   const languageSelectWidth = Math.min(
     220,
-    Math.max(100, selectedLanguageLabel.length * 9 + 48),
+    Math.max(100, selectedLanguageLabel.length * 9 + 68),
   );
 
   return (

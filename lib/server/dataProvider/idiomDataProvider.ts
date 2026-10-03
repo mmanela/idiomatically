@@ -465,12 +465,13 @@ export class IdiomDataProvider {
     async getAllIdioms(): Promise<MinimalIdiom[]> {
         const query = this.activeOnly();
         const slugs = await this.idiomCollection
-            .find(query, { projection: { slug: 1, updatedAt: 1, createdAt: 1 } })
+            .find(query, { projection: { slug: 1, languageKey: 1, updatedAt: 1, createdAt: 1 } })
             .sort({ slug: 1 })
             .toArray();
         return slugs.map(x => {
             return {
                 slug: x.slug,
+                languageKey: x.languageKey,
                 lastModifiedDate: x.updatedAt || x.createdAt
             }
         });

@@ -76,10 +76,13 @@ export const IdiomListView: React.FunctionComponent<IdiomListViewProps> = props 
   const pageNumber = normalizePage(props.page);
   if (props.initialData.idioms.edges.length <= 0) {
     return (
-      <Empty
-        image={Empty.PRESENTED_IMAGE_DEFAULT}
-        description="Could not find a needle in a haystack."
-      />
+      <section className="idiomDirectory">
+        <Title level={1}>{props.heading}</Title>
+        <Empty
+          image={Empty.PRESENTED_IMAGE_DEFAULT}
+          description="Could not find a needle in a haystack."
+        />
+      </section>
     );
   }
 

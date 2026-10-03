@@ -79,8 +79,15 @@ npm run dev       # unified development server
 npm run codegen   # regenerate GraphQL schema and typed artifacts
 npm run check     # React Router type generation, TypeScript, and production build
 npm run test:e2e  # isolated Chromium end-to-end suite
+npm run seo:smoke -- https://idiomatically.net
+npm run --silent seo:content-report -- https://idiomatically.net > seo-content.csv
 npm run db:stop   # stop the Docker MongoDB service
 ```
+
+The SEO smoke check validates canonical URLs, redirects, pagination errors,
+structured data, and sitemap behavior against a deployed environment. The
+content report produces a prioritized CSV of idioms with missing or short
+descriptions, literal translations, or transliterations.
 
 The end-to-end suite starts the application on port 3100, resets the `idiomatically-e2e` database before every test, and stores failure traces under `lib/test-results`.
 

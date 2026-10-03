@@ -1,15 +1,19 @@
-import { print, type DocumentNode } from "graphql";
+import { getOperationAST, print, type DocumentNode } from "graphql";
 
 export async function graphqlRequest<TData, TVariables>(
   request: Request,
   query: DocumentNode,
   variables: TVariables,
 ) {
+  const operationName =
+    getOperationAST(query)?.name?.value || "ServerSideRender";
   const response = await fetch(new URL("/graphql", request.url), {
     method: "POST",
     headers: {
+      "apollo-require-preflight": "true",
       "content-type": "application/json",
       cookie: request.headers.get("cookie") || "",
+      "x-apollo-operation-name": operationName,
     },
     body: JSON.stringify({
       query: print(query),

@@ -31,8 +31,12 @@
 }
 
 .languageOptionContainer {
+  animation: none !important;
   max-width: calc(100vw - 20px);
   min-width: 180px !important;
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
   width: max-content !important;
 }
 

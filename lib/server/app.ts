@@ -48,6 +48,25 @@ await apolloServer.start();
 export const app = express();
 
 app.disable("x-powered-by");
+app.get("/service-worker.js", (req, res) => {
+  res.set({
+    "Cache-Control": "no-store, max-age=0",
+    "Content-Type": "application/javascript; charset=utf-8",
+    "Service-Worker-Allowed": "/",
+  });
+  res.send(`
+self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (event) => {
+  event.waitUntil((async () => {
+    const cacheNames = await caches.keys();
+    await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+    await self.registration.unregister();
+    const clients = await self.clients.matchAll({ type: "window" });
+    await Promise.all(clients.map((client) => client.navigate("/")));
+  })());
+});
+`);
+});
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.get("/hello", async (req, res) => {

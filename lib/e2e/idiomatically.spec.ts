@@ -415,26 +415,34 @@ test('public idiom content is server rendered and client navigation stays hydrat
   expect(listResponse.ok()).toBeTruthy();
   expect(await listResponse.text()).toContain('Read between the lines');
 
-  const detailResponse = await page.request.get('/idioms/read-between-the-lines');
-  expect(detailResponse.ok()).toBeTruthy();
-  const detailHtml = await detailResponse.text();
-  expect(detailHtml).toContain('Read between the lines');
-  expect(detailHtml).toContain('Find the hidden meaning.');
-  expect(detailHtml).toContain(
-    '<meta property="og:title" content="Read between the lines — English idiom"/>'
-  );
-  expect(detailHtml).toContain(
-    '<meta property="og:description" content="Find the hidden meaning. Explore 1 related idiom in another language."/>'
-  );
-  expect(detailHtml).toContain(
-    '<meta property="og:image" content="http://localhost:3100/social/idioms/read-between-the-lines.png"/>'
-  );
-  expect(detailHtml).toContain(
-    '<meta name="twitter:card" content="summary_large_image"/>'
-  );
-  expect(detailHtml).toContain(
-    '<link rel="canonical" href="http://localhost:3100/idioms/read-between-the-lines"/>'
-  );
+  for (const userAgent of [
+    'Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)',
+    'Twitterbot/1.0'
+  ]) {
+    const detailResponse = await page.request.get(
+      '/idioms/read-between-the-lines',
+      { headers: { 'user-agent': userAgent } }
+    );
+    expect(detailResponse.ok()).toBeTruthy();
+    const detailHtml = await detailResponse.text();
+    expect(detailHtml).toContain('Read between the lines');
+    expect(detailHtml).toContain('Find the hidden meaning.');
+    expect(detailHtml).toContain(
+      '<meta property="og:title" content="Read between the lines — English idiom"/>'
+    );
+    expect(detailHtml).toContain(
+      '<meta property="og:description" content="Find the hidden meaning. Explore 1 related idiom in another language."/>'
+    );
+    expect(detailHtml).toContain(
+      '<meta property="og:image" content="http://localhost:3100/social/idioms/read-between-the-lines.png"/>'
+    );
+    expect(detailHtml).toContain(
+      '<meta name="twitter:card" content="summary_large_image"/>'
+    );
+    expect(detailHtml).toContain(
+      '<link rel="canonical" href="http://localhost:3100/idioms/read-between-the-lines"/>'
+    );
+  }
   const socialImageResponse = await page.request.get(
     '/social/idioms/read-between-the-lines.png'
   );
@@ -622,6 +630,21 @@ test('all-language filter lists non-English idioms without a render loop', async
   expect(languageLabelFits).toBe(true);
 
   await languageFilter.click();
+  const languageMenuMotion = await page
+    .locator('.languageOptionContainer')
+    .evaluate(element => {
+      const styles = window.getComputedStyle(element);
+      return {
+        animationName: styles.animationName,
+        opacity: styles.opacity,
+        transform: styles.transform
+      };
+    });
+  expect(languageMenuMotion).toEqual({
+    animationName: 'none',
+    opacity: '1',
+    transform: 'none'
+  });
   await page.locator('.languageOption').filter({ hasText: /^All$/ }).click();
 
   await expect(page).toHaveURL('/idioms?lang=all');

@@ -1,4 +1,4 @@
-import { useLoaderData } from "react-router";
+import { data, useLoaderData } from "react-router";
 import type {
   GetIdiomQuery,
   GetIdiomQueryVariables,
@@ -7,26 +7,32 @@ import { getIdiomQuery } from "../fragments/getIdiom";
 import { graphqlRequest } from "../graphql.server";
 import { Idiom } from "../pages/Idiom";
 import type { Route } from "./+types/idiom";
+import { getPublicUrl } from "../seo.server";
+import { getLanguagePath } from "../utilities/languageUtil";
 
 export async function loader({ params, request }: Route.LoaderArgs) {
-  const data = await graphqlRequest<GetIdiomQuery, GetIdiomQueryVariables>(
+  const graphqlData = await graphqlRequest<GetIdiomQuery, GetIdiomQueryVariables>(
     request,
     getIdiomQuery,
     { slug: params.slug },
   );
-  const requestUrl = new URL(request.url);
-  return {
-    ...data,
-    canonicalUrl: data.idiom
-      ? `${requestUrl.origin}/idioms/${data.idiom.slug}`
-      : requestUrl.href,
+  const canonicalUrl = graphqlData.idiom
+    ? getPublicUrl(request, `/idioms/${graphqlData.idiom.slug}`)
+    : getPublicUrl(request, `/idioms/${params.slug}`);
+  const result = {
+    ...graphqlData,
+    canonicalUrl,
   };
+  return graphqlData.idiom ? result : data(result, { status: 404 });
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => {
   const idiom = loaderData?.idiom;
   if (!idiom) {
-    return [{ title: "Idiomatically" }];
+    return [
+      { title: "Idiom not found | Idiomatically" },
+      { name: "robots", content: "noindex,follow" },
+    ];
   }
 
   const language = idiom.language?.languageName;
@@ -61,6 +67,44 @@ export const meta: Route.MetaFunction = ({ loaderData }) => {
     { name: "twitter:title", content: socialTitle },
     { name: "twitter:description", content: description },
     { name: "twitter:image", content: socialImageUrl.toString() },
+    {
+      "script:ld+json": {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "DefinedTerm",
+            name: idiom.title,
+            description,
+            inDefinedTermSet: {
+              "@type": "DefinedTermSet",
+              name: `${language || "World"} idioms`,
+              url: language
+                ? new URL(getLanguagePath(language), canonicalUrl).toString()
+                : new URL("/idioms", canonicalUrl).toString(),
+            },
+            inLanguage: idiom.language?.languageKey,
+            url: canonicalUrl,
+          },
+          {
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Idioms",
+                item: new URL("/idioms", canonicalUrl).toString(),
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: idiom.title,
+                item: canonicalUrl,
+              },
+            ],
+          },
+        ],
+      },
+    },
   ];
 };
 

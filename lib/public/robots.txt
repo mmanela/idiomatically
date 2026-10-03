@@ -2,6 +2,7 @@ User-agent: *
 Disallow: /admin/
 Disallow: /api/
 Disallow: /auth/
+Disallow: /graphql
 Disallow: /login
 Disallow: /me
 Disallow: /new

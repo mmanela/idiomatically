@@ -2,10 +2,40 @@ import { useLoaderData, useSearchParams } from "react-router";
 import { IdiomListView } from "../pages/IdiomListView";
 import { loadIdiomList } from "../loaders/idioms.server";
 import type { Route } from "./+types/home";
+import { buildPageMeta, pageTitle, SITE_DESCRIPTION } from "../seo";
+import { getCanonicalUrl } from "../seo.server";
 
-export function loader({ request }: Route.LoaderArgs) {
-  return loadIdiomList(request);
+export async function loader({ request }: Route.LoaderArgs) {
+  const data = await loadIdiomList(request, "en");
+  return {
+    ...data,
+    seo: {
+      canonicalUrl: getCanonicalUrl(request, "/"),
+      languageKey: "en",
+      languageName: "English",
+      noIndex: new URL(request.url).searchParams.has("q"),
+    },
+  };
 }
+
+export const meta: Route.MetaFunction = ({ loaderData }) => {
+  if (!loaderData) {
+    return [{ title: "Idiomatically" }];
+  }
+  return buildPageMeta({
+    title: pageTitle("Idioms translated across languages"),
+    description: SITE_DESCRIPTION,
+    canonicalUrl: loaderData.seo.canonicalUrl,
+    noIndex: loaderData.seo.noIndex,
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "Idiomatically",
+      url: loaderData.seo.canonicalUrl,
+      description: SITE_DESCRIPTION,
+    },
+  });
+};
 
 export default function HomeRoute() {
   const initialData = useLoaderData<typeof loader>();
@@ -14,8 +44,10 @@ export default function HomeRoute() {
     <IdiomListView
       initialData={initialData}
       filter={searchParams.get("q")}
-      language={searchParams.get("lang")}
+      language="en"
       page={searchParams.get("page")}
+      heading="English idioms and equivalents across languages"
+      introduction="Explore English idioms, their meanings, and equivalent expressions used in other languages and countries."
       onPageChange={(page) => {
         searchParams.set("page", page);
         setSearchParams(searchParams);

@@ -25,7 +25,7 @@ export interface SearchBoxProps {
   filter: string | null;
   language: string | null;
   onSearch: (value: string) => void;
-  onLanguageChange: (value: string) => void;
+  onLanguageChange: (value: string, languageName: string) => void;
 }
 
 export function SearchBox(props: SearchBoxProps) {
@@ -89,7 +89,12 @@ export function SearchBox(props: SearchBoxProps) {
         style={{ width: languageSelectWidth } as CSSProperties}
         title={selectedLanguageLabel}
         classNames={{ popup: { root: "languageOptionContainer" } }}
-        onChange={props.onLanguageChange}
+        onChange={(value) => {
+          const language = languages.find(
+            (candidate) => candidate.languageKey === value,
+          );
+          props.onLanguageChange(value, language?.languageName || value);
+        }}
         options={languages.map((language) => ({
           value: language.languageKey,
           label: language.languageName,

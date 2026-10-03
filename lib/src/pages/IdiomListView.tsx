@@ -1,13 +1,13 @@
 import * as React from "react";
-import {
-  GetIdiomListQuery,
-  GetIdiomListQueryVariables
-} from "../__generated__/types";
+import { GetIdiomListQueryVariables } from "../__generated__/types";
 import "./IdiomListView.scss";
-import { Empty } from "antd";
-import { FULL_IDIOM_ENTRY } from "../fragments/fragments";
+import { Empty, Typography } from "antd";
 import { gql } from "@apollo/client";
 import { IdiomListRenderer } from "../components/IdiomListRenderer";
+import type { IdiomListData } from "../loaders/idioms.server";
+import { Link, useLocation } from "react-router";
+import { IDIOM_PAGE_SIZE } from "../constants";
+const { Paragraph, Title } = Typography;
 
 export const getIdiomListQuery = gql`
   query GetIdiomListQuery(
@@ -24,19 +24,37 @@ export const getIdiomListQuery = gql`
       }
       edges {
         node {
-          ...FullIdiomEntry
+          id
+          slug
+          title
+          literalTranslation
+          transliteration
+          language {
+            languageKey
+            languageName
+            countries {
+              countryKey
+              countryName
+              emojiFlag
+            }
+          }
+          equivalents {
+            id
+          }
         }
       }
     }
   }
-  ${FULL_IDIOM_ENTRY}
 `;
 
 export interface IdiomListViewProps {
-  initialData: GetIdiomListQuery;
+  initialData: IdiomListData;
   filter: string | null;
   language: string | null;
   page: string | null;
+  heading: string;
+  introduction?: string;
+  languageDirectory?: React.ReactNode;
   onPageChange: (value: string) => void;
 }
 
@@ -54,8 +72,8 @@ function normalizePage(page: string | null) {
 }
 
 export const IdiomListView: React.FunctionComponent<IdiomListViewProps> = props => {
+  const location = useLocation();
   const pageNumber = normalizePage(props.page);
-  const pageSize = 10;
   if (props.initialData.idioms.edges.length <= 0) {
     return (
       <Empty
@@ -66,17 +84,52 @@ export const IdiomListView: React.FunctionComponent<IdiomListViewProps> = props 
   }
 
   const idioms = props.initialData.idioms.edges.map(x => x.node);
+  const pageCount = Math.ceil(
+    props.initialData.idioms.totalCount / IDIOM_PAGE_SIZE,
+  );
+  const pageHref = (page: number) => {
+    const searchParams = new URLSearchParams(location.search);
+    if (page <= 1) {
+      searchParams.delete("page");
+    } else {
+      searchParams.set("page", String(page));
+    }
+    const search = searchParams.toString();
+    return `${location.pathname}${search ? `?${search}` : ""}`;
+  };
 
   return (
-    <IdiomListRenderer
-      className="idiomListView"
-      pageSize={pageSize}
-      totalCount={props.initialData.idioms.totalCount}
-      idioms={idioms}
-      pageNumber={pageNumber}
-      onPageChange={(page: number, size?: number) => {
-        props.onPageChange(String(page));
-      }}
-    />
+    <section className="idiomDirectory">
+      <Title level={1}>{props.heading}</Title>
+      {props.introduction && <Paragraph>{props.introduction}</Paragraph>}
+      {props.languageDirectory}
+      <IdiomListRenderer
+        className="idiomListView"
+        pageSize={IDIOM_PAGE_SIZE}
+        totalCount={props.initialData.idioms.totalCount}
+        idioms={idioms}
+        pageNumber={pageNumber}
+        onPageChange={(page: number) => {
+          props.onPageChange(String(page));
+        }}
+      />
+      {pageCount > 1 && (
+        <nav className="crawlablePagination" aria-label="Idiom list pages">
+          {pageNumber > 1 && (
+            <Link rel="prev" to={pageHref(pageNumber - 1)}>
+              Previous page
+            </Link>
+          )}
+          <span>
+            Page {pageNumber} of {pageCount}
+          </span>
+          {pageNumber < pageCount && (
+            <Link rel="next" to={pageHref(pageNumber + 1)}>
+              Next page
+            </Link>
+          )}
+        </nav>
+      )}
+    </section>
   );
 };

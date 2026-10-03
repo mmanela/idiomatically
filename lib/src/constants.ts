@@ -1,1 +1,2 @@
 export const DEFAULT_PAGE_TITLE = "Idiomatically - Idioms translated across languages and countries";
+export const IDIOM_PAGE_SIZE = 10;

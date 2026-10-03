@@ -1,11 +1,16 @@
 import * as React from "react";
 import { Tooltip } from "antd";
 import "./LanguageFlags.scss";
-import { FullIdiomEntry_language, FullIdiomEntry_language_countries } from "../__generated__/types";
-import { CountryFlag, FlagSize } from "./CountryFlag";
+import { CountryFlag, FlagSize, type CountryFlagInfo } from "./CountryFlag";
+
+export interface LanguageFlagInfo {
+  languageKey: string;
+  languageName: string;
+  countries: CountryFlagInfo[];
+}
 
 export interface LanguageFlagsProps {
-  languageInfo: FullIdiomEntry_language;
+  languageInfo: LanguageFlagInfo;
   /**
    * Small - 24px
    * Default - 32px
@@ -31,7 +36,7 @@ export const LanguageFlags: React.FunctionComponent<LanguageFlagsProps> = props 
   );
 };
 
-const renderFlag = (countries: FullIdiomEntry_language_countries[], size?: FlagSize, compactMode?: boolean) => {
+const renderFlag = (countries: CountryFlagInfo[], size?: FlagSize, compactMode?: boolean) => {
   let countriesToRender = [...countries];
   if (compactMode) {
     // Just pick first country for now, in the future we may want some idea
@@ -67,6 +72,6 @@ const renderFlag = (countries: FullIdiomEntry_language_countries[], size?: FlagS
   }
 };
 
-const renderFlagList = (countries: FullIdiomEntry_language_countries[], size?: FlagSize) => (
+const renderFlagList = (countries: CountryFlagInfo[], size?: FlagSize) => (
   <div className="flagList">{countries.map(f => <CountryFlag key={f.countryKey} country={f} size={size} />)}</div>
 );

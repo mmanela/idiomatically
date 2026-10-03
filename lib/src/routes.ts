@@ -9,6 +9,7 @@ export default [
   layout("components/App.tsx", [
     index("routes/home.tsx"),
     route("idioms", "routes/idioms.tsx"),
+    route("languages/:language/idioms", "routes/language-idioms.tsx"),
     route("idioms/:slug", "routes/idiom.tsx"),
     route("new", "routes/new-idiom.tsx"),
     route("idioms/:slug/update", "routes/update-idiom.tsx"),

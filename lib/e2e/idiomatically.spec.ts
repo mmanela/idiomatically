@@ -192,7 +192,7 @@ async function readLayout(page: Page) {
     const header = document.querySelector('header.ant-layout-header')!.getBoundingClientRect();
     const main = document.querySelector('main')!.getBoundingClientRect();
     const footer = document.querySelector('footer.mainFooter')!.getBoundingClientRect();
-    const title = document.querySelector('header h1')!;
+    const title = document.querySelector('header .siteTitle')!;
     const subtitle = document.querySelector('header h2')!;
     const navigation = document.querySelector('.navCommandBar')!.getBoundingClientRect();
     const searchControls = document.querySelector('.idiomSearchControls')!.getBoundingClientRect();
@@ -316,7 +316,7 @@ test('sitemap reflects newly created idioms without a server restart', async ({ 
     /<lastmod>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z<\/lastmod>/
   );
   expect(updatedSitemap).toContain(
-    '<loc>http://localhost:3100/idioms?lang=en</loc>'
+    '<loc>http://localhost:3100/languages/english/idioms</loc>'
   );
 
   const robotsResponse = await page.request.get('/robots.txt');
@@ -411,7 +411,7 @@ test('public idiom content is server rendered and client navigation stays hydrat
   expect(equivalent.data?.createIdiom.status).toBe('SUCCESS');
   await logout(page);
 
-  const listResponse = await page.request.get('/idioms?lang=en');
+  const listResponse = await page.request.get('/languages/english/idioms');
   expect(listResponse.ok()).toBeTruthy();
   expect(await listResponse.text()).toContain('Read between the lines');
 
@@ -463,6 +463,97 @@ test('public idiom content is server rendered and client navigation stays hydrat
       exact: true
     })
   ).toBeVisible();
+});
+
+test('SEO routes expose canonical metadata, complete mappings, and true 404 responses', async ({ page }) => {
+  await loginAs(page, 'Administrator');
+  const sourceIdiom = await createEnglishIdiomViaApi(
+    page,
+    'A rising tide lifts all boats',
+    'Improvement in the general situation benefits everyone.'
+  );
+  const equivalents = [
+    ['La unión hace la fuerza', 'Unity creates strength', 'es', 'AR'],
+    ['L’union fait la force', 'Unity creates strength', 'fr', 'FR'],
+    ['Einigkeit macht stark', 'Unity makes strong', 'de', 'DE'],
+    ['L’unione fa la forza', 'Unity creates strength', 'it', 'IT'],
+    ['A união faz a força', 'Unity creates strength', 'pt', 'BR'],
+    ['Η ισχύς εν τη ενώσει', 'Strength lies in unity', 'el', 'GR']
+  ] as const;
+  for (const [title, literalTranslation, languageKey, countryKey] of equivalents) {
+    const result = await graphql<{
+      createIdiom: { status: string };
+    }>(page, `
+      mutation CreateSeoEquivalent(
+        $title: String!
+        $literalTranslation: String!
+        $languageKey: String!
+        $countryKeys: [String!]
+        $relatedIdiomId: ID!
+      ) {
+        createIdiom(idiom: {
+          title: $title
+          literalTranslation: $literalTranslation
+          languageKey: $languageKey
+          countryKeys: $countryKeys
+          relatedIdiomId: $relatedIdiomId
+        }) {
+          status
+        }
+      }
+    `, {
+      title,
+      literalTranslation,
+      languageKey,
+      countryKeys: [countryKey],
+      relatedIdiomId: sourceIdiom.id
+    });
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.createIdiom.status).toBe('SUCCESS');
+  }
+  await logout(page);
+
+  const detailResponse = await page.request.get(
+    '/idioms/a-rising-tide-lifts-all-boats'
+  );
+  expect(detailResponse.status()).toBe(200);
+  const detailHtml = await detailResponse.text();
+  for (const [title] of equivalents) {
+    expect(detailHtml).toContain(title);
+  }
+  expect(detailHtml).toContain('"@type":"DefinedTerm"');
+  expect(detailHtml).toContain('"@type":"BreadcrumbList"');
+
+  const spanishResponse = await page.request.get(
+    '/languages/spanish/idioms'
+  );
+  expect(spanishResponse.status()).toBe(200);
+  const spanishHtml = await spanishResponse.text();
+  expect(spanishHtml).toContain('Spanish idioms and equivalents');
+  expect(spanishHtml).toContain(
+    '<link rel="canonical" href="http://localhost:3100/languages/spanish/idioms"/>'
+  );
+  expect(spanishHtml).toContain('La unión hace la fuerza');
+
+  const legacyResponse = await page.request.get('/idioms?lang=es', {
+    maxRedirects: 0
+  });
+  expect(legacyResponse.status()).toBe(302);
+  expect(legacyResponse.headers()['location']).toBe(
+    '/languages/spanish/idioms'
+  );
+
+  const searchResponse = await page.request.get(
+    '/languages/spanish/idioms?q=union'
+  );
+  expect(await searchResponse.text()).toContain(
+    '<meta name="robots" content="noindex,follow"/>'
+  );
+
+  expect((await page.request.get('/missing-page')).status()).toBe(404);
+  expect(
+    (await page.request.get('/idioms/missing-idiom')).status()
+  ).toBe(404);
 });
 
 test('administrator can update an existing idiom', async ({ page }) => {
@@ -619,7 +710,7 @@ test('all-language filter lists non-English idioms without a render loop', async
   expect(tooltipLayout.tooltip.top).toBeGreaterThanOrEqual(tooltipLayout.map.top);
   expect(tooltipLayout.tooltip.bottom).toBeLessThanOrEqual(tooltipLayout.map.bottom);
 
-  await page.goto('/idioms?lang=af');
+  await page.goto('/languages/afrikaans/idioms');
   await expect(page.getByText('Die koeël is deur die kerk')).toBeVisible();
   const languageFilter = page.getByRole('combobox', { name: 'Language' });
   const languageFilterLabel = page.locator('.languageSelect .ant-select-content-value');
@@ -650,7 +741,7 @@ test('all-language filter lists non-English idioms without a render loop', async
   await languageFilter.click();
   await page.locator('.languageOption').filter({ hasText: /^All$/ }).click();
 
-  await expect(page).toHaveURL('/idioms?lang=all');
+  await expect(page).toHaveURL('/idioms');
   await expect(page.getByText('Die koeël is deur die kerk')).toBeVisible();
   await expect(page.locator('#webpack-dev-server-client-overlay')).toHaveCount(0);
 });
@@ -773,15 +864,17 @@ test('search and pagination preserve filters in deep links', async ({ page }) =>
     await createEnglishIdiomViaApi(page, `Test idiom ${String(index).padStart(2, '0')}`, `Description ${index}`);
   }
 
-  await gotoHydrated(page, '/idioms?lang=en');
+  await gotoHydrated(page, '/languages/english/idioms');
   await expect(page.getByText('Test idiom 01', { exact: true })).toBeVisible();
   await page.getByTitle('2').click();
-  await expect(page).toHaveURL('/idioms?lang=en&page=2');
+  await expect(page).toHaveURL('/languages/english/idioms?page=2');
   await expect(page.getByText('Test idiom 11', { exact: true })).toBeVisible();
 
   await page.getByRole('searchbox', { name: 'Find an idiom' }).fill('Test idiom 03');
   await page.getByRole('button', { name: 'search' }).click();
-  await expect(page).toHaveURL('/idioms?q=Test+idiom+03&lang=en');
+  await expect(page).toHaveURL(
+    '/languages/english/idioms?q=Test+idiom+03'
+  );
   await expect(page.getByText('Test idiom 03', { exact: true })).toBeVisible();
   await expect(page.getByText('Test idiom 11', { exact: true })).not.toBeVisible();
 });

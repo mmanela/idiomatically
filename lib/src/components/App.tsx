@@ -7,15 +7,16 @@ import {
   Outlet,
   useLoaderData,
   useLocation,
+  useMatches,
   useNavigate,
 } from "react-router";
 import type { GetCurrentUser } from "../__generated__/types";
-import { DEFAULT_PAGE_TITLE } from "../constants";
 import { graphqlRequest } from "../graphql.server";
 import "./App.scss";
 import { NavCommandBar } from "./NavCommandBar";
 import { SearchBox } from "./SearchBox";
 import { getCurrentUserQuery } from "./withCurrentUser";
+import { getLanguagePath } from "../utilities/languageUtil";
 
 const { Header, Footer, Content } = Layout;
 
@@ -38,33 +39,37 @@ export function loader({ request }: LoaderFunctionArgs) {
 export default function App() {
   const initialCurrentUser = useLoaderData<typeof loader>().me;
   const location = useLocation();
+  const matches = useMatches();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const queryFilter = searchParams.get("q");
-  const queryLang = searchParams.get("lang");
+  const routeSeo = matches
+    .map(
+      (match) =>
+        match.loaderData as
+          | { seo?: { languageKey?: string; languageName?: string } }
+          | undefined,
+    )
+    .find((data) => data?.seo?.languageKey)?.seo;
+  const queryLang = routeSeo?.languageKey || "en";
 
   const updateSearchParams = useCallback(
-    (lang: string | null, filter: string | null) => {
+    (lang: string | null, languageName: string | null, filter: string | null) => {
       const nextSearchParams = new URLSearchParams();
       if (filter) {
         nextSearchParams.set("q", filter);
       }
-      if (lang) {
-        nextSearchParams.set("lang", lang);
-      }
+      const pathname =
+        !lang || lang === "all"
+          ? "/idioms"
+          : getLanguagePath(languageName || lang);
       navigate({
-        pathname: "/idioms",
+        pathname,
         search: nextSearchParams.toString(),
       });
     },
     [navigate],
   );
-
-  useEffect(() => {
-    if (!location.pathname.startsWith("/idioms/")) {
-      document.title = DEFAULT_PAGE_TITLE;
-    }
-  }, [location.pathname]);
 
   useEffect(() => {
     document.documentElement.dataset.hydrated = "true";
@@ -76,15 +81,21 @@ export default function App() {
     <ConfigProvider theme={theme}>
       <Layout className="container">
         <Header>
-          <h1>
+          <div className="siteTitle">
             <Link to="/">Idiomatically</Link>
-          </h1>
+          </div>
           <h2>Explore idioms translated across languages and countries</h2>
           <NavCommandBar initialCurrentUser={initialCurrentUser} />
           <SearchBox
-            onSearch={(value) => updateSearchParams(queryLang, value)}
-            onLanguageChange={(value) =>
-              updateSearchParams(value, queryFilter)
+            onSearch={(value) =>
+              updateSearchParams(
+                queryLang,
+                routeSeo?.languageName || null,
+                value,
+              )
+            }
+            onLanguageChange={(value, languageName) =>
+              updateSearchParams(value, languageName, queryFilter)
             }
             filter={queryFilter}
             language={queryLang}

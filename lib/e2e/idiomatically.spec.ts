@@ -630,6 +630,21 @@ test('all-language filter lists non-English idioms without a render loop', async
   expect(languageLabelFits).toBe(true);
 
   await languageFilter.click();
+  const languageMenuMotion = await page
+    .locator('.languageOptionContainer')
+    .evaluate(element => {
+      const styles = window.getComputedStyle(element);
+      return {
+        animationName: styles.animationName,
+        opacity: styles.opacity,
+        transform: styles.transform
+      };
+    });
+  expect(languageMenuMotion).toEqual({
+    animationName: 'none',
+    opacity: '1',
+    transform: 'none'
+  });
   await page.locator('.languageOption').filter({ hasText: /^All$/ }).click();
 
   await expect(page).toHaveURL('/idioms?lang=all');

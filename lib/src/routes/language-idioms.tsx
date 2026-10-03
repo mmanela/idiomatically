@@ -1,17 +1,29 @@
-import { useLoaderData, useSearchParams } from "react-router";
+import {
+  data as responseData,
+  redirect,
+  useLoaderData,
+  useSearchParams,
+} from "react-router";
 import {
   findLanguageBySlug,
   loadLanguagesWithIdioms,
 } from "../loaders/languages.server";
-import { loadIdiomList } from "../loaders/idioms.server";
+import {
+  getIdiomListPage,
+  loadIdiomList,
+} from "../loaders/idioms.server";
 import { IdiomListView } from "../pages/IdiomListView";
 import { buildPageMeta, pageTitle } from "../seo";
 import { getCanonicalUrl } from "../seo.server";
-import { getLanguagePath } from "../utilities/languageUtil";
+import { getLanguagePath } from "../utilities/languagePath";
 import type { Route } from "./+types/language-idioms";
 import { loadFeaturedIdiom } from "../loaders/featuredIdiom.server";
 
 export async function loader({ params, request }: Route.LoaderArgs) {
+  const page = getIdiomListPage(request);
+  if (page.redirectTo) {
+    return redirect(page.redirectTo, 301);
+  }
   const languages = await loadLanguagesWithIdioms(request);
   const language = findLanguageBySlug(languages, params.language);
   if (!language) {
@@ -26,9 +38,9 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   );
   const requestUrl = new URL(request.url);
   const canonicalPath = getLanguagePath(language.languageName);
-  return {
+  const notFound = page.pageNumber > 1 && data.idioms.edges.length === 0;
+  const result = {
     ...data,
-    languages,
     language,
     featuredIdiom,
     seo: {
@@ -37,13 +49,21 @@ export async function loader({ params, request }: Route.LoaderArgs) {
       languageName: language.languageName,
       noIndex: requestUrl.searchParams.has("q"),
       page: requestUrl.searchParams.get("page"),
+      notFound,
     },
   };
+  return notFound ? responseData(result, { status: 404 }) : result;
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => {
   if (!loaderData) {
     return [];
+  }
+  if (loaderData.seo.notFound) {
+    return [
+      { title: "Page not found | Idiomatically" },
+      { name: "robots", content: "noindex,follow" },
+    ];
   }
   const { language, idioms, seo } = loaderData;
   const pageSuffix =

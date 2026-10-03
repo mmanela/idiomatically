@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 import type { GetLanguagesWithIdioms } from "../__generated__/types";
 import { graphqlRequest } from "../graphql.server";
-import { toLanguageSlug } from "../utilities/languageUtil";
+import { toLanguageSlug } from "../utilities/languagePath";
 
 const languagesWithIdiomsQuery = gql`
   query GetSeoLanguagesWithIdioms {

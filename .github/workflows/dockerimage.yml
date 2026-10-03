@@ -83,6 +83,9 @@ jobs:
         AUTH_SMOKE_ATTEMPTS: 18
         AUTH_SMOKE_RETRY_DELAY_MS: 10000
 
+    - name: Verify production SEO
+      run: node lib/server/scripts/seoSmoke.mjs https://idiomatically.net
+
     - name: Record deployed image
       run: |
         echo "### Production image" >> "$GITHUB_STEP_SUMMARY"

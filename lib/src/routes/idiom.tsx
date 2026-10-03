@@ -8,7 +8,7 @@ import { graphqlRequest } from "../graphql.server";
 import { Idiom } from "../pages/Idiom";
 import type { Route } from "./+types/idiom";
 import { getPublicUrl } from "../seo.server";
-import { getLanguagePath } from "../utilities/languageUtil";
+import { getLanguagePath } from "../utilities/languagePath";
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const graphqlData = await graphqlRequest<GetIdiomQuery, GetIdiomQueryVariables>(

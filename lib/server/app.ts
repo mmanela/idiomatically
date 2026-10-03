@@ -9,7 +9,7 @@ import { createAuth, getLocalIdentity } from "./auth";
 import { createGraphqlRuntime, getCurrentUser } from "./graphql";
 import { initializeJobs, stopJobs } from "./jobScheduler";
 import { renderIdiomSocialImage } from "./socialImage";
-import { getLanguagePath } from "../src/utilities/languageUtil";
+import { getLanguagePath } from "../src/utilities/languagePath";
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 dotenv.config({ path: `.env.${process.env.NODE_ENV}.local`, override: true });
@@ -230,11 +230,26 @@ app.get("/sitemap.xml", async (req, res) => {
   const sitemapStream = new SitemapStream({ hostname: serverUrl });
   const idioms = await dataProviders.idiom.getAllIdioms();
   const languages = await dataProviders.idiom.getLanguagesWithIdioms();
+  const latestIdiomDate = latestDate(idioms.map((idiom) => idiom.lastModifiedDate));
+  const languageLastModified = new Map(
+    languages.map((language) => [
+      language.languageKey,
+      latestDate(
+        idioms
+          .filter((idiom) => idiom.languageKey === language.languageKey)
+          .map((idiom) => idiom.lastModifiedDate),
+      ),
+    ]),
+  );
 
-  sitemapStream.write({ url: "/", priority: 1 });
+  sitemapStream.write({ url: "/", priority: 1, lastmod: latestIdiomDate });
   sitemapStream.write({ url: "/about", priority: 0.8 });
   sitemapStream.write({ url: "/partners", priority: 0.6 });
-  sitemapStream.write({ url: "/idioms", priority: 0.9 });
+  sitemapStream.write({
+    url: "/idioms",
+    priority: 0.9,
+    lastmod: latestIdiomDate,
+  });
   for (const idiom of idioms) {
     sitemapStream.write({
       url: `/idioms/${idiom.slug}`,
@@ -246,6 +261,7 @@ app.get("/sitemap.xml", async (req, res) => {
     sitemapStream.write({
       url: getLanguagePath(language.languageName),
       priority: 0.7,
+      lastmod: languageLastModified.get(language.languageKey),
     });
   }
   sitemapStream.end();
@@ -257,6 +273,14 @@ app.get("/sitemap.xml", async (req, res) => {
   });
   return res.send(sitemap);
 });
+
+function latestDate(dates: Date[]) {
+  return dates.reduce<Date | undefined>(
+    (latest, candidate) =>
+      !latest || candidate > latest ? candidate : latest,
+    undefined,
+  );
+}
 
 app.use(
   createRequestHandler({

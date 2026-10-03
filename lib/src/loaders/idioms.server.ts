@@ -32,18 +32,45 @@ export interface IdiomListData {
   };
 }
 
-export async function loadIdiomList(request: Request, locale: string) {
+export function getIdiomListPage(request: Request) {
   const url = new URL(request.url);
-  const page = Number.parseInt(url.searchParams.get("page") || "1", 10);
-  const pageNumber = Number.isNaN(page) || page < 1 ? 1 : page;
+  const rawPage = url.searchParams.get("page");
+  if (rawPage === null) {
+    return { pageNumber: 1, redirectTo: null };
+  }
+  const pageNumber = Number(rawPage);
+  if (
+    !/^[1-9]\d*$/.test(rawPage) ||
+    !Number.isSafeInteger(pageNumber) ||
+    rawPage === "1"
+  ) {
+    url.searchParams.delete("page");
+    return {
+      pageNumber: 1,
+      redirectTo: `${url.pathname}${url.search}`,
+    };
+  }
+  return {
+    pageNumber,
+    redirectTo: null,
+  };
+}
+
+export async function loadIdiomList(
+  request: Request,
+  locale: string,
+  limit = IDIOM_PAGE_SIZE,
+) {
+  const url = new URL(request.url);
+  const { pageNumber } = getIdiomListPage(request);
   return graphqlRequest<IdiomListData, GetIdiomListQueryVariables>(
     request,
     getIdiomListQuery,
     {
       filter: url.searchParams.get("q"),
       locale,
-      limit: IDIOM_PAGE_SIZE,
-      cursor: String((pageNumber - 1) * IDIOM_PAGE_SIZE),
+      limit,
+      cursor: String((pageNumber - 1) * limit),
     },
   );
 }

@@ -16,7 +16,7 @@ import "./App.scss";
 import { NavCommandBar } from "./NavCommandBar";
 import { SearchBox } from "./SearchBox";
 import { getCurrentUserQuery } from "./withCurrentUser";
-import { getLanguagePath } from "../utilities/languageUtil";
+import { getLanguagePath } from "../utilities/languagePath";
 
 const { Header, Footer, Content } = Layout;
 

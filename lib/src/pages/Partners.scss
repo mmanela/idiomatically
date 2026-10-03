@@ -1,0 +1,23 @@
+.partnersPage {
+  .partnerCard {
+    background: #f7f9fc;
+    border: 1px solid #e1e6ef;
+    border-radius: 6px;
+    margin: 1.25rem 0;
+    padding: 1.25rem;
+  }
+
+  .partnerCard h2 {
+    font-size: 1.35rem;
+    margin-top: 0;
+  }
+
+  .partnerCard > :last-child {
+    font-weight: 600;
+  }
+
+  .partnerDisclaimer {
+    color: rgba(0, 0, 0, 0.55);
+    font-size: 0.85rem;
+  }
+}

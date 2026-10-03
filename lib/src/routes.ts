@@ -16,6 +16,7 @@ export default [
     route("me", "routes/profile.tsx"),
     route("admin/proposals", "routes/change-proposals.tsx"),
     route("about", "routes/about.tsx"),
+    route("partners", "routes/partners.tsx"),
     route("*", "routes/not-found.tsx"),
   ]),
 ] satisfies RouteConfig;

@@ -233,6 +233,7 @@ app.get("/sitemap.xml", async (req, res) => {
 
   sitemapStream.write({ url: "/", priority: 1 });
   sitemapStream.write({ url: "/about", priority: 0.8 });
+  sitemapStream.write({ url: "/partners", priority: 0.6 });
   sitemapStream.write({ url: "/idioms", priority: 0.9 });
   for (const idiom of idioms) {
     sitemapStream.write({

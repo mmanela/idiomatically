@@ -297,6 +297,7 @@ test('sitemap reflects newly created idioms without a server restart', async ({ 
   );
   const initialSitemap = await initialResponse.text();
   expect(initialSitemap).toContain('<loc>http://localhost:3100/idioms</loc>');
+  expect(initialSitemap).toContain('<loc>http://localhost:3100/partners</loc>');
   expect(initialSitemap).not.toContain('/idioms/fresh-from-the-sitemap');
 
   await loginAs(page, 'Administrator');
@@ -463,6 +464,31 @@ test('public idiom content is server rendered and client navigation stays hydrat
       exact: true
     })
   ).toBeVisible();
+});
+
+test('partner projects are discoverable and server rendered', async ({ page }) => {
+  const response = await page.request.get('/partners');
+  expect(response.status()).toBe(200);
+  const html = await response.text();
+  expect(html).toContain('Idiom partners');
+  expect(html).toContain('https://idiomator.com/');
+  expect(html).toContain('https://github.com/MachhDev/Idiomatic');
+  expect(html).toContain(
+    '<link rel="canonical" href="http://localhost:3100/partners"/>'
+  );
+
+  await gotoHydrated(page, '/');
+  await page.getByRole('link', { name: 'Idiom partners' }).click();
+  await expect(page).toHaveURL('/partners');
+  await expect(
+    page.getByRole('heading', { name: 'Idiom partners' })
+  ).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: 'Visit Idiomator' })
+  ).toHaveAttribute('href', 'https://idiomator.com/');
+  await expect(
+    page.getByRole('link', { name: 'Explore Idiomatic on GitHub' })
+  ).toHaveAttribute('href', 'https://github.com/MachhDev/Idiomatic');
 });
 
 test('SEO routes expose canonical metadata, complete mappings, and true 404 responses', async ({ page }) => {

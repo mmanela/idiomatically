@@ -93,13 +93,19 @@ body {
       display: flex;
       width: 100%;
 
-      .github {
+      .resourcesFooter {
         flex: 1 1;
         text-align: center;
-        color: inherit;
-        &:hover {
-          color: black;
-          transition: color 1s ease-in 0s;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        a {
+          color: inherit;
+          &:hover {
+            color: black;
+            transition: color 1s ease-in 0s;
+          }
         }
       }
 

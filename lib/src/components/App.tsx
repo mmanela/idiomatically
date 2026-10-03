@@ -115,15 +115,16 @@ export default function App() {
             </span>
             <span className="heart">♥</span>
           </span>
-          <a
-            className="github"
-            rel="source"
-            href="https://github.com/mmanela/idiomatically"
-          >
-            <span>
+          <span className="resourcesFooter">
+            <a
+              className="github"
+              rel="source"
+              href="https://github.com/mmanela/idiomatically"
+            >
               <GithubOutlined /> View on Github
-            </span>
-          </a>
+            </a>
+            <Link to="/partners">Idiom partners</Link>
+          </span>
           <span className="creativeCommons">
             <a
               rel="license"

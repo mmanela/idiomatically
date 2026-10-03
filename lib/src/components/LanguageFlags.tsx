@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Tooltip } from "antd";
+import { Link } from "react-router";
 import "./LanguageFlags.scss";
 import { CountryFlag, FlagSize, type CountryFlagInfo } from "./CountryFlag";
 
@@ -21,6 +22,7 @@ export interface LanguageFlagsProps {
   layoutMode?: "horizontal" | "vertical";
   compactMode?: boolean;
   hideFlags?: boolean;
+  labelHref?: string;
 }
 
 export const LanguageFlags: React.FunctionComponent<LanguageFlagsProps> = props => {
@@ -30,7 +32,14 @@ export const LanguageFlags: React.FunctionComponent<LanguageFlagsProps> = props 
 
   return (
     <div className={["flagAvatarContainer", layoutMode, size].join(" ")}>
-      {props.showLabel && <div className="flagAfterText">{languageLabel}</div>}
+      {props.showLabel &&
+        (props.labelHref ? (
+          <Link className="flagAfterText" to={props.labelHref}>
+            {languageLabel}
+          </Link>
+        ) : (
+          <div className="flagAfterText">{languageLabel}</div>
+        ))}
       {!props.hideFlags && renderFlag(props.languageInfo.countries, size, props.compactMode)}
     </div>
   );

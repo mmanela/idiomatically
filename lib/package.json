@@ -73,6 +73,7 @@
     "check": "npm run typecheck && npm run build",
     "codegen": "tsx server/scripts/genJoined.ts && graphql-codegen --config server/codegen.yml",
     "db:start": "docker compose -f ../docker-compose.yml up -d mongo",
+    "db:seed": "cross-env NODE_ENV=development node server/scripts/seedDevelopmentData.mjs",
     "db:stop": "docker compose -f ../docker-compose.yml stop mongo",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",

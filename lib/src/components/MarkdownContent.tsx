@@ -43,3 +43,16 @@ export function markdownToPlainText(source: string) {
     .replace(/\s+/g, " ")
     .trim();
 }
+
+export function markdownBeforeFirstHeading(source: string) {
+  const tokens = marked.lexer(source);
+  const headingIndex = tokens.findIndex((token) => token.type === "heading");
+  if (headingIndex === -1) {
+    return source;
+  }
+  return tokens
+    .slice(0, headingIndex)
+    .map((token) => token.raw)
+    .join("")
+    .trim();
+}

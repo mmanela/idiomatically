@@ -52,7 +52,7 @@ export interface IdiomListViewProps {
   filter: string | null;
   language: string | null;
   page: string | null;
-  heading: string;
+  heading?: string;
   introduction?: string;
   featuredIdiom?: FeaturedIdiomData | null;
   onPageChange: (value: string) => void;
@@ -77,7 +77,7 @@ export const IdiomListView: React.FunctionComponent<IdiomListViewProps> = props 
   if (props.initialData.idioms.edges.length <= 0) {
     return (
       <section className="idiomDirectory">
-        <Title level={1}>{props.heading}</Title>
+        {props.heading && <Title level={1}>{props.heading}</Title>}
         <Empty
           image={Empty.PRESENTED_IMAGE_DEFAULT}
           description="Could not find a needle in a haystack."
@@ -103,8 +103,12 @@ export const IdiomListView: React.FunctionComponent<IdiomListViewProps> = props 
 
   return (
     <section className="idiomDirectory">
-      <Title level={1}>{props.heading}</Title>
-      {props.introduction && <Paragraph>{props.introduction}</Paragraph>}
+      {(props.heading || props.introduction) && (
+        <header className="idiomDirectoryHeader">
+          {props.heading && <Title level={1}>{props.heading}</Title>}
+          {props.introduction && <Paragraph>{props.introduction}</Paragraph>}
+        </header>
+      )}
       {props.featuredIdiom && <FeaturedIdiom idiom={props.featuredIdiom} />}
       <IdiomListRenderer
         className="idiomListView"

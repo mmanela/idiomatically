@@ -45,10 +45,29 @@
 @media screen and (max-width: 600px) {
   .idiomSearchControls {
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
+
+    .idiomSearchBox {
+      .ant-input-search-btn {
+        border-bottom-right-radius: 6px !important;
+        border-top-right-radius: 6px !important;
+      }
+    }
 
     .languageSelect {
+      background-color: white !important;
+      border-color: #d9d9d9 !important;
+      border-radius: 6px !important;
       width: 100% !important;
+
+      .ant-select-content,
+      .ant-select-input {
+        color: rgba(0, 0, 0, 0.65) !important;
+      }
+
+      .ant-select-suffix {
+        color: rgba(0, 0, 0, 0.45) !important;
+      }
     }
   }
 }

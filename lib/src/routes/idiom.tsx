@@ -38,7 +38,8 @@ export const meta: Route.MetaFunction = ({ loaderData }) => {
   const socialImageUrl = new URL(
     `/social/idioms/${idiom.slug}.png`,
     canonicalUrl,
-  ).toString();
+  );
+  socialImageUrl.searchParams.set("v", "2");
 
   return [
     { title: `${idiom.title} - Idiomatically` },
@@ -49,7 +50,7 @@ export const meta: Route.MetaFunction = ({ loaderData }) => {
     { property: "og:title", content: socialTitle },
     { property: "og:description", content: description },
     { property: "og:url", content: canonicalUrl },
-    { property: "og:image", content: socialImageUrl },
+    { property: "og:image", content: socialImageUrl.toString() },
     { property: "og:image:width", content: "1200" },
     { property: "og:image:height", content: "630" },
     {
@@ -59,7 +60,7 @@ export const meta: Route.MetaFunction = ({ loaderData }) => {
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: socialTitle },
     { name: "twitter:description", content: description },
-    { name: "twitter:image", content: socialImageUrl },
+    { name: "twitter:image", content: socialImageUrl.toString() },
   ];
 };
 

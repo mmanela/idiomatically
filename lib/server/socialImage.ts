@@ -46,24 +46,24 @@ export async function renderIdiomSocialImage(idiom: Idiom) {
 
       <g transform="translate(70 58)">
         <rect width="82" height="82" rx="16" fill="#57405c"/>
-        <text x="41" y="67" fill="#fff" font-family="Georgia, serif" font-size="62" font-weight="700" text-anchor="middle">I</text>
-        <text x="108" y="54" fill="#fff" font-family="Arial, sans-serif" font-size="38" font-weight="700">Idiomatically</text>
+        <text x="41" y="67" fill="#fff" font-family="DejaVu Serif, serif" font-size="62" font-weight="700" text-anchor="middle">I</text>
+        <text x="108" y="54" fill="#fff" font-family="DejaVu Sans, sans-serif" font-size="38" font-weight="700">Idiomatically</text>
       </g>
 
-      <text x="70" y="245" fill="#fff" font-family="Georgia, serif" font-size="64" font-weight="700">
+      <text x="70" y="245" fill="#fff" font-family="DejaVu Serif, serif" font-size="64" font-weight="700">
         ${renderLines(titleLines, 76)}
       </text>
 
       <rect x="70" y="365" width="${Math.min(relatedText.length * 17 + 40, 620)}" height="54" rx="27" fill="#79a8c9" opacity=".28"/>
-      <text x="92" y="401" fill="#eaf4fa" font-family="Arial, sans-serif" font-size="26" font-weight="700">
+      <text x="92" y="401" fill="#eaf4fa" font-family="DejaVu Sans, sans-serif" font-size="26" font-weight="700">
         ${escapeXml(idiom.language.languageName)} · ${escapeXml(relatedText)}
       </text>
 
-      <text x="70" y="485" fill="#eaf4fa" font-family="Arial, sans-serif" font-size="29">
+      <text x="70" y="485" fill="#eaf4fa" font-family="DejaVu Sans, sans-serif" font-size="29">
         ${renderLines(descriptionLines.length ? descriptionLines : ["Explore its meaning, translation, and equivalents."], 43)}
       </text>
 
-      <text x="70" y="580" fill="#b9d0df" font-family="Arial, sans-serif" font-size="23">idiomatically.net</text>
+      <text x="70" y="580" fill="#b9d0df" font-family="DejaVu Sans, sans-serif" font-size="23">idiomatically.net</text>
     </svg>
   `;
 

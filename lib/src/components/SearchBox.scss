@@ -31,12 +31,12 @@
 }
 
 .languageOptionContainer {
-  animation: none !important;
+  // rc-motion needs an animation-end event to remove the popup after closing.
+  animation-duration: 1ms !important;
   max-width: calc(100vw - 20px);
   min-width: 180px !important;
   opacity: 1 !important;
   transform: none !important;
-  transition: none !important;
   width: max-content !important;
 }
 

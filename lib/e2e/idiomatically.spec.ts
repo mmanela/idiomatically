@@ -434,7 +434,7 @@ test('public idiom content is server rendered and client navigation stays hydrat
       '<meta property="og:description" content="Find the hidden meaning. Explore 1 related idiom in another language."/>'
     );
     expect(detailHtml).toContain(
-      '<meta property="og:image" content="http://localhost:3100/social/idioms/read-between-the-lines.png"/>'
+      '<meta property="og:image" content="http://localhost:3100/social/idioms/read-between-the-lines.png?v=2"/>'
     );
     expect(detailHtml).toContain(
       '<meta name="twitter:card" content="summary_large_image"/>'
@@ -635,16 +635,19 @@ test('all-language filter lists non-English idioms without a render loop', async
     .evaluate(element => {
       const styles = window.getComputedStyle(element);
       return {
-        animationName: styles.animationName,
+        animationDuration: styles.animationDuration,
         opacity: styles.opacity,
         transform: styles.transform
       };
     });
   expect(languageMenuMotion).toEqual({
-    animationName: 'none',
+    animationDuration: '0.001s',
     opacity: '1',
     transform: 'none'
   });
+  await languageFilter.click();
+  await expect(page.locator('.languageOptionContainer')).toBeHidden();
+  await languageFilter.click();
   await page.locator('.languageOption').filter({ hasText: /^All$/ }).click();
 
   await expect(page).toHaveURL('/idioms?lang=all');

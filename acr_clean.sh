@@ -5,13 +5,13 @@
 # that pull images via manifest digest.
 
 # Change to 'true' to enable image delete
-ENABLE_DELETE=false
+ENABLE_DELETE=true
 
 # Modify for your environment
 # TIMESTAMP can be a date-time string such as 2019-03-15T17:55:00.
 REGISTRY=idiomatically893a
 REPOSITORY=idiomatically
-TIMESTAMP=2020-07-28
+TIMESTAMP=2020-10-02
 
 # Delete all images older than specified timestamp.
 

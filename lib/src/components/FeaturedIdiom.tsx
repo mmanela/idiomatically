@@ -2,13 +2,19 @@ import { Typography } from "antd";
 import { Link } from "react-router";
 import type { FeaturedIdiom as FeaturedIdiomData } from "../loaders/featuredIdiom.server";
 import { LanguageFlags } from "./LanguageFlags";
-import { MarkdownContent } from "./MarkdownContent";
+import {
+  MarkdownContent,
+  markdownBeforeFirstHeading,
+} from "./MarkdownContent";
 import "./FeaturedIdiom.scss";
 
 const { Paragraph, Text, Title } = Typography;
 
 export function FeaturedIdiom({ idiom }: { idiom: FeaturedIdiomData }) {
   const equivalentCount = idiom.equivalentCount;
+  const descriptionPreview = idiom.description
+    ? markdownBeforeFirstHeading(idiom.description)
+    : "";
   return (
     <aside className="featuredIdiom" aria-labelledby="featured-idiom-title">
       <Text className="featuredIdiomLabel">Featured idiom</Text>
@@ -41,10 +47,10 @@ export function FeaturedIdiom({ idiom }: { idiom: FeaturedIdiomData }) {
           <Text strong>Literally:</Text> {idiom.literalTranslation}
         </Paragraph>
       )}
-      {idiom.description && (
+      {descriptionPreview && (
         <MarkdownContent
           className="featuredIdiomDescription markdown"
-          source={idiom.description}
+          source={descriptionPreview}
         />
       )}
       <Link className="featuredIdiomLink" to={`/idioms/${idiom.slug}`}>

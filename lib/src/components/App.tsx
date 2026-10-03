@@ -43,6 +43,7 @@ export default function App() {
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const queryFilter = searchParams.get("q");
+  const SiteTitle = location.pathname === "/" ? "h1" : "div";
   const routeSeo = matches
     .map(
       (match) =>
@@ -81,9 +82,9 @@ export default function App() {
     <ConfigProvider theme={theme}>
       <Layout className="container">
         <Header>
-          <div className="siteTitle">
+          <SiteTitle className="siteTitle">
             <Link to="/">Idiomatically</Link>
-          </div>
+          </SiteTitle>
           <h2>Explore idioms translated across languages and countries</h2>
           <NavCommandBar initialCurrentUser={initialCurrentUser} />
           <SearchBox

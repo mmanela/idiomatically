@@ -501,9 +501,20 @@ test('home page is a global discovery hub', async ({ page }) => {
   await gotoHydrated(page, '/');
   await expect(
     page.getByRole('heading', {
-      name: 'Idioms across languages and cultures'
+      level: 1,
+      name: 'Idiomatically'
     })
   ).toBeVisible();
+  await expect(
+    page.getByRole('heading', {
+      name: 'Idioms across languages and cultures'
+    })
+  ).toHaveCount(0);
+  await expect(
+    page.getByText(
+      'Discover how people around the world express the same ideas in wonderfully different ways.'
+    )
+  ).toHaveCount(0);
   await expect(
     page.locator('.languageSelect .ant-select-content-value')
   ).toHaveText('All');
@@ -548,7 +559,7 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
   const sourceIdiom = await createEnglishIdiomViaApi(
     page,
     'A rising tide lifts all boats',
-    'Improvement in the general situation benefits **everyone**.'
+    'Improvement in the general situation benefits **everyone**.\n\n# Alternate Forms\n- A rising tide raises all ships.'
   );
   const equivalents = [
     ['La unión hace la fuerza', 'Unity creates strength', 'es', 'AR'],
@@ -571,7 +582,7 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
       ) {
         createIdiom(idiom: {
           title: $title
-          description: "A **shared** expression."
+          description: "A **shared** expression.\\n\\n## Examples\\n- People achieve more together."
           literalTranslation: $literalTranslation
           languageKey: $languageKey
           countryKeys: $countryKeys
@@ -636,6 +647,9 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
   await expect(
     page.locator('.featuredIdiomDescription strong')
   ).toBeVisible();
+  await expect(
+    page.locator('.featuredIdiomDescription')
+  ).not.toContainText(/Alternate Forms|Examples/);
 
   const legacyResponse = await page.request.get('/idioms?lang=es', {
     maxRedirects: 0

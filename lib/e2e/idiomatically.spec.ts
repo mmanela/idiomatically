@@ -548,7 +548,7 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
   const sourceIdiom = await createEnglishIdiomViaApi(
     page,
     'A rising tide lifts all boats',
-    'Improvement in the general situation benefits everyone.'
+    'Improvement in the general situation benefits **everyone**.'
   );
   const equivalents = [
     ['La unión hace la fuerza', 'Unity creates strength', 'es', 'AR'],
@@ -571,6 +571,7 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
       ) {
         createIdiom(idiom: {
           title: $title
+          description: "A **shared** expression."
           literalTranslation: $literalTranslation
           languageKey: $languageKey
           countryKeys: $countryKeys
@@ -609,6 +610,12 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
   const spanishHtml = await spanishResponse.text();
   expect(spanishHtml).toContain('Spanish idioms');
   expect(spanishHtml).not.toContain('Featured idiom');
+  expect(spanishHtml).toMatch(
+    /<div title="Spanish" class="[^"]*languageSelect/
+  );
+  expect(spanishHtml).not.toMatch(
+    /<div title="es" class="[^"]*languageSelect/
+  );
   expect(spanishHtml).toContain(
     '<link rel="canonical" href="http://localhost:3100/languages/spanish/idioms"/>'
   );
@@ -618,6 +625,17 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
   expect(allIdiomsHtml).toContain('Featured idiom');
   expect(allIdiomsHtml).toContain('featuredIdiomEquivalentCount');
   expect(allIdiomsHtml).not.toContain('0 equivalent idioms');
+  const featuredMarkup = allIdiomsHtml.match(
+    /<aside class="featuredIdiom"[\s\S]*?<\/aside>/
+  )?.[0];
+  expect(featuredMarkup).toBeDefined();
+  expect(featuredMarkup).not.toContain('**shared**');
+  expect(featuredMarkup).not.toContain('**everyone**');
+
+  await page.goto('/idioms');
+  await expect(
+    page.locator('.featuredIdiomDescription strong')
+  ).toBeVisible();
 
   const legacyResponse = await page.request.get('/idioms?lang=es', {
     maxRedirects: 0

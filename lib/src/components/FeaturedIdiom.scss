@@ -38,6 +38,18 @@
     white-space: nowrap;
   }
 
+  .featuredIdiomDescription {
+    margin-bottom: 1em;
+
+    > :first-child {
+      margin-top: 0;
+    }
+
+    > :last-child {
+      margin-bottom: 0;
+    }
+  }
+
   .featuredIdiomLink {
     font-weight: 600;
   }

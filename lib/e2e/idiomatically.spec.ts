@@ -635,16 +635,19 @@ test('all-language filter lists non-English idioms without a render loop', async
     .evaluate(element => {
       const styles = window.getComputedStyle(element);
       return {
-        animationName: styles.animationName,
+        animationDuration: styles.animationDuration,
         opacity: styles.opacity,
         transform: styles.transform
       };
     });
   expect(languageMenuMotion).toEqual({
-    animationName: 'none',
+    animationDuration: '0.001s',
     opacity: '1',
     transform: 'none'
   });
+  await languageFilter.click();
+  await expect(page.locator('.languageOptionContainer')).toBeHidden();
+  await languageFilter.click();
   await page.locator('.languageOption').filter({ hasText: /^All$/ }).click();
 
   await expect(page).toHaveURL('/idioms?lang=all');

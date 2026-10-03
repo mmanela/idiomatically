@@ -132,7 +132,13 @@ export const Idiom: React.FunctionComponent<IdiomProps> = props => {
     <article className="idiom">
       <div className="page-header">
         <div className="page-header-title">
-          <Title className="idiomTitle" level={3} editable={showEdit ? editConfig : false}>
+          <Title
+            className="idiomTitle"
+            level={1}
+            editable={showEdit ? editConfig : false}
+            lang={idiom.language.languageKey}
+            dir="auto"
+          >
             {idiom.title}
           </Title>
           <div className="page-header-actions">{buttons}</div>
@@ -140,21 +146,21 @@ export const Idiom: React.FunctionComponent<IdiomProps> = props => {
         <LanguageFlags languageInfo={idiom.language} size="large" showLabel />
         {idiom.transliteration && (
           <>
-            <Title level={4}>Pronunciation</Title>
+            <Title level={2}>Pronunciation</Title>
             <Paragraph className="content">{idiom.transliteration}</Paragraph>
           </>
         )}
 
         {idiom.literalTranslation && (
           <>
-            <Title level={4}>Literal Translation </Title>
+            <Title level={2}>Literal Translation </Title>
             <Paragraph className="content">{idiom.literalTranslation}</Paragraph>
           </>
         )}
 
         {idiom.description && (
           <>
-            <Title level={4}>Description</Title>
+            <Title level={2}>Meaning</Title>
             <Paragraph className="content description">
               {renderedDescription ? (
                 <div
@@ -168,7 +174,7 @@ export const Idiom: React.FunctionComponent<IdiomProps> = props => {
           </>
         )}
 
-        <Title level={4}>Equivalents</Title>
+        <Title level={2}>Equivalent idioms in other languages</Title>
         <Paragraph className="info">This is how you express this idiom across languages and locales.</Paragraph>
         <Tabs
           animated={false}

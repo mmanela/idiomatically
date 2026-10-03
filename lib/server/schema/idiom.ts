@@ -107,6 +107,7 @@ export default gql`
     # What it literally means in English
     literalTranslation: String
 
+    equivalentCount: Int!
     equivalents: [Idiom!]!
     language: Language!
     createdAt: String!

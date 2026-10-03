@@ -1,23 +1,41 @@
 import * as React from "react";
-import { FullIdiomEntry, MinimalIdiomEntry } from "../__generated__/types";
 import "./IdiomListRenderer.scss";
 import { List } from "antd";
 import { Link } from "react-router";
 import { LanguageFlags } from "../components/LanguageFlags";
 import { ListSize } from "antd/lib/list";
 
+export interface IdiomListItem {
+  id: string;
+  slug: string;
+  title: string;
+  literalTranslation: string | null;
+  transliteration: string | null;
+  language: {
+    languageKey: string;
+    languageName: string;
+    countries: Array<{
+      countryKey: string;
+      countryName: string;
+      emojiFlag: string;
+    }>;
+  };
+  equivalentCount?: number;
+  equivalents?: ReadonlyArray<unknown>;
+}
+
 export interface IdiomListRendererProps {
   showSplit?: boolean;
   listSize?: ListSize;
   paginationSize?: "small" | "default";
-  idioms: (FullIdiomEntry | MinimalIdiomEntry)[];
+  idioms: IdiomListItem[];
   onPageChange?: (page: number, size?: number) => void;
   pageNumber?: number;
   pageSize: number;
   totalCount: number;
   className?: string;
   renderIdiomListItem?: (
-    item: FullIdiomEntry | MinimalIdiomEntry
+    item: IdiomListItem
   ) => React.ReactNode;
 }
 
@@ -48,22 +66,24 @@ export const IdiomListRenderer: React.FunctionComponent<IdiomListRendererProps> 
 };
 
 function isFullIdiom(
-  item: FullIdiomEntry | MinimalIdiomEntry
-): item is FullIdiomEntry {
-  return (item as FullIdiomEntry).equivalents !== undefined;
+  item: IdiomListItem
+): item is IdiomListItem & { equivalents: ReadonlyArray<unknown> } {
+  return item.equivalents !== undefined;
 }
 
 interface IdiomListItemRenderingOptions {
   includeLiteralTranslation?: boolean;
 }
 export const renderIdiomListItem = (
-  item: FullIdiomEntry | MinimalIdiomEntry,
+  item: IdiomListItem,
   actions?: React.ReactNode[],
   options?: IdiomListItemRenderingOptions
 ) => {
   const idiom = item;
   let equivalentsCount = 0;
-  if (isFullIdiom(idiom)) {
+  if (idiom.equivalentCount !== undefined) {
+    equivalentsCount = idiom.equivalentCount;
+  } else if (isFullIdiom(idiom)) {
     equivalentsCount = idiom.equivalents.length;
   }
 
@@ -101,7 +121,12 @@ export const renderIdiomListItem = (
               {equivalentIdiomContent}
             </div>
 
-            <Link className="idiomListTitle" to={`/idioms/${idiom.slug}`}>
+            <Link
+              className="idiomListTitle"
+              to={`/idioms/${idiom.slug}`}
+              lang={idiom.language.languageKey}
+              dir="auto"
+            >
               {idiom.title}
             </Link>
           </div>

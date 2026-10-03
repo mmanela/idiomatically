@@ -6,7 +6,7 @@ const { Title, Paragraph, Text } = Typography;
 export const About: React.FunctionComponent = props => {
   return (
     <article>
-      <Title level={3}>About Idiomatically</Title>
+      <Title level={1}>About Idiomatically</Title>
       <Paragraph>
         Idiomatically is a site all about ...{" "}
         <a href="https://www.wordnik.com/words/idiom" target="_blank" rel="noopener noreferrer">
@@ -35,7 +35,7 @@ export const About: React.FunctionComponent = props => {
         Every idiom page allows you to explore all the equivalent idioms in different languages/countries as a list and as an interactive map.
         <img id="equivalentMapExample" src="static/equivalentMap.png" alt="interactive map of idioms" />
       </Paragraph>
-      <Title level={3}>Sources</Title>
+      <Title level={2}>Sources</Title>
       <Paragraph>
         <Text>
           Content on the site is gathered directly from native speakers or sourced from sites across the internet like {" "}
@@ -50,14 +50,14 @@ export const About: React.FunctionComponent = props => {
         </Text>
       </Paragraph>
 
-      <Title level={3}>Contributing</Title>
+      <Title level={2}>Contributing</Title>
       <Paragraph>
         <Text>We welcome contributions of new idioms or relations between idioms. Just sign in
         and you can submit changes. Submissions go through a quick review process before they are made public.
         </Text>
       </Paragraph>
 
-      <Title level={3}>Feedback</Title>
+      <Title level={2}>Feedback</Title>
       <Paragraph>
         <Text>If you have questions or want to report a bug, please reach out by filing an issue on the <a href="https://github.com/mmanela/idiomatically" target="_blank" rel="noopener noreferrer">GitHub repo</a>.
         </Text>

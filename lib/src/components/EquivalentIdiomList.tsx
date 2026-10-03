@@ -5,16 +5,18 @@ import {
   GetIdiomQuery_idiom,
   RemoveEquivalentIdiomMutation,
   RemoveEquivalentIdiomMutationVariables,
-  GetCurrentUser_me,
-  FullIdiomEntry,
-  MinimalIdiomEntry
+  GetCurrentUser_me
 } from "../__generated__/types";
 import { gql } from "@apollo/client";
 import { useMutation } from "@apollo/client/react";
 import { DeleteFilled } from '@ant-design/icons';
 import { Button, Typography } from "antd";
 import "./EquivalentIdiomList.scss";
-import { IdiomListRenderer, renderIdiomListItem } from "./IdiomListRenderer";
+import {
+  IdiomListRenderer,
+  renderIdiomListItem,
+  type IdiomListItem,
+} from "./IdiomListRenderer";
 const { Paragraph } = Typography;
 
 export const removeEquivalentQuery = gql`
@@ -63,10 +65,10 @@ export const EquivalentIdiomList: React.FunctionComponent<EquivalentListProps> =
       listSize="small"
       paginationSize="small"
       idioms={ordered}
-      pageSize={5}
+      pageSize={ordered.length}
       totalCount={ordered.length}
       className="equivalentList"
-      renderIdiomListItem={(item: FullIdiomEntry | MinimalIdiomEntry) => {
+      renderIdiomListItem={(item) => {
         return (
           <EquivalentIdiomItem
             equivalentIdiom={item}
@@ -81,7 +83,7 @@ export const EquivalentIdiomList: React.FunctionComponent<EquivalentListProps> =
 
 interface EquivalentItemProps {
   user?: GetCurrentUser_me | null;
-  equivalentIdiom: MinimalIdiomEntry;
+  equivalentIdiom: IdiomListItem;
   idiom: GetIdiomQuery_idiom;
 }
 const EquivalentIdiomItem: React.FunctionComponent<EquivalentItemProps> = props => {

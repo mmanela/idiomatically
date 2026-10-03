@@ -1,4 +1,15 @@
 
+.idiomDirectory > h1 {
+  font-size: 1.65rem;
+}
+
+.crawlablePagination {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
 .idiomListView {
   .idiomListItem {
     padding-left: 0;

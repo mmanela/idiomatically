@@ -1,0 +1,18 @@
+.homePage {
+  > h1 {
+    font-size: 1.65rem;
+  }
+
+  .popularIdiomsHeader {
+    align-items: baseline;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    margin-top: 1.75rem;
+  }
+
+  .popularIdiomsHeader h2 {
+    font-size: 1.35rem;
+    margin-bottom: 0;
+  }
+}

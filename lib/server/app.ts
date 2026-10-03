@@ -9,6 +9,7 @@ import { createAuth, getLocalIdentity } from "./auth";
 import { createGraphqlRuntime, getCurrentUser } from "./graphql";
 import { initializeJobs, stopJobs } from "./jobScheduler";
 import { renderIdiomSocialImage } from "./socialImage";
+import { getLanguagePath } from "../src/utilities/languageUtil";
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 dotenv.config({ path: `.env.${process.env.NODE_ENV}.local`, override: true });
@@ -232,8 +233,8 @@ app.get("/sitemap.xml", async (req, res) => {
 
   sitemapStream.write({ url: "/", priority: 1 });
   sitemapStream.write({ url: "/about", priority: 0.8 });
+  sitemapStream.write({ url: "/partners", priority: 0.6 });
   sitemapStream.write({ url: "/idioms", priority: 0.9 });
-  sitemapStream.write({ url: "/idioms?lang=all", priority: 0.8 });
   for (const idiom of idioms) {
     sitemapStream.write({
       url: `/idioms/${idiom.slug}`,
@@ -243,7 +244,7 @@ app.get("/sitemap.xml", async (req, res) => {
   }
   for (const language of languages) {
     sitemapStream.write({
-      url: `/idioms?lang=${language.languageKey}`,
+      url: getLanguagePath(language.languageName),
       priority: 0.7,
     });
   }

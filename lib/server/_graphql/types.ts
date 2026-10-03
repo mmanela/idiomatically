@@ -32,6 +32,7 @@ export type Idiom = {
   createdAt: Scalars['String']['output'];
   createdBy?: Maybe<User>;
   description?: Maybe<Scalars['String']['output']>;
+  equivalentCount: Scalars['Int']['output'];
   equivalents: Array<Idiom>;
   id: Scalars['ID']['output'];
   language: Language;
@@ -421,6 +422,7 @@ export type IdiomResolvers<ContextType = GlobalContext, ParentType extends Resol
   createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  equivalentCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   equivalents?: Resolver<Array<ResolversTypes['Idiom']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   language?: Resolver<ResolversTypes['Language'], ParentType, ContextType>;

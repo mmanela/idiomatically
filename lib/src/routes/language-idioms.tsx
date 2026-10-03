@@ -1,5 +1,4 @@
 import { useLoaderData, useSearchParams } from "react-router";
-import { LanguageDirectory } from "../components/LanguageDirectory";
 import {
   findLanguageBySlug,
   loadLanguagesWithIdioms,
@@ -104,9 +103,6 @@ export default function LanguageIdiomsRoute() {
       page={searchParams.get("page")}
       heading={`${language.languageName} idioms and equivalents`}
       introduction={`Explore ${initialData.idioms.totalCount} ${language.languageName} idioms, including their meanings, literal translations, regional usage, and equivalent expressions in other languages.`}
-      languageDirectory={
-        <LanguageDirectory languages={initialData.languages} />
-      }
       onPageChange={(page) => {
         searchParams.set("page", page);
         setSearchParams(searchParams);

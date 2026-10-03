@@ -92,7 +92,7 @@ export default function IdiomsRoute() {
       language="all"
       page={searchParams.get("page")}
       heading="Idioms from around the world"
-      introduction={`Browse ${initialData.idioms.totalCount} idioms across languages and compare expressions that communicate the same ideas.`}
+      introduction={`Explore ${initialData.idioms.totalCount} idioms and their equivalents across languages.`}
       featuredIdiom={initialData.featuredIdiom}
       onPageChange={(page) => {
         searchParams.set("page", page);

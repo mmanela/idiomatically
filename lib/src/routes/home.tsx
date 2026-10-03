@@ -54,7 +54,7 @@ export default function HomeRoute() {
       language="en"
       page={searchParams.get("page")}
       heading="English idioms and equivalents across languages"
-      introduction="Explore English idioms, their meanings, and equivalent expressions used in other languages and countries."
+      introduction="Explore English idioms and their equivalents across languages."
       featuredIdiom={initialData.featuredIdiom}
       onPageChange={(page) => {
         searchParams.set("page", page);

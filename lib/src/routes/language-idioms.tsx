@@ -102,6 +102,7 @@ export default function LanguageIdiomsRoute() {
   const initialData = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
   const { language } = initialData;
+  const idiomCount = initialData.idioms.totalCount;
   return (
     <IdiomListView
       initialData={initialData}
@@ -109,7 +110,9 @@ export default function LanguageIdiomsRoute() {
       language={language.languageKey}
       page={searchParams.get("page")}
       heading={`${language.languageName} idioms and equivalents`}
-      introduction={`Explore ${initialData.idioms.totalCount} ${language.languageName} idioms, including their meanings, literal translations, regional usage, and equivalent expressions in other languages.`}
+      introduction={`Explore ${idiomCount} ${language.languageName} ${
+        idiomCount === 1 ? "idiom and its equivalents" : "idioms and their equivalents"
+      }.`}
       featuredIdiom={initialData.featuredIdiom}
       onPageChange={(page) => {
         searchParams.set("page", page);

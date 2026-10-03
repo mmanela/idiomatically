@@ -2,6 +2,7 @@ import { Typography } from "antd";
 import { Link } from "react-router";
 import type { FeaturedIdiom as FeaturedIdiomData } from "../loaders/featuredIdiom.server";
 import { LanguageFlags } from "./LanguageFlags";
+import { MarkdownContent } from "./MarkdownContent";
 import "./FeaturedIdiom.scss";
 
 const { Paragraph, Text, Title } = Typography;
@@ -40,7 +41,12 @@ export function FeaturedIdiom({ idiom }: { idiom: FeaturedIdiomData }) {
           <Text strong>Literally:</Text> {idiom.literalTranslation}
         </Paragraph>
       )}
-      {idiom.description && <Paragraph>{idiom.description}</Paragraph>}
+      {idiom.description && (
+        <MarkdownContent
+          className="featuredIdiomDescription markdown"
+          source={idiom.description}
+        />
+      )}
       <Link className="featuredIdiomLink" to={`/idioms/${idiom.slug}`}>
         Explore this idiom
       </Link>

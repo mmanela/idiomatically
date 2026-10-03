@@ -85,6 +85,9 @@ jobs:
 
     - name: Verify production SEO
       run: node lib/server/scripts/seoSmoke.mjs https://idiomatically.net
+      env:
+        SEO_SMOKE_ATTEMPTS: 18
+        SEO_SMOKE_RETRY_DELAY_MS: 10000
 
     - name: Record deployed image
       run: |

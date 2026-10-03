@@ -15,10 +15,9 @@ import { useCurrentUser } from "../components/withCurrentUser";
 import { gql } from "@apollo/client";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { useState, Suspense, useEffect } from "react";
-import { marked } from "marked";
-import dompurifyFactory from "dompurify";
 import { AddEquivalentSection } from "../components/AddEquivalentSection";
 import { EquivalentIdiomList } from "../components/EquivalentIdiomList";
+import { MarkdownContent } from "../components/MarkdownContent";
 import { DeleteFilled } from '@ant-design/icons';
 import { Typography, Alert, Spin, Button, Tabs } from "antd";
 import screenfull from 'screenfull';
@@ -49,7 +48,6 @@ export const Idiom: React.FunctionComponent<IdiomProps> = props => {
   const { slug } = props;
   const navigate = useNavigate();
   const [equivalentTab, setEquivalentTab] = useState<string>("List");
-  const [renderedDescription, setRenderedDescription] = useState<string | null>(null);
   const mapFullScreen = useFullScreenHandle();
   const { currentUser, currentUserLoading } = useCurrentUser();
   const [deleteConfirmation, setDeleteConfirmation] = useState(DeleteActionState.None);
@@ -71,20 +69,6 @@ export const Idiom: React.FunctionComponent<IdiomProps> = props => {
       }
     }
   }, [idiomTitle]);
-
-  useEffect(() => {
-    if (!data.idiom?.description) {
-      setRenderedDescription(null);
-      return;
-    }
-
-    const dompurify = dompurifyFactory(window);
-    setRenderedDescription(
-      dompurify.sanitize(
-        marked.parse(data.idiom.description, { async: false }) as string,
-      ),
-    );
-  }, [data.idiom?.description]);
 
   if (deleteStatusInfo.data && deleteStatusInfo.data.deleteIdiom.status === OperationStatus.SUCCESS) {
     return <Navigate to="/" replace />;
@@ -162,14 +146,10 @@ export const Idiom: React.FunctionComponent<IdiomProps> = props => {
           <>
             <Title level={2}>Meaning</Title>
             <Paragraph className="content description">
-              {renderedDescription ? (
-                <div
-                  className="markdown"
-                  dangerouslySetInnerHTML={{ __html: renderedDescription }}
-                />
-              ) : (
-                <div className="markdown">{idiom.description}</div>
-              )}
+              <MarkdownContent
+                className="markdown"
+                source={idiom.description}
+              />
             </Paragraph>
           </>
         )}

@@ -99,6 +99,7 @@ export default function App() {
             }
             filter={queryFilter}
             language={queryLang}
+            languageName={routeSeo?.languageName}
           />
         </Header>
         <Content>

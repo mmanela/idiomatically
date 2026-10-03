@@ -23,6 +23,7 @@ export const getLanguagesWithIdiomsQuery = gql`
 export interface SearchBoxProps {
   filter: string | null;
   language: string | null;
+  languageName?: string | null;
   onSearch: (value: string) => void;
   onLanguageChange: (value: string, languageName: string) => void;
 }
@@ -48,7 +49,7 @@ export function SearchBox(props: SearchBoxProps) {
       : []),
   ];
   if (!languages.some((language) => language.languageKey === selectedLanguage)) {
-    const selectedLanguageName = selectedLanguage;
+    const selectedLanguageName = props.languageName || selectedLanguage;
     languages.push({
       languageKey: selectedLanguage,
       languageName: selectedLanguageName,

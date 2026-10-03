@@ -459,11 +459,57 @@ test('public idiom content is server rendered and client navigation stays hydrat
   await expect(page).toHaveURL('/');
   await waitForRoute(page, '/');
   await expect(
-    page.locator('.idiomListView').getByRole('link', {
+    page.locator('.homeIdiomList').getByRole('link', {
       name: 'Read between the lines',
       exact: true
     })
   ).toBeVisible();
+});
+
+test('home page is a global discovery hub', async ({ page }) => {
+  await loginAs(page, 'Administrator');
+  await createEnglishIdiomViaApi(
+    page,
+    'English discovery idiom',
+    'An English idiom for the global homepage.'
+  );
+  const related = await graphql<{
+    createIdiom: { status: string };
+  }>(page, `
+    mutation {
+      createIdiom(idiom: {
+        title: "Descubrimiento global"
+        description: "Un modismo en español para la página principal."
+        literalTranslation: "Global discovery"
+        languageKey: "es"
+        countryKeys: ["ES"]
+      }) {
+        status
+      }
+    }
+  `);
+  expect(related.errors).toBeUndefined();
+  expect(related.data?.createIdiom.status).toBe('SUCCESS');
+  await logout(page);
+
+  await gotoHydrated(page, '/');
+  await expect(
+    page.getByRole('heading', {
+      name: 'Idioms across languages and cultures'
+    })
+  ).toBeVisible();
+  await expect(
+    page.locator('.languageSelect .ant-select-content-value')
+  ).toHaveText('All');
+  await expect(
+    page.getByRole('link', { name: 'Browse all idioms' })
+  ).toHaveAttribute('href', '/idioms');
+
+  const redirectedSearch = await page.request.get('/?q=global', {
+    maxRedirects: 0
+  });
+  expect(redirectedSearch.status()).toBe(302);
+  expect(redirectedSearch.headers()['location']).toBe('/idioms?q=global');
 });
 
 test('partner projects are discoverable and server rendered', async ({ page }) => {

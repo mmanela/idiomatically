@@ -1,16 +1,21 @@
-import { useLoaderData, useSearchParams } from "react-router";
-import { IdiomListView } from "../pages/IdiomListView";
+import { redirect, useLoaderData } from "react-router";
 import { loadIdiomList } from "../loaders/idioms.server";
 import type { Route } from "./+types/home";
 import { buildPageMeta, pageTitle, SITE_DESCRIPTION } from "../seo";
 import { getCanonicalUrl } from "../seo.server";
 import { loadFeaturedIdiom } from "../loaders/featuredIdiom.server";
+import { HomePage } from "../pages/HomePage";
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const data = await loadIdiomList(request, "en");
+  const requestUrl = new URL(request.url);
+  if (requestUrl.search) {
+    return redirect(`/idioms${requestUrl.search}`);
+  }
+
+  const data = await loadIdiomList(request, "all");
   const featuredIdiom = await loadFeaturedIdiom(
     request,
-    "en",
+    "all",
     data.idioms.totalCount,
   );
   return {
@@ -18,9 +23,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     featuredIdiom,
     seo: {
       canonicalUrl: getCanonicalUrl(request, "/"),
-      languageKey: "en",
-      languageName: "English",
-      noIndex: new URL(request.url).searchParams.has("q"),
+      languageKey: "all",
+      languageName: "All",
     },
   };
 }
@@ -33,7 +37,6 @@ export const meta: Route.MetaFunction = ({ loaderData }) => {
     title: pageTitle("Idioms translated across languages"),
     description: SITE_DESCRIPTION,
     canonicalUrl: loaderData.seo.canonicalUrl,
-    noIndex: loaderData.seo.noIndex,
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "WebSite",
@@ -46,20 +49,10 @@ export const meta: Route.MetaFunction = ({ loaderData }) => {
 
 export default function HomeRoute() {
   const initialData = useLoaderData<typeof loader>();
-  const [searchParams, setSearchParams] = useSearchParams();
   return (
-    <IdiomListView
-      initialData={initialData}
-      filter={searchParams.get("q")}
-      language="en"
-      page={searchParams.get("page")}
-      heading="English idioms and equivalents across languages"
-      introduction="Explore English idioms and their equivalents across languages."
+    <HomePage
+      idiomData={initialData}
       featuredIdiom={initialData.featuredIdiom}
-      onPageChange={(page) => {
-        searchParams.set("page", page);
-        setSearchParams(searchParams);
-      }}
     />
   );
 }

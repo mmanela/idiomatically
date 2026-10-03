@@ -97,8 +97,10 @@ body {
         flex: 1 1;
         text-align: center;
         display: flex;
-        flex-direction: column;
-        gap: 4px;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        white-space: nowrap;
 
         a {
           color: inherit;

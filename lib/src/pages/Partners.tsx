@@ -56,11 +56,6 @@ export function Partners() {
           Explore Idiomatic on GitHub
         </a>
       </section>
-
-      <Paragraph className="partnerDisclaimer">
-        These projects are independently maintained. Their features and
-        availability may change over time.
-      </Paragraph>
     </article>
   );
 }

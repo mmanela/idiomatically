@@ -478,7 +478,7 @@ test('partner projects are discoverable and server rendered', async ({ page }) =
   );
 
   await gotoHydrated(page, '/');
-  await page.getByRole('link', { name: 'Idiom partners' }).click();
+  await page.getByRole('link', { name: 'Partners', exact: true }).click();
   await expect(page).toHaveURL('/partners');
   await expect(
     page.getByRole('heading', { name: 'Idiom partners' })

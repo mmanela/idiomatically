@@ -121,9 +121,10 @@ export default function App() {
               rel="source"
               href="https://github.com/mmanela/idiomatically"
             >
-              <GithubOutlined /> View on Github
+              <GithubOutlined /> GitHub
             </a>
-            <Link to="/partners">Idiom partners</Link>
+            <span aria-hidden="true">·</span>
+            <Link to="/partners">Partners</Link>
           </span>
           <span className="creativeCommons">
             <a

@@ -116,8 +116,6 @@ export default function IdiomsRoute() {
       filter={searchParams.get("q")}
       language="all"
       page={searchParams.get("page")}
-      heading="Idioms from around the world"
-      introduction={`Explore ${initialData.idioms.totalCount} idioms and their equivalents across languages.`}
       featuredIdiom={initialData.featuredIdiom}
       onPageChange={(page) => {
         searchParams.set("page", page);

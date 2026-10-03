@@ -33,6 +33,7 @@ or Docker:
 ```sh
 cd lib
 npm run db:start
+npm run db:seed
 ```
 
 Then start the unified application server:
@@ -42,6 +43,10 @@ cd lib
 npm install
 npm run dev
 ```
+
+`npm run db:seed` adds an idempotent local-only demo dataset with connected
+idioms across multiple languages. Re-running it refreshes only the seeded demo
+records and leaves idioms you created manually untouched.
 
 Open http://localhost:3000. Vite development middleware, React Router SSR, GraphQL, and authentication all run on that single origin.
 

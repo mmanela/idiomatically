@@ -518,9 +518,10 @@ test('home page is a global discovery hub', async ({ page }) => {
   await expect(
     page.locator('.languageSelect .ant-select-content-value')
   ).toHaveText('All');
+  await expect(page.getByText('Popular idioms')).toHaveCount(0);
   await expect(
     page.getByRole('link', { name: 'Browse all idioms' })
-  ).toHaveAttribute('href', '/idioms');
+  ).toHaveCount(0);
 
   const redirectedSearch = await page.request.get('/?q=global', {
     maxRedirects: 0
@@ -562,20 +563,21 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
     'Improvement in the general situation benefits **everyone**.\n\n# Alternate Forms\n- A rising tide raises all ships.'
   );
   const equivalents = [
-    ['La unión hace la fuerza', 'Unity creates strength', 'es', 'AR'],
-    ['L’union fait la force', 'Unity creates strength', 'fr', 'FR'],
-    ['Einigkeit macht stark', 'Unity makes strong', 'de', 'DE'],
-    ['L’unione fa la forza', 'Unity creates strength', 'it', 'IT'],
-    ['A união faz a força', 'Unity creates strength', 'pt', 'BR'],
-    ['Η ισχύς εν τη ενώσει', 'Strength lies in unity', 'el', 'GR']
+    ['La unión hace la fuerza', 'Unity creates strength', 'La union ase la fwersa', 'es', 'AR'],
+    ['L’union fait la force', 'Unity creates strength', 'Lyunyon fe la fors', 'fr', 'FR'],
+    ['Einigkeit macht stark', 'Unity makes strong', 'Aynikhkayt makht shtark', 'de', 'DE'],
+    ['L’unione fa la forza', 'Unity creates strength', 'Lunyone fa la fortsa', 'it', 'IT'],
+    ['A união faz a força', 'Unity creates strength', 'A unyao faz a forsa', 'pt', 'BR'],
+    ['Η ισχύς εν τη ενώσει', 'Strength lies in unity', 'I ischys en ti enosei', 'el', 'GR']
   ] as const;
-  for (const [title, literalTranslation, languageKey, countryKey] of equivalents) {
+  for (const [title, literalTranslation, transliteration, languageKey, countryKey] of equivalents) {
     const result = await graphql<{
       createIdiom: { status: string };
     }>(page, `
       mutation CreateSeoEquivalent(
         $title: String!
         $literalTranslation: String!
+        $transliteration: String!
         $languageKey: String!
         $countryKeys: [String!]
         $relatedIdiomId: ID!
@@ -584,6 +586,7 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
           title: $title
           description: "A **shared** expression.\\n\\n## Examples\\n- People achieve more together."
           literalTranslation: $literalTranslation
+          transliteration: $transliteration
           languageKey: $languageKey
           countryKeys: $countryKeys
           relatedIdiomId: $relatedIdiomId
@@ -594,10 +597,30 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
     `, {
       title,
       literalTranslation,
+      transliteration,
       languageKey,
       countryKeys: [countryKey],
       relatedIdiomId: sourceIdiom.id
     });
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.createIdiom.status).toBe('SUCCESS');
+  }
+  for (let index = 1; index <= 4; index++) {
+    const result = await graphql<{
+      createIdiom: { status: string };
+    }>(page, `
+      mutation CreateSpanishDirectoryIdiom($title: String!) {
+        createIdiom(idiom: {
+          title: $title
+          description: "A Spanish directory test idiom."
+          literalTranslation: "A Spanish directory test idiom"
+          languageKey: "es"
+          countryKeys: ["AR"]
+        }) {
+          status
+        }
+      }
+    `, { title: `Spanish directory idiom ${index}` });
     expect(result.errors).toBeUndefined();
     expect(result.data?.createIdiom.status).toBe('SUCCESS');
   }
@@ -620,7 +643,8 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
   expect(spanishResponse.status()).toBe(200);
   const spanishHtml = await spanishResponse.text();
   expect(spanishHtml).toContain('Spanish idioms');
-  expect(spanishHtml).not.toContain('Featured idiom');
+  expect(spanishHtml).toContain('Featured translation');
+  expect(spanishHtml).not.toContain('One idea, two languages');
   expect(spanishHtml).toMatch(
     /<div title="Spanish" class="[^"]*languageSelect/
   );
@@ -632,10 +656,36 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
   );
   expect(spanishHtml).toContain('La unión hace la fuerza');
 
+  await page.goto('/languages/spanish/idioms');
+  await expect(
+    page.locator('.featuredIdiomSource a[lang="es"]')
+  ).toBeVisible();
+  await expect(
+    page.locator('.featuredIdiomSource .flagAfterText')
+  ).toHaveAttribute('href', '/languages/spanish/idioms');
+  await expect(
+    page.locator('.featuredIdiomTarget a[lang="en"]')
+  ).toBeVisible();
+  await expect(
+    page.locator('.featuredIdiomTarget .flagAfterText')
+  ).toHaveAttribute('href', '/languages/english/idioms');
+  await expect(
+    page.locator('.featuredIdiomSource').getByText('Transliteration:')
+  ).toHaveCount(0);
+  await expect(
+    page.locator('.featuredIdiomSource').getByText('Literally:')
+  ).toBeVisible();
+  await expect(
+    page.locator('.featuredIdiomTarget .featuredIdiomDescription')
+  ).toBeVisible();
+
   const allIdiomsHtml = await (await page.request.get('/idioms')).text();
-  expect(allIdiomsHtml).toContain('Featured idiom');
-  expect(allIdiomsHtml).toContain('featuredIdiomEquivalentCount');
-  expect(allIdiomsHtml).not.toContain('0 equivalent idioms');
+  expect(allIdiomsHtml).toContain('Featured translation');
+  expect(allIdiomsHtml).toContain('featuredIdiomConnector');
+  expect(allIdiomsHtml).not.toContain('One idea, two languages');
+  expect(allIdiomsHtml).not.toContain('Explore these equivalent idioms');
+  expect(allIdiomsHtml).toContain('featuredIdiomSource');
+  expect(allIdiomsHtml).toContain('featuredIdiomTarget');
   const featuredMarkup = allIdiomsHtml.match(
     /<aside class="featuredIdiom"[\s\S]*?<\/aside>/
   )?.[0];
@@ -645,11 +695,72 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
 
   await page.goto('/idioms');
   await expect(
-    page.locator('.featuredIdiomDescription strong')
+    page.getByRole('heading', { name: 'Idioms from around the world' })
+  ).toHaveCount(0);
+  await expect(
+    page.locator('.featuredIdiomSource .featuredIdiomDescription strong')
   ).toBeVisible();
   await expect(
-    page.locator('.featuredIdiomDescription')
+    page.locator('.featuredIdiomSource .featuredIdiomDescription')
   ).not.toContainText(/Alternate Forms|Examples/);
+  await expect(
+    page.locator('.featuredIdiomTarget .featuredIdiomDescription')
+  ).not.toContainText(/Alternate Forms|Examples/);
+  const sourceLanguage = await page
+    .locator('.featuredIdiomSource a[lang]')
+    .getAttribute('lang');
+  const targetLanguage = await page
+    .locator('.featuredIdiomTarget a[lang]')
+    .getAttribute('lang');
+  expect(sourceLanguage).toBe('en');
+  expect(sourceLanguage).not.toBe(targetLanguage);
+  expect(targetLanguage).not.toBe('en');
+  await expect(
+    page.locator('.featuredIdiomSource .flagAfterText')
+  ).toHaveAttribute('href', '/languages/english/idioms');
+  await expect(
+    page.locator('.featuredIdiomTarget .flagAfterText')
+  ).toHaveAttribute('href', /\/languages\/[^/]+\/idioms/);
+  const targetNativeText =
+    (await page.locator('.featuredIdiomTarget a[lang]').textContent()) || '';
+  const targetTransliteration = page
+    .locator('.featuredIdiomTarget')
+    .getByText('Transliteration:');
+  if (/[\u0370-\u03ff]/u.test(targetNativeText)) {
+    await expect(targetTransliteration).toBeVisible();
+  } else {
+    await expect(targetTransliteration).toHaveCount(0);
+  }
+  await expect(
+    page.locator('.featuredIdiomTarget').getByText('Literally:')
+  ).toBeVisible();
+  await expect(
+    page.locator('.featuredIdiomTarget .featuredIdiomDescription')
+  ).toBeVisible();
+  await page.setViewportSize({ width: 500, height: 900 });
+  await expect(page.locator('.idiomDirectoryHeader')).toBeHidden();
+  const mobileSearchStyles = await page.evaluate(() => {
+    const languageSelect = document.querySelector('.languageSelect')!;
+    const searchButton = document.querySelector('.ant-input-search-btn')!;
+    const languageStyles = window.getComputedStyle(languageSelect);
+    const searchButtonStyles = window.getComputedStyle(searchButton);
+    return {
+      languageBackground: languageStyles.backgroundColor,
+      languageLeftRadius: languageStyles.borderTopLeftRadius,
+      searchRightRadius: searchButtonStyles.borderTopRightRadius
+    };
+  });
+  expect(mobileSearchStyles.languageBackground).toBe('rgb(255, 255, 255)');
+  expect(mobileSearchStyles.languageLeftRadius).toBe('6px');
+  expect(mobileSearchStyles.searchRightRadius).toBe('6px');
+  const sourceBox = await page.locator('.featuredIdiomSource').boundingBox();
+  const targetBox = await page.locator('.featuredIdiomTarget').boundingBox();
+  expect(sourceBox).not.toBeNull();
+  expect(targetBox).not.toBeNull();
+  expect(targetBox!.y).toBeGreaterThan(sourceBox!.y + sourceBox!.height);
+  const mobileListItem = await page.locator('.idiomListItem').first().boundingBox();
+  expect(mobileListItem).not.toBeNull();
+  expect(mobileListItem!.height).toBeLessThan(140);
 
   const legacyResponse = await page.request.get('/idioms?lang=es', {
     maxRedirects: 0

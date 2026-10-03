@@ -98,6 +98,7 @@ export const Idiom: React.FunctionComponent<IdiomProps> = props => {
     )
   ];
   const editConfig = {
+    editing: false,
     onStart: () => {
       navigate("/idioms/" + idiom.slug + "/update");
     }

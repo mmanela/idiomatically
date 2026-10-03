@@ -31,7 +31,13 @@
     color: rgba(0, 0, 0, 0.65);
     align-items: flex-start;
     margin-right: 10px;
+    text-decoration: none;
     vertical-align: middle;
+
+    &:hover {
+      color: rgba(0, 0, 0, 0.65);
+      text-decoration: underline;
+    }
   }
 
   .flagOverflowText {

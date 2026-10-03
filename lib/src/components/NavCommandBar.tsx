@@ -1,6 +1,7 @@
 import {
   HomeOutlined,
   InfoCircleOutlined,
+  LinkOutlined,
   LoginOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
@@ -39,6 +40,18 @@ export function NavCommandBar({
           label: (
             <Link to="/about" style={{ display: "inline-flex", gap: 6 }}>
               <InfoCircleOutlined /> About
+            </Link>
+          ),
+        },
+        {
+          key: "partners",
+          label: (
+            <Link
+              to="/partners"
+              aria-label="Partners"
+              style={{ display: "inline-flex", gap: 6 }}
+            >
+              <LinkOutlined /> Partners
             </Link>
           ),
         },

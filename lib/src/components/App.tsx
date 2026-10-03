@@ -115,17 +115,15 @@ export default function App() {
             </span>
             <span className="heart">♥</span>
           </span>
-          <span className="resourcesFooter">
-            <a
-              className="github"
-              rel="source"
-              href="https://github.com/mmanela/idiomatically"
-            >
-              <GithubOutlined /> GitHub
-            </a>
-            <span aria-hidden="true">·</span>
-            <Link to="/partners">Partners</Link>
-          </span>
+          <a
+            className="github"
+            rel="source"
+            href="https://github.com/mmanela/idiomatically"
+          >
+            <span>
+              <GithubOutlined /> View on Github
+            </span>
+          </a>
           <span className="creativeCommons">
             <a
               rel="license"

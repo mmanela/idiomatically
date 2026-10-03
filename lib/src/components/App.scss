@@ -93,21 +93,13 @@ body {
       display: flex;
       width: 100%;
 
-      .resourcesFooter {
+      .github {
         flex: 1 1;
         text-align: center;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        white-space: nowrap;
-
-        a {
-          color: inherit;
-          &:hover {
-            color: black;
-            transition: color 1s ease-in 0s;
-          }
+        color: inherit;
+        &:hover {
+          color: black;
+          transition: color 1s ease-in 0s;
         }
       }
 

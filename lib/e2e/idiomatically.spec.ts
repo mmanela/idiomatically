@@ -156,7 +156,7 @@ test('public navigation is readable and consistently spaced', async ({ page }) =
   await expect(page.getByRole('searchbox', { name: 'Find an idiom' })).toBeVisible();
   await expect(page.getByRole('combobox', { name: 'Language' })).toBeVisible();
 
-  for (const name of ['Home', 'About', 'Login']) {
+  for (const name of ['Home', 'About', 'Partners', 'Login']) {
     const link = page.getByRole('link', { name });
     await expect(link).toBeVisible();
     const linkGap = await link.evaluate(element =>

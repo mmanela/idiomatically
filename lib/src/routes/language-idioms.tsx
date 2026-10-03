@@ -109,10 +109,12 @@ export default function LanguageIdiomsRoute() {
       filter={searchParams.get("q")}
       language={language.languageKey}
       page={searchParams.get("page")}
-      heading={`${language.languageName} idioms and equivalents`}
-      introduction={`Explore ${idiomCount} ${language.languageName} ${
-        idiomCount === 1 ? "idiom and its equivalents" : "idioms and their equivalents"
-      }.`}
+      heading={`${language.languageName} idioms`}
+      introduction={
+        idiomCount === 1
+          ? "Compare this expression with related idioms in other languages."
+          : `Compare ${idiomCount} expressions with related idioms in other languages.`
+      }
       featuredIdiom={initialData.featuredIdiom}
       onPageChange={(page) => {
         searchParams.set("page", page);

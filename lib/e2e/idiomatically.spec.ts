@@ -601,7 +601,7 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
   );
   expect(spanishResponse.status()).toBe(200);
   const spanishHtml = await spanishResponse.text();
-  expect(spanishHtml).toContain('Spanish idioms and equivalents');
+  expect(spanishHtml).toContain('Spanish idioms');
   expect(spanishHtml).not.toContain('Featured idiom');
   expect(spanishHtml).toContain(
     '<link rel="canonical" href="http://localhost:3100/languages/spanish/idioms"/>'

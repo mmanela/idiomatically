@@ -6,7 +6,7 @@ import { loadLanguagesWithIdioms } from "../loaders/languages.server";
 import { getLanguageName, getLanguagePath } from "../utilities/languageUtil";
 import { getCanonicalUrl } from "../seo.server";
 import { buildPageMeta, pageTitle } from "../seo";
-import { LanguageDirectory } from "../components/LanguageDirectory";
+import { loadFeaturedIdiom } from "../loaders/featuredIdiom.server";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -27,9 +27,15 @@ export async function loader({ request }: Route.LoaderArgs) {
     loadIdiomList(request, "all"),
     loadLanguagesWithIdioms(request),
   ]);
+  const featuredIdiom = await loadFeaturedIdiom(
+    request,
+    "all",
+    data.idioms.totalCount,
+  );
   return {
     ...data,
     languages,
+    featuredIdiom,
     seo: {
       canonicalUrl: getCanonicalUrl(request, "/idioms"),
       languageKey: "all",
@@ -87,9 +93,7 @@ export default function IdiomsRoute() {
       page={searchParams.get("page")}
       heading="Idioms from around the world"
       introduction={`Browse ${initialData.idioms.totalCount} idioms across languages and compare expressions that communicate the same ideas.`}
-      languageDirectory={
-        <LanguageDirectory languages={initialData.languages} />
-      }
+      featuredIdiom={initialData.featuredIdiom}
       onPageChange={(page) => {
         searchParams.set("page", page);
         setSearchParams(searchParams);

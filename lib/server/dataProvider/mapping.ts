@@ -133,6 +133,7 @@ export function mapDbIdiom(dbIdiom: DbIdiom, dbTranslations?: DbIdiom[], users?:
         language: languageModel,
         literalTranslation: dbIdiom.literalTranslation,
         transliteration: dbIdiom.transliteration,
+        equivalentCount: (dbIdiom.equivalents || []).length,
         createdAt: dbIdiom.createdAt && dbIdiom.createdAt.toUTCString(),
         updatedAt: dbIdiom.updatedAt && dbIdiom.updatedAt.toUTCString(),
         equivalents: [],

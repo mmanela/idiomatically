@@ -1,0 +1,50 @@
+@use "variables" as *;
+
+.featuredIdiom {
+  background: #f5f8ff;
+  border: 1px solid #d6e4ff;
+  border-left: 4px solid $primaryColor1;
+  border-radius: 6px;
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+
+  .featuredIdiomLabel {
+    color: $secondaryColor1;
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+  }
+
+  .featuredIdiomHeader {
+    align-items: flex-start;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+  }
+
+  h2 {
+    font-size: 1.35rem;
+    margin: 0;
+  }
+
+  .flagAvatarContainer {
+    margin: 0.25rem 0 0.75rem;
+  }
+
+  .featuredIdiomEquivalentCount {
+    white-space: nowrap;
+  }
+
+  .featuredIdiomLink {
+    font-weight: 600;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .featuredIdiom .featuredIdiomHeader {
+    display: block;
+  }
+}

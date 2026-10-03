@@ -7,6 +7,8 @@ import { IdiomListRenderer } from "../components/IdiomListRenderer";
 import type { IdiomListData } from "../loaders/idioms.server";
 import { Link, useLocation } from "react-router";
 import { IDIOM_PAGE_SIZE } from "../constants";
+import type { FeaturedIdiom as FeaturedIdiomData } from "../loaders/featuredIdiom.server";
+import { FeaturedIdiom } from "../components/FeaturedIdiom";
 const { Paragraph, Title } = Typography;
 
 export const getIdiomListQuery = gql`
@@ -38,9 +40,7 @@ export const getIdiomListQuery = gql`
               emojiFlag
             }
           }
-          equivalents {
-            id
-          }
+          equivalentCount
         }
       }
     }
@@ -54,7 +54,7 @@ export interface IdiomListViewProps {
   page: string | null;
   heading: string;
   introduction?: string;
-  languageDirectory?: React.ReactNode;
+  featuredIdiom?: FeaturedIdiomData | null;
   onPageChange: (value: string) => void;
 }
 
@@ -102,7 +102,7 @@ export const IdiomListView: React.FunctionComponent<IdiomListViewProps> = props 
     <section className="idiomDirectory">
       <Title level={1}>{props.heading}</Title>
       {props.introduction && <Paragraph>{props.introduction}</Paragraph>}
-      {props.languageDirectory}
+      {props.featuredIdiom && <FeaturedIdiom idiom={props.featuredIdiom} />}
       <IdiomListRenderer
         className="idiomListView"
         pageSize={IDIOM_PAGE_SIZE}

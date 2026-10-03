@@ -20,6 +20,7 @@ export interface IdiomListItem {
       emojiFlag: string;
     }>;
   };
+  equivalentCount?: number;
   equivalents?: ReadonlyArray<unknown>;
 }
 
@@ -80,7 +81,9 @@ export const renderIdiomListItem = (
 ) => {
   const idiom = item;
   let equivalentsCount = 0;
-  if (isFullIdiom(idiom)) {
+  if (idiom.equivalentCount !== undefined) {
+    equivalentsCount = idiom.equivalentCount;
+  } else if (isFullIdiom(idiom)) {
     equivalentsCount = idiom.equivalents.length;
   }
 

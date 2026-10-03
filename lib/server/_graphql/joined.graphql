@@ -117,6 +117,7 @@ type Idiom {
   tags: [String!]!
   transliteration: String
   literalTranslation: String
+  equivalentCount: Int!
   equivalents: [Idiom!]!
   language: Language!
   createdAt: String!

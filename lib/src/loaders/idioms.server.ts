@@ -18,7 +18,7 @@ export interface IdiomListEntry {
       emojiFlag: string;
     }>;
   };
-  equivalents: Array<{ id: string }>;
+  equivalentCount: number;
 }
 
 export interface IdiomListData {

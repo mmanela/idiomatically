@@ -4,11 +4,18 @@ import { loadIdiomList } from "../loaders/idioms.server";
 import type { Route } from "./+types/home";
 import { buildPageMeta, pageTitle, SITE_DESCRIPTION } from "../seo";
 import { getCanonicalUrl } from "../seo.server";
+import { loadFeaturedIdiom } from "../loaders/featuredIdiom.server";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const data = await loadIdiomList(request, "en");
+  const featuredIdiom = await loadFeaturedIdiom(
+    request,
+    "en",
+    data.idioms.totalCount,
+  );
   return {
     ...data,
+    featuredIdiom,
     seo: {
       canonicalUrl: getCanonicalUrl(request, "/"),
       languageKey: "en",
@@ -48,6 +55,7 @@ export default function HomeRoute() {
       page={searchParams.get("page")}
       heading="English idioms and equivalents across languages"
       introduction="Explore English idioms, their meanings, and equivalent expressions used in other languages and countries."
+      featuredIdiom={initialData.featuredIdiom}
       onPageChange={(page) => {
         searchParams.set("page", page);
         setSearchParams(searchParams);

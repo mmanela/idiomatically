@@ -7,7 +7,11 @@ export async function graphqlRequest<TData, TVariables>(
 ) {
   const operationName =
     getOperationAST(query)?.name?.value || "ServerSideRender";
-  const response = await fetch(new URL("/graphql", request.url), {
+  const graphqlUrl = new URL(
+    "/graphql",
+    `http://127.0.0.1:${process.env.PORT || "3000"}`,
+  );
+  const response = await fetch(graphqlUrl, {
     method: "POST",
     headers: {
       "apollo-require-preflight": "true",

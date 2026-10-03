@@ -62,10 +62,12 @@ export class Languages {
 
             let countryLanguages = country.languages;
 
-            // Hardcoded insertion of Yiddish into IL data set. 
-            // Need to submit PR to add to underlying NPM package
+            // Supplement languages omitted from countries-list country mappings.
             if (countryCode === "IL") {
                 countryLanguages = countryLanguages.concat("yi");
+            }
+            if (countryCode === "GB") {
+                countryLanguages = countryLanguages.concat("cy");
             }
 
             for (const langCode of countryLanguages) {

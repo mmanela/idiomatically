@@ -99,6 +99,11 @@ export function createAuth(options: {
         },
       },
     },
+    onAPIError: {
+      onError: (error) => {
+        console.error("[auth] API error", authErrorSummary(error));
+      },
+    },
   });
 }
 
@@ -162,6 +167,27 @@ function requireGoogleCredential(
       `${name} must be configured when Google authentication is enabled`,
     );
   }
+}
+
+function authErrorSummary(error: unknown) {
+  if (!(error instanceof Error)) {
+    return { name: "UnknownError" };
+  }
+
+  const code =
+    "code" in error &&
+    (typeof error.code === "string" || typeof error.code === "number")
+      ? error.code
+      : undefined;
+  const message = error.message
+    .replace(/mongodb(?:\+srv)?:\/\/\S+/gi, "<redacted-mongo-uri>")
+    .replace(
+      /([?&](?:code|state|token|access_token|refresh_token|id_token)=)[^&\s]+/gi,
+      "$1<redacted>",
+    )
+    .slice(0, 1000);
+
+  return { name: error.name, code, message };
 }
 
 export function getLocalIdentity(role: string) {

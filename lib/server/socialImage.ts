@@ -31,6 +31,8 @@ export async function renderIdiomSocialImage(idiom: Idiom) {
     relatedCount === 1
       ? "1 related idiom in another language"
       : `${relatedCount} related idioms in other languages`;
+  const badgeText = `${idiom.language.languageName} · ${relatedText}`;
+  const badgeWidth = Math.min(badgeText.length * 15 + 44, 1060);
 
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
@@ -54,9 +56,9 @@ export async function renderIdiomSocialImage(idiom: Idiom) {
         ${renderLines(titleLines, 76)}
       </text>
 
-      <rect x="70" y="365" width="${Math.min(relatedText.length * 17 + 40, 620)}" height="54" rx="27" fill="#79a8c9" opacity=".28"/>
+      <rect x="70" y="365" width="${badgeWidth}" height="54" rx="27" fill="#79a8c9" opacity=".28"/>
       <text x="92" y="401" fill="#eaf4fa" font-family="DejaVu Sans, sans-serif" font-size="26" font-weight="700">
-        ${escapeXml(idiom.language.languageName)} · ${escapeXml(relatedText)}
+        ${escapeXml(badgeText)}
       </text>
 
       <text x="70" y="485" fill="#eaf4fa" font-family="DejaVu Sans, sans-serif" font-size="29">

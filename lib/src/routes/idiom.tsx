@@ -39,7 +39,7 @@ export const meta: Route.MetaFunction = ({ loaderData }) => {
     `/social/idioms/${idiom.slug}.png`,
     canonicalUrl,
   );
-  socialImageUrl.searchParams.set("v", "2");
+  socialImageUrl.searchParams.set("v", "3");
 
   return [
     { title: `${idiom.title} - Idiomatically` },

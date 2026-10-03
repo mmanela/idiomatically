@@ -610,6 +610,8 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
 
   const allIdiomsHtml = await (await page.request.get('/idioms')).text();
   expect(allIdiomsHtml).toContain('Featured idiom');
+  expect(allIdiomsHtml).toContain('featuredIdiomEquivalentCount');
+  expect(allIdiomsHtml).not.toContain('0 equivalent idioms');
 
   const legacyResponse = await page.request.get('/idioms?lang=es', {
     maxRedirects: 0

@@ -77,7 +77,9 @@ export async function loadFeaturedIdiom(
     locale,
     limit: rotationPool,
   });
-  const candidates = data.idioms.edges.map((edge) => edge.node);
+  const candidates = data.idioms.edges
+    .map((edge) => edge.node)
+    .filter((idiom) => idiom.equivalentCount > 0);
   if (candidates.length === 0) {
     return null;
   }

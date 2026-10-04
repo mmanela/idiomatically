@@ -449,6 +449,12 @@ test('public idiom content is server rendered and client navigation stays hydrat
     expect(detailHtml).toContain(
       '<link rel="canonical" href="http://localhost:3100/idioms/read-between-the-lines"/>'
     );
+    expect(detailHtml).toMatch(
+      /<div title="English" class="[^"]*languageSelect/
+    );
+    expect(detailHtml).not.toMatch(
+      /<div title="en" class="[^"]*languageSelect/
+    );
   }
   const socialImageResponse = await page.request.get(
     '/social/idioms/read-between-the-lines.png'

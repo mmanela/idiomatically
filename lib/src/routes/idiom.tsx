@@ -22,6 +22,12 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const result = {
     ...graphqlData,
     canonicalUrl,
+    seo: graphqlData.idiom
+      ? {
+          languageKey: graphqlData.idiom.language.languageKey,
+          languageName: graphqlData.idiom.language.languageName,
+        }
+      : undefined,
   };
   return graphqlData.idiom ? result : data(result, { status: 404 });
 }

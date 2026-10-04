@@ -35,6 +35,13 @@ export class IdiomDataProvider {
         //this.idiomCollection.createIndex({ description: "text" });
     }
 
+    async ensureIndexes() {
+        await Promise.all([
+            this.idiomCollection.createIndex({ slug: 1 }, { name: "slug_1" }),
+            this.idiomCollection.createIndex({ languageKey: 1 }, { name: "languageKey_1" })
+        ]);
+    }
+
     /**
      * Converts a idiom filter into one that excludes deleted and provisional idioms
      * @param idiomFilter A filter to extend to active idioms only
@@ -477,7 +484,7 @@ export class IdiomDataProvider {
         });
     }
 
-    async queryIdioms(args: QueryIdiomsArgs, idiomExpandOptions: IdiomExpandOptions): Promise<Paged<Idiom>> {
+    async queryIdioms(args: QueryIdiomsArgs, idiomExpandOptions: IdiomExpandOptions, includeTotalCount = true): Promise<Paged<Idiom>> {
         const filter = args && args.filter ? args.filter : undefined;
         const limit = args && args.limit ? args.limit : 50;
         const locale = args && args.locale ? args.locale : "en";
@@ -517,15 +524,17 @@ export class IdiomDataProvider {
         }
 
         findFilter = this.activeOnly(findFilter);
-        totalCount = await this.idiomCollection.countDocuments(findFilter);
-
-        dbIdioms = await this.idiomCollection.aggregate<DbIdiom>([
+        const idiomsPromise = this.idiomCollection.aggregate<DbIdiom>([
             { $match: findFilter },
             { $addFields: { equivCount: { $size: { "$ifNull": ["$equivalents", []] } } } },
             { $sort: sortObj }
         ]).skip(skip)
             .limit(limit)
             .toArray();
+        const countPromise = includeTotalCount
+            ? this.idiomCollection.countDocuments(findFilter)
+            : Promise.resolve(null);
+        [totalCount, dbIdioms] = await Promise.all([countPromise, idiomsPromise]);
 
         let dbEquivalents: DbIdiom[] = [];
         if (dbIdioms) {

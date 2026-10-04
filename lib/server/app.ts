@@ -43,6 +43,7 @@ const { dataProviders, server: apolloServer } = createGraphqlRuntime({
   adminEmails,
 });
 
+await dataProviders.idiom.ensureIndexes();
 await initializeJobs(dataProviders, adminEmails);
 await apolloServer.start();
 

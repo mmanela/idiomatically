@@ -15,7 +15,10 @@ import { getLanguageName } from "../utilities/languageUtil";
 import { getLanguagePath } from "../utilities/languagePath";
 import { getCanonicalUrl } from "../seo.server";
 import { buildPageMeta, pageTitle } from "../seo";
-import { loadFeaturedIdiom } from "../loaders/featuredIdiom.server";
+import {
+  loadFeaturedIdiom,
+  MINIMUM_FEATURED_IDIOMS,
+} from "../loaders/featuredIdiom.server";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -39,15 +42,15 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirect(page.redirectTo, 301);
   }
 
-  const [data, languages] = await Promise.all([
+  const [data, languages, featuredCandidate] = await Promise.all([
     loadIdiomList(request, "all"),
     loadLanguagesWithIdioms(request),
+    loadFeaturedIdiom(request, "all"),
   ]);
-  const featuredIdiom = await loadFeaturedIdiom(
-    request,
-    "all",
-    data.idioms.totalCount,
-  );
+  const featuredIdiom =
+    data.idioms.totalCount >= MINIMUM_FEATURED_IDIOMS
+      ? featuredCandidate
+      : null;
   const notFound = page.pageNumber > 1 && data.idioms.edges.length === 0;
   const result = {
     ...data,

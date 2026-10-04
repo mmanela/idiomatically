@@ -23,6 +23,7 @@ const { Header, Footer, Content } = Layout;
 
 const theme = {
   token: {
+    colorLink: "#0069cc",
     colorPrimary: "#0069cc",
     colorTextDescription: "#595959",
     fontFamily:

@@ -157,6 +157,7 @@ test('public navigation is readable and consistently spaced', async ({ page }) =
   await expect(page.getByRole('combobox', { name: 'Language' })).toBeVisible();
   await expect(page.locator('.creativeCommons img')).toHaveAttribute('width', '80');
   await expect(page.locator('.creativeCommons img')).toHaveAttribute('height', '15');
+  await expect(page.locator('.mainFooter')).toHaveCSS('color', 'rgb(118, 118, 118)');
 
   for (const name of ['Home', 'About', 'Partners', 'Login']) {
     const link = page.getByRole('link', { name });
@@ -473,6 +474,9 @@ test('public idiom content is server rendered and client navigation stays hydrat
     page.getByRole('heading', { level: 3, name: 'Leer entre líneas' })
   ).toBeVisible();
   await expect(page.locator('h4.ant-list-item-meta-title')).toHaveCount(0);
+  await expect(
+    page.getByRole('button', { name: 'Login to correlate with other idioms' })
+  ).toHaveCSS('color', 'rgb(0, 105, 204)');
   await page.getByRole('link', { name: 'Home' }).click();
   await expect(page).toHaveURL('/');
   await waitForRoute(page, '/');

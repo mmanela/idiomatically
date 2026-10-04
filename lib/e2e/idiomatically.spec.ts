@@ -149,12 +149,14 @@ test('public navigation is readable and consistently spaced', async ({ page }) =
   expect(layout.searchControls.width).toBe(700);
   expect(layout.languageSelectWidth).toBeGreaterThanOrEqual(100);
   expect(layout.languageSelectWidth).toBeLessThanOrEqual(220);
-  expect(layout.languageSelectorBackground).toBe('rgb(24, 144, 255)');
+  expect(layout.languageSelectorBackground).toBe('rgb(0, 105, 204)');
   expect(layout.homeLinkColor).toBe('rgba(0, 0, 0, 0.65)');
   expect(layout.searchButtonRightRadius).toEqual({ bottom: '0px', top: '0px' });
 
   await expect(page.getByRole('searchbox', { name: 'Find an idiom' })).toBeVisible();
   await expect(page.getByRole('combobox', { name: 'Language' })).toBeVisible();
+  await expect(page.locator('.creativeCommons img')).toHaveAttribute('width', '80');
+  await expect(page.locator('.creativeCommons img')).toHaveAttribute('height', '15');
 
   for (const name of ['Home', 'About', 'Partners', 'Login']) {
     const link = page.getByRole('link', { name });
@@ -467,6 +469,10 @@ test('public idiom content is server rendered and client navigation stays hydrat
   );
 
   await gotoHydrated(page, '/idioms/read-between-the-lines');
+  await expect(
+    page.getByRole('heading', { level: 3, name: 'Leer entre líneas' })
+  ).toBeVisible();
+  await expect(page.locator('h4.ant-list-item-meta-title')).toHaveCount(0);
   await page.getByRole('link', { name: 'Home' }).click();
   await expect(page).toHaveURL('/');
   await waitForRoute(page, '/');

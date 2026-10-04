@@ -23,7 +23,8 @@ const { Header, Footer, Content } = Layout;
 
 const theme = {
   token: {
-    colorPrimary: "#1890ff",
+    colorPrimary: "#0069cc",
+    colorTextDescription: "#595959",
     fontFamily:
       '"Lucida Sans", "Lucida Sans Regular", "Lucida Grande", "Lucida Sans Unicode", Geneva, Verdana, sans-serif',
   },
@@ -137,8 +138,10 @@ export default function App() {
             >
               <img
                 alt="Creative Commons License"
+                height={15}
                 style={{ borderWidth: 0, verticalAlign: "text-bottom" }}
                 src="https://i.creativecommons.org/l/by-sa/4.0/80x15.png"
+                width={80}
               />
             </a>
           </span>

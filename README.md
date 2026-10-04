@@ -102,8 +102,12 @@ npm run seo:smoke -- https://idiomatically.net
 The authentication check validates the deployed Better Auth route and callback
 URL without logging in or exposing Google credentials. The SEO check validates
 canonical URLs, redirects, pagination errors, structured data, and sitemap
-behavior. Complete one real Google login on the deployed environment before
-directing users to it.
+behavior. Before directing users to a new deployment, manually sign in once
+through <https://idiomatically.net/login> using a Google test account you
+control. If the Google OAuth consent screen is in testing mode, add that account
+as an authorized test user first. Verify that Google returns to Idiomatically,
+the user is signed in, and `/me` loads successfully. New accounts receive the
+General role unless their email is listed in `ADMIN_EMAILS`.
 
 Useful commands:
 

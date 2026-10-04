@@ -108,6 +108,30 @@
     }
   }
 
+  .featuredIdiomClamp {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+  }
+
+  .featuredIdiomMetadata {
+    -webkit-line-clamp: 2;
+  }
+
+  .featuredIdiomDescription {
+    -webkit-line-clamp: 3;
+  }
+
+  .featuredIdiomClickablePreview {
+    border-radius: 2px;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid $primaryColor1;
+      outline-offset: 1px;
+    }
+  }
+
 }
 
 @media screen and (max-width: 600px) {
@@ -161,6 +185,7 @@
     .featuredIdiomDescription {
       font-size: 0.84rem;
       line-height: 1.25;
+      -webkit-line-clamp: 2;
 
       p,
       ul,

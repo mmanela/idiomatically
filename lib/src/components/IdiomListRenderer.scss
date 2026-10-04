@@ -2,13 +2,17 @@
 .idiomListRenderer {
   .idiomListDetails {
     align-items: center;
+    flex: 1;
+    min-width: 0;
 
-    h4 {
+    .idiomListHeading {
       font-weight: bold;
       margin-bottom: 0;
+      margin-top: 0;
     }
 
-    .ant-list-item-meta-description {
+    .idiomListDescription {
+      color: #595959;
       font-size: 0.9rem;
     }
 

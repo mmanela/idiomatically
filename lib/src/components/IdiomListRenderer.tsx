@@ -112,31 +112,28 @@ export const renderIdiomListItem = (
 
   return (
     <List.Item key={idiom.slug} className="idiomListItem" actions={actions}>
-      <List.Item.Meta
-        className="idiomListDetails"
-        title={
-          <div>
-            <div className="itemHeader">
-              {flagElement}
-              {equivalentIdiomContent}
-            </div>
+      <div className="idiomListDetails">
+        <div className="itemHeader">
+          {flagElement}
+          {equivalentIdiomContent}
+        </div>
 
-            <Link
-              className="idiomListTitle"
-              to={`/idioms/${idiom.slug}`}
-              lang={idiom.language.languageKey}
-              dir="auto"
-            >
-              {idiom.title}
-            </Link>
+        <h3 className="idiomListHeading">
+          <Link
+            className="idiomListTitle"
+            to={`/idioms/${idiom.slug}`}
+            lang={idiom.language.languageKey}
+            dir="auto"
+          >
+            {idiom.title}
+          </Link>
+        </h3>
+        {includeLiteralTranslation && idiom.literalTranslation && (
+          <div className="idiomListDescription">
+            {idiom.literalTranslation}
           </div>
-        }
-        description={
-          includeLiteralTranslation ? (
-            <div>{idiom.literalTranslation}</div>
-          ) : null
-        }
-      />
+        )}
+      </div>
     </List.Item>
   );
 };

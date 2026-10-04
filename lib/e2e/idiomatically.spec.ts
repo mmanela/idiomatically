@@ -472,7 +472,7 @@ test('public idiom content is server rendered and client navigation stays hydrat
   ).toBeVisible();
 });
 
-test('home page is a global discovery hub', async ({ page }) => {
+test('home page is an English discovery hub', async ({ page }) => {
   await loginAs(page, 'Administrator');
   await createEnglishIdiomViaApi(
     page,
@@ -517,7 +517,11 @@ test('home page is a global discovery hub', async ({ page }) => {
   ).toHaveCount(0);
   await expect(
     page.locator('.languageSelect .ant-select-content-value')
-  ).toHaveText('All');
+  ).toHaveText('English');
+  await expect(
+    page.getByRole('link', { name: 'English discovery idiom' })
+  ).toBeVisible();
+  await expect(page.getByText('Descubrimiento global')).toHaveCount(0);
   await expect(page.getByText('Popular idioms')).toHaveCount(0);
   await expect(
     page.getByRole('link', { name: 'Browse all idioms' })
@@ -527,7 +531,9 @@ test('home page is a global discovery hub', async ({ page }) => {
     maxRedirects: 0
   });
   expect(redirectedSearch.status()).toBe(301);
-  expect(redirectedSearch.headers()['location']).toBe('/idioms?q=global');
+  expect(redirectedSearch.headers()['location']).toBe(
+    '/languages/english/idioms?q=global'
+  );
 });
 
 test('partner projects are discoverable and server rendered', async ({ page }) => {
@@ -560,7 +566,7 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
   const sourceIdiom = await createEnglishIdiomViaApi(
     page,
     'A rising tide lifts all boats',
-    'Improvement in the general situation benefits **everyone**.\n\n# Alternate Forms\n- A rising tide raises all ships.'
+    'Improvement in the general situation benefits **everyone**, because shared progress creates opportunities and stronger conditions for every person involved. The expression emphasizes that broad success can help individuals even when they did not cause the original improvement.\n\n# Alternate Forms\n- A rising tide raises all ships.'
   );
   const equivalents = [
     ['La unión hace la fuerza', 'Unity creates strength', 'La union ase la fwersa', 'es', 'AR'],
@@ -678,6 +684,9 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
   await expect(
     page.locator('.featuredIdiomTarget .featuredIdiomDescription')
   ).toBeVisible();
+  await expect(
+    page.locator('.featuredIdiomTarget .featuredIdiomDescription')
+  ).toHaveAttribute('role', 'link');
 
   const allIdiomsHtml = await (await page.request.get('/idioms')).text();
   expect(allIdiomsHtml).toContain('Featured translation');
@@ -700,6 +709,15 @@ test('SEO routes expose canonical metadata, complete mappings, and true 404 resp
   await expect(
     page.locator('.featuredIdiomSource .featuredIdiomDescription strong')
   ).toBeVisible();
+  await expect(
+    page.locator('.featuredIdiomSource .featuredIdiomDescription')
+  ).toHaveAttribute('role', 'link');
+  await page
+    .locator('.featuredIdiomSource .featuredIdiomDescription')
+    .press('Enter');
+  await expect(page).toHaveURL(`/idioms/${sourceIdiom.slug}`);
+  await page.goBack();
+  await waitForHydration(page);
   await expect(
     page.locator('.featuredIdiomSource .featuredIdiomDescription')
   ).not.toContainText(/Alternate Forms|Examples/);

@@ -5,17 +5,21 @@ import { buildPageMeta, pageTitle, SITE_DESCRIPTION } from "../seo";
 import { getCanonicalUrl } from "../seo.server";
 import { loadFeaturedIdiom } from "../loaders/featuredIdiom.server";
 import { HomePage } from "../pages/HomePage";
+import { getLanguagePath } from "../utilities/languagePath";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const requestUrl = new URL(request.url);
   if (requestUrl.search) {
-    return redirect(`/idioms${requestUrl.search}`, 301);
+    return redirect(
+      `${getLanguagePath("English")}${requestUrl.search}`,
+      301,
+    );
   }
 
-  const data = await loadIdiomList(request, "all", 7);
+  const data = await loadIdiomList(request, "en", 7);
   const featuredIdiom = await loadFeaturedIdiom(
     request,
-    "all",
+    "en",
     data.idioms.totalCount,
   );
   return {
@@ -23,8 +27,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     featuredIdiom,
     seo: {
       canonicalUrl: getCanonicalUrl(request, "/"),
-      languageKey: "all",
-      languageName: "All",
+      languageKey: "en",
+      languageName: "English",
     },
   };
 }

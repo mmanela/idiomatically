@@ -1,5 +1,6 @@
 import { Typography } from "antd";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { type KeyboardEvent } from "react";
 import type { FeaturedIdiom as FeaturedIdiomData } from "../loaders/featuredIdiom.server";
 import { LanguageFlags } from "./LanguageFlags";
 import {
@@ -13,7 +14,22 @@ import "./FeaturedIdiom.scss";
 const { Paragraph, Text, Title } = Typography;
 
 export function FeaturedIdiom({ idiom }: { idiom: FeaturedIdiomData }) {
+  const navigate = useNavigate();
   const equivalent = idiom.featuredEquivalent;
+  const sourcePreviewInteraction = previewInteraction(
+    idiom.slug,
+    navigate,
+  );
+  const targetPreviewInteraction = previewInteraction(
+    equivalent.slug,
+    navigate,
+  );
+  const metadataClassName =
+    "featuredIdiomMetadata featuredIdiomClamp featuredIdiomClickablePreview";
+  const sourceDescriptionClassName =
+    "featuredIdiomDescription featuredIdiomClamp featuredIdiomClickablePreview markdown";
+  const targetDescriptionClassName =
+    "featuredIdiomDescription featuredIdiomClamp featuredIdiomClickablePreview markdown";
   const descriptionPreview = idiom.description
     ? markdownBeforeFirstHeading(idiom.description)
     : "";
@@ -43,18 +59,25 @@ export function FeaturedIdiom({ idiom }: { idiom: FeaturedIdiomData }) {
             </Link>
           </Title>
           {requiresTransliteration(idiom.title) && (
-            <Paragraph>
+            <Paragraph
+              {...sourcePreviewInteraction}
+              className={metadataClassName}
+            >
               <Text strong>Transliteration:</Text> {idiom.transliteration}
             </Paragraph>
           )}
           {idiom.literalTranslation && (
-            <Paragraph>
+            <Paragraph
+              {...sourcePreviewInteraction}
+              className={metadataClassName}
+            >
               <Text strong>Literally:</Text> {idiom.literalTranslation}
             </Paragraph>
           )}
           {descriptionPreview && (
             <MarkdownContent
-              className="featuredIdiomDescription markdown"
+              {...sourcePreviewInteraction}
+              className={sourceDescriptionClassName}
               source={descriptionPreview}
             />
           )}
@@ -79,19 +102,26 @@ export function FeaturedIdiom({ idiom }: { idiom: FeaturedIdiomData }) {
             </Link>
           </Title>
           {requiresTransliteration(equivalent.title) && (
-            <Paragraph>
+            <Paragraph
+              {...targetPreviewInteraction}
+              className={metadataClassName}
+            >
               <Text strong>Transliteration:</Text>{" "}
               {equivalent.transliteration}
             </Paragraph>
           )}
           {equivalent.literalTranslation && (
-            <Paragraph>
+            <Paragraph
+              {...targetPreviewInteraction}
+              className={metadataClassName}
+            >
               <Text strong>Literally:</Text> {equivalent.literalTranslation}
             </Paragraph>
           )}
           {equivalentDescriptionPreview && (
             <MarkdownContent
-              className="featuredIdiomDescription markdown"
+              {...targetPreviewInteraction}
+              className={targetDescriptionClassName}
               source={equivalentDescriptionPreview}
             />
           )}
@@ -99,4 +129,23 @@ export function FeaturedIdiom({ idiom }: { idiom: FeaturedIdiomData }) {
       </div>
     </aside>
   );
+}
+
+function previewInteraction(
+  slug: string,
+  navigate: ReturnType<typeof useNavigate>,
+) {
+  const openIdiom = () => navigate(`/idioms/${slug}`);
+  return {
+    "aria-label": "Read full idiom",
+    onClick: openIdiom,
+    onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openIdiom();
+      }
+    },
+    role: "link" as const,
+    tabIndex: 0,
+  };
 }

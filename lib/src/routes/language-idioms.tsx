@@ -17,7 +17,10 @@ import { buildPageMeta, pageTitle } from "../seo";
 import { getCanonicalUrl } from "../seo.server";
 import { getLanguagePath } from "../utilities/languagePath";
 import type { Route } from "./+types/language-idioms";
-import { loadFeaturedIdiom } from "../loaders/featuredIdiom.server";
+import {
+  loadFeaturedIdiom,
+  MINIMUM_FEATURED_IDIOMS,
+} from "../loaders/featuredIdiom.server";
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const page = getIdiomListPage(request);
@@ -30,12 +33,14 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     throw new Response("Language not found", { status: 404 });
   }
 
-  const data = await loadIdiomList(request, language.languageKey);
-  const featuredIdiom = await loadFeaturedIdiom(
-    request,
-    language.languageKey,
-    data.idioms.totalCount,
-  );
+  const [data, featuredCandidate] = await Promise.all([
+    loadIdiomList(request, language.languageKey),
+    loadFeaturedIdiom(request, language.languageKey),
+  ]);
+  const featuredIdiom =
+    data.idioms.totalCount >= MINIMUM_FEATURED_IDIOMS
+      ? featuredCandidate
+      : null;
   const requestUrl = new URL(request.url);
   const canonicalPath = getLanguagePath(language.languageName);
   const notFound = page.pageNumber > 1 && data.idioms.edges.length === 0;

@@ -3,6 +3,7 @@ import { graphqlRequest } from "../graphql.server";
 import { requiresTransliteration } from "../utilities/script";
 
 const ENGLISH_LANGUAGE_KEY = "en";
+export const MINIMUM_FEATURED_IDIOMS = 5;
 
 const featuredIdiomCandidatesQuery = gql`
   query GetFeaturedIdiomCandidates($locale: String!, $limit: Int!) {
@@ -105,14 +106,11 @@ interface FeaturedIdiomResult {
 export async function loadFeaturedIdiom(
   request: Request,
   locale: string,
-  totalCount: number,
-  minimumIdioms = 5,
   rotationPool = 1000,
 ): Promise<FeaturedIdiom | null> {
   const url = new URL(request.url);
   const page = Number.parseInt(url.searchParams.get("page") || "1", 10);
   if (
-    totalCount < minimumIdioms ||
     url.searchParams.has("q") ||
     (!Number.isNaN(page) && page > 1)
   ) {

@@ -3,6 +3,7 @@ import { ConfigProvider, Layout } from "antd";
 import { useCallback, useEffect } from "react";
 import {
   Link,
+  matchPath,
   type LoaderFunctionArgs,
   Outlet,
   useLoaderData,
@@ -44,6 +45,9 @@ export default function App() {
   const searchParams = new URLSearchParams(location.search);
   const queryFilter = searchParams.get("q");
   const SiteTitle = location.pathname === "/" ? "h1" : "div";
+  const isIdiomDetailPage = Boolean(
+    matchPath("/idioms/:slug", location.pathname),
+  );
   const routeSeo = matches
     .map(
       (match) =>
@@ -81,7 +85,7 @@ export default function App() {
   return (
     <ConfigProvider theme={theme}>
       <Layout className="container">
-        <Header>
+        <Header className={isIdiomDetailPage ? "idiomDetailHeader" : undefined}>
           <SiteTitle className="siteTitle">
             <Link to="/">Idiomatically</Link>
           </SiteTitle>

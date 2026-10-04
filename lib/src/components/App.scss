@@ -140,6 +140,11 @@ body {
       .ant-layout-header {
         padding-left: 10px;
         padding-right: 10px;
+
+        &.idiomDetailHeader .idiomSearchControls {
+          display: none;
+        }
+
         .ant-menu-item,
         .ant-menu-submenu-title {
           padding: 0 10px;

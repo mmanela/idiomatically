@@ -155,33 +155,42 @@ export const Idiom: React.FunctionComponent<IdiomProps> = props => {
           </>
         )}
 
-        <Title level={2}>Equivalent idioms in other languages</Title>
-        <Paragraph className="info">This is how you express this idiom across languages and locales.</Paragraph>
-        <Tabs
-          animated={false}
-          tabBarExtraContent={fullScreenMapButton}
-          onChange={onTabChange}
-          items={[
-            {
-              key: "List",
-              label: "List",
-              children: <EquivalentIdiomList idiom={idiom} user={currentUser} />,
-            },
-            {
-              key: "Map",
-              label: "Map",
-              className: "worldMapPanel",
-              children: (
-                <Suspense fallback={<Spin delay={150} className="middleSpinner" description="Loading..." />}>
-                  <FullScreen handle={mapFullScreen}>
-                    <WorldMap idiom={idiom} />
-                  </FullScreen>
-                </Suspense>
-              ),
-            },
-          ]}
-        />
-        <AddEquivalentSection idiom={idiom} user={currentUser} navigate={navigate} />
+        <section className="equivalentIdiomsSection" aria-labelledby="equivalent-idioms-title">
+          <header className="equivalentIdiomsHeader">
+            <Title id="equivalent-idioms-title" className="equivalentIdiomsTitle" level={2}>
+              Equivalent idioms in other languages
+            </Title>
+            <Paragraph className="info equivalentIdiomsDescription">
+              This is how you express this idiom across languages and locales.
+            </Paragraph>
+          </header>
+          <Tabs
+            className="equivalentIdiomsTabs"
+            animated={false}
+            tabBarExtraContent={fullScreenMapButton}
+            onChange={onTabChange}
+            items={[
+              {
+                key: "List",
+                label: "List",
+                children: <EquivalentIdiomList idiom={idiom} user={currentUser} />,
+              },
+              {
+                key: "Map",
+                label: "Map",
+                className: "worldMapPanel",
+                children: (
+                  <Suspense fallback={<Spin delay={150} className="middleSpinner" description="Loading..." />}>
+                    <FullScreen handle={mapFullScreen}>
+                      <WorldMap idiom={idiom} />
+                    </FullScreen>
+                  </Suspense>
+                ),
+              },
+            ]}
+          />
+          <AddEquivalentSection idiom={idiom} user={currentUser} navigate={navigate} />
+        </section>
       </div>
     </article>
 

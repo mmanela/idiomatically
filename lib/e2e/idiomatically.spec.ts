@@ -829,6 +829,10 @@ test('directory pagination normalizes invalid pages and rejects pages beyond the
   await logout(page);
 
   for (const path of [
+    '/?page=0',
+    '/?page=1',
+    '/?page=abc',
+    '/?page=999999999999999999999',
     '/idioms?page=0',
     '/idioms?page=1',
     '/idioms?page=abc',
@@ -836,7 +840,9 @@ test('directory pagination normalizes invalid pages and rejects pages beyond the
   ]) {
     const response = await page.request.get(path, { maxRedirects: 0 });
     expect(response.status()).toBe(301);
-    expect(response.headers()['location']).toBe('/idioms');
+    expect(response.headers()['location']).toBe(
+      path.startsWith('/?') ? '/' : '/idioms'
+    );
   }
 
   for (const path of [
@@ -852,6 +858,7 @@ test('directory pagination normalizes invalid pages and rejects pages beyond the
   }
 
   for (const path of [
+    '/?page=999',
     '/idioms?page=999',
     '/languages/english/idioms?page=999'
   ]) {
@@ -864,6 +871,12 @@ test('directory pagination normalizes invalid pages and rejects pages beyond the
     expect(html).not.toContain('rel="canonical"');
     expect(html).toContain('Could not find a needle in a haystack.');
   }
+
+  await gotoHydrated(page, '/?page=2');
+  await expect(
+    page.locator('.homeIdiomList .ant-pagination-item-active')
+  ).toHaveText('2');
+  await expect(page).toHaveURL('/?page=2');
 });
 
 test('administrator can update an existing idiom', async ({ page }) => {

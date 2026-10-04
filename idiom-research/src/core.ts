@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { parse, type DefaultTreeAdapterTypes } from "parse5";
 import type {
   EvidenceSource,
   EvidenceSummary,
@@ -189,15 +190,23 @@ export function mergeMapping(
   return "added";
 }
 
+const nonContentElements = new Set(["noscript", "script", "style", "template"]);
+
+function extractPageText(node: DefaultTreeAdapterTypes.Node): string {
+  if ("value" in node) {
+    return node.value;
+  }
+  if ("tagName" in node && nonContentElements.has(node.tagName)) {
+    return "";
+  }
+  if ("childNodes" in node) {
+    return node.childNodes.map(extractPageText).join(" ");
+  }
+  return "";
+}
+
 export function normalizePageText(value: string): string {
-  return value
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;|&apos;/gi, "'")
+  return extractPageText(parse(value))
     .replace(/\s+/g, " ")
     .trim()
     .toLocaleLowerCase();

@@ -4,6 +4,7 @@ import {
   excerptAppearsInPage,
   hasApprovedCorroboratedMapping,
   normalizeIdiomTitle,
+  normalizePageText,
   sourceHost,
   summarizeEvidence,
 } from "../src/core.js";
@@ -73,6 +74,35 @@ test("matches exact or near-exact evidence excerpts in HTML", () => {
       "<html><body>The phrase means to reveal a secret unintentionally.</body></html>",
     ),
     true,
+  );
+});
+
+test("ignores script contents with browser-valid closing-tag whitespace", () => {
+  assert.equal(
+    excerptAppearsInPage(
+      "The phrase means to reveal a secret unintentionally.",
+      [
+        "<html><body>",
+        "<script>The phrase means to reveal a secret unintentionally.</script >",
+        "<p>This visible paragraph discusses something else entirely.</p>",
+        "</body></html>",
+      ].join(""),
+    ),
+    false,
+  );
+});
+
+test("decodes nested HTML entities only once", () => {
+  assert.equal(
+    normalizePageText("&amp;quot;quoted&amp;quot; and &amp;quot;literal&amp;quot;."),
+    "&quot;quoted&quot; and &quot;literal&quot;.",
+  );
+  assert.equal(
+    excerptAppearsInPage(
+      '"quoted" and "literal".',
+      "&amp;quot;quoted&amp;quot; and &amp;quot;literal&amp;quot;.",
+    ),
+    false,
   );
 });
 

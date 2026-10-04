@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "dotenv": "^18.0.5",
+    "parse5": "^8.0.1",
     "transliteration": "^2.6.1"
   },
   "devDependencies": {

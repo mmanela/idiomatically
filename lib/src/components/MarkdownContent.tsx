@@ -1,15 +1,20 @@
 import dompurifyFactory from "dompurify";
 import { marked } from "marked";
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+  type HTMLAttributes,
+} from "react";
 
-export interface MarkdownContentProps {
+export interface MarkdownContentProps
+  extends HTMLAttributes<HTMLDivElement> {
   source: string;
-  className?: string;
 }
 
 export function MarkdownContent({
   source,
   className,
+  ...divProps
 }: MarkdownContentProps) {
   const [rendered, setRendered] = useState<string | null>(null);
 
@@ -23,13 +28,18 @@ export function MarkdownContent({
   if (rendered) {
     return (
       <div
+        {...divProps}
         className={className}
         dangerouslySetInnerHTML={{ __html: rendered }}
       />
     );
   }
 
-  return <div className={className}>{markdownToPlainText(source)}</div>;
+  return (
+    <div {...divProps} className={className}>
+      {markdownToPlainText(source)}
+    </div>
+  );
 }
 
 export function markdownToPlainText(source: string) {

@@ -3,7 +3,10 @@ import { loadIdiomList } from "../loaders/idioms.server";
 import type { Route } from "./+types/home";
 import { buildPageMeta, pageTitle, SITE_DESCRIPTION } from "../seo";
 import { getCanonicalUrl } from "../seo.server";
-import { loadFeaturedIdiom } from "../loaders/featuredIdiom.server";
+import {
+  loadFeaturedIdiom,
+  MINIMUM_FEATURED_IDIOMS,
+} from "../loaders/featuredIdiom.server";
 import { HomePage } from "../pages/HomePage";
 import { getLanguagePath } from "../utilities/languagePath";
 
@@ -16,12 +19,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     );
   }
 
-  const data = await loadIdiomList(request, "en", 7);
-  const featuredIdiom = await loadFeaturedIdiom(
-    request,
-    "en",
-    data.idioms.totalCount,
-  );
+  const [data, featuredCandidate] = await Promise.all([
+    loadIdiomList(request, "en", 7),
+    loadFeaturedIdiom(request, "en"),
+  ]);
+  const featuredIdiom =
+    data.idioms.totalCount >= MINIMUM_FEATURED_IDIOMS
+      ? featuredCandidate
+      : null;
   return {
     ...data,
     featuredIdiom,

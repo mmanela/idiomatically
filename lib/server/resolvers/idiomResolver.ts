@@ -13,7 +13,9 @@ export default {
     Query: {
         idioms: async (parent, args: QueryIdiomsArgs, context: GlobalContext, info) => {
             const expandOptions: IdiomExpandOptions = getIdiomExpandOptions(info);
-            const response = await context.dataProviders.idiom.queryIdioms(args, expandOptions);
+            const requestedFields = getRequestedFields(info);
+            const includeTotalCount = requestedFields.has("totalCount") || requestedFields.has("pageInfo");
+            const response = await context.dataProviders.idiom.queryIdioms(args, expandOptions, includeTotalCount);
 
             // This is really not right. Using skip/take is weak in two ways
             // 1. Performance isn't great since its paging whole query still
@@ -22,7 +24,7 @@ export default {
             // that we have to always prioritize oldest idiom first, which is also unfortunate.
 
             const nextEndPosition = response.skip + response.count;
-            const hasNextPage = nextEndPosition < response.totalCount;
+            const hasNextPage = response.totalCount !== null && nextEndPosition < response.totalCount;
             let pageInfo: PageInfo = {
                 endCursor: nextEndPosition.toString(),
                 hasNextPage: hasNextPage
@@ -109,4 +111,10 @@ function getIdiomExpandOptions(info: GraphQLResolveInfo) {
     });
 
     return expandOptions;
+}
+
+function getRequestedFields(info: GraphQLResolveInfo) {
+    const fields = new Set<string>();
+    traverse(info, fieldNode => fields.add(fieldNode.name.value));
+    return fields;
 }

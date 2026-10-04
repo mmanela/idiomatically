@@ -1,0 +1,5 @@
+node_modules/
+.env
+.idiom-research/*
+!.idiom-research/dataset.json
+*.tsbuildinfo
